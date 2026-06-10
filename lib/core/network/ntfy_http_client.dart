@@ -2,7 +2,6 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:ntfyd/core/network/ntfy_interceptor.dart';
 import 'package:ntfyd/core/secure_storage/server_credential.dart';
 

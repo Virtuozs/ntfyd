@@ -1,3 +1,5 @@
+// ignore_for_file: no_leading_underscores_for_local_identifiers
+
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -47,7 +49,7 @@ void main(){
       };
 
       final client = NtfyHttpClient(
-        baseUrl: "https://ntfy.sh",
+        baseUrl: 'https://ntfy.sh',
         credential: const ServerCredential.noAuth(),
         dio: Dio()..httpClientAdapter = mockAdapter,
       );
@@ -205,7 +207,6 @@ void main(){
         dio: Dio()..httpClientAdapter = mockAdapter,
       );
 
-      // ACT
       // This is how a repository will use NtfyHttpClient in practice:
       // catch the DioException and map it.
       Failure? mappedFailure;
@@ -215,7 +216,6 @@ void main(){
         mappedFailure = ExceptionMapper.map(e);
       }
 
-      // ASSERT
       expect(mappedFailure, isA<AuthFailure>());
       expect((mappedFailure as AuthFailure).statusCode, 401);
     });
@@ -242,7 +242,6 @@ void main(){
 
   group('NtfyInterceptor => secrets never logged', () {
     test('logged request path does not contain credential value', () async {
-      // ARRANGE
       final loggedMessages = <String>[];
 
       mockAdapter.handler = (_) async => _ok('{"healthy": true}');
@@ -257,10 +256,8 @@ void main(){
         onLog: (message) => loggedMessages.add(message),
       );
 
-      // ACT
       await client.get('/v1/health');
 
-      // ASSERT
       // None of the log output should contain the raw password
       final allLogs = loggedMessages.join(' ');
       expect(allLogs.contains('s3cr3t'), isFalse);

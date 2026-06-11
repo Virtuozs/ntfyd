@@ -32,10 +32,8 @@ void main() {
       // ARRANGE: a DioException with a 401 response
       final exception = _makeDioException(401);
 
-      // ACT: run it through the mapper
       final result = ExceptionMapper.map(exception);
 
-      // ASSERT: get exactly AuthFailure(statusCode: 401)
       expect(result, const Failure.auth(statusCode: 401));
     });
 
@@ -71,9 +69,6 @@ void main() {
     });
   });
 
-  // ─────────────────────────────────────────────────────────
-  // GROUP 2: Does ExceptionMapper handle non-Dio exceptions?
-  // ─────────────────────────────────────────────────────────
   group('ExceptionMapper — non-Dio exceptions', () {
     test('maps SocketException → NetworkFailure', () {
       // SocketException is a Dart IO exception for dropped connections
@@ -85,20 +80,11 @@ void main() {
 
     test('maps FormatException → UnknownFailure', () {
       // FormatException happens when JSON parsing fails
-      final result = ExceptionMapper.map(
-        const FormatException('bad json'),
-      );
+      final result = ExceptionMapper.map(const FormatException('bad json'));
       expect(result, isA<UnknownFailure>());
     });
   });
 
-  // ─────────────────────────────────────────────────────────
-  // GROUP 3: Does Freezed generate correct equality?
-  //
-  // Freezed replaces manual == and hashCode. These tests confirm
-  // that two Failure instances with the same fields are equal,
-  // and that copyWith produces a new object correctly.
-  // ─────────────────────────────────────────────────────────
   group('Failure — Freezed equality', () {
     test('two NetworkFailures with identical fields are equal', () {
       const a = Failure.network(message: 'err', statusCode: 503);
@@ -121,20 +107,12 @@ void main() {
       // with only the fields you specified changed
       final copy = (original as NetworkFailure).copyWith(statusCode: 500);
 
-      expect(copy.statusCode, 500);      // changed
-      expect(copy.message, 'err');       // unchanged
-      expect(copy, isNot(same(original))); // different object in memory
+      expect(copy.statusCode, 500);
+      expect(copy.message, 'err');
+      expect(copy, isNot(same(original)));
     });
   });
 
-  // ─────────────────────────────────────────────────────────
-  // GROUP 4: Is Failure.when() exhaustive across all 9 types?
-  //
-  // Freezed generates when() as a pattern match. If you add a
-  // 10th Failure variant and forget to handle it somewhere,
-  // the Dart COMPILER will error on this test — that is the
-  // safety net we want.
-  // ─────────────────────────────────────────────────────────
   group('Failure — exhaustive when()', () {
     test('when() routes each of the 9 subtypes to the correct branch', () {
       // One instance of every subtype
@@ -152,21 +130,28 @@ void main() {
 
       // Expected label for each, in the same order as the list above
       final expected = [
-        'network', 'auth', 'notFound', 'rateLimit', 'server',
-        'cache', 'validation', 'biometric', 'unknown',
+        'network',
+        'auth',
+        'notFound',
+        'rateLimit',
+        'server',
+        'cache',
+        'validation',
+        'biometric',
+        'unknown',
       ];
 
       for (var i = 0; i < failures.length; i++) {
         final label = failures[i].when(
-          network:    (_, _)  => 'network',
-          auth:       (_)      => 'auth',
-          notFound:   ()       => 'notFound',
-          rateLimit:  (_)      => 'rateLimit',
-          server:     (_, _)  => 'server',
-          cache:      (_)      => 'cache',
-          validation: (_, _)  => 'validation',
-          biometric:  (_)      => 'biometric',
-          unknown:    (_)      => 'unknown',
+          network: (_, _) => 'network',
+          auth: (_) => 'auth',
+          notFound: () => 'notFound',
+          rateLimit: (_) => 'rateLimit',
+          server: (_, _) => 'server',
+          cache: (_) => 'cache',
+          validation: (_, _) => 'validation',
+          biometric: (_) => 'biometric',
+          unknown: (_) => 'unknown',
         );
         expect(label, expected[i]);
       }

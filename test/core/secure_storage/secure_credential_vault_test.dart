@@ -267,12 +267,13 @@ void main() {
     });
   });
 
-  group('security — credentials are not logged', () {
+  group('security credentials are not logged', () {
     test('toString() of BasicAuth does not expose password', () {
       const cred = ServerCredential.basicAuth(
         username: 'alice',
         password: 'sup3rS3cr3t',
       );
+      final str = cred.toString();
       // Freezed-generated toString includes field values by default,
       // so we rely on the vault never logging the credential this
       // test confirms the raw password isn't visible in the object's
@@ -284,7 +285,7 @@ void main() {
       //
       // Here we specifically verify the password doesn't slip into
       // vault's internal key (which would be a security regression):
-      expect(_key('server-1'), isNot(contains('sup3rS3cr3t')));
+      expect(str, isNot(contains('sup3rS3cr3t')));
     });
 
     test('storage key for a ref never contains credential values', () {

@@ -27,10 +27,6 @@ bool operator ==(Object other) {
 @override
 int get hashCode => runtimeType.hashCode;
 
-@override
-String toString() {
-  return 'ServerCredential()';
-}
 
 
 }
@@ -198,10 +194,6 @@ bool operator ==(Object other) {
 @override
 int get hashCode => runtimeType.hashCode;
 
-@override
-String toString() {
-  return 'ServerCredential.noAuth()';
-}
 
 
 }
@@ -236,10 +228,6 @@ bool operator ==(Object other) {
 @override
 int get hashCode => Object.hash(runtimeType,username,password);
 
-@override
-String toString() {
-  return 'ServerCredential.basicAuth(username: $username, password: $password)';
-}
 
 
 }
@@ -303,10 +291,6 @@ bool operator ==(Object other) {
 @override
 int get hashCode => Object.hash(runtimeType,token);
 
-@override
-String toString() {
-  return 'ServerCredential.bearerToken(token: $token)';
-}
 
 
 }

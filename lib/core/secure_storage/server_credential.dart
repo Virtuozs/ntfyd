@@ -11,7 +11,14 @@ sealed class ServerCredential with _$ServerCredential {
     required String password,
   }) = BasicAuth;
 
-  const factory ServerCredential.bearerToken({
-    required String token,
-  }) = BearerToken;
+  const factory ServerCredential.bearerToken({required String token}) =
+      BearerToken;
+
+  @override
+  String toString() => when(
+    noAuth: () => 'ServerCredential.noAuth()',
+    basicAuth: (username, _) =>
+        'ServerCredential.basicAuth(username: $username, password: [REDACTED])',
+    bearerToken: (_) => 'ServerCredential.bearerToken(token: [REDACTED])',
+  );
 }

@@ -4,7 +4,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ntfyd/core/secure_storage/secure_credential_vault.dart';
 import 'package:ntfyd/core/secure_storage/server_credential.dart';
 
-const _keyPrefix = 'ntfyd_cred_';
 const _basicPrefix = 'basic:';
 const _bearerPrefix = 'bearer:';
 

@@ -217,7 +217,7 @@ void main() {
       const cred = ServerCredential.noAuth();
       final result = cred.when(
         noAuth: () => 'no-auth',
-        basicAuth: (_, __) => 'basic',
+        basicAuth: (_, _) => 'basic',
         bearerToken: (_) => 'bearer',
       );
       expect(result, 'no-auth');
@@ -257,7 +257,7 @@ void main() {
           .map(
             (c) => c.when(
               noAuth: () => 'none',
-              basicAuth: (_, __) => 'basic',
+              basicAuth: (_, _) => 'basic',
               bearerToken: (_) => 'bearer',
             ),
           )

@@ -3292,6 +3292,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GroupsTable groups = $GroupsTable(this);
   late final $GroupMembersTable groupMembers = $GroupMembersTable(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
+  late final ServerConfigDao serverConfigDao = ServerConfigDao(
+    this as AppDatabase,
+  );
+  late final SubscriptionDao subscriptionDao = SubscriptionDao(
+    this as AppDatabase,
+  );
+  late final MessageDao messageDao = MessageDao(this as AppDatabase);
+  late final GroupDao groupDao = GroupDao(this as AppDatabase);
+  late final SettingDao settingDao = SettingDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();

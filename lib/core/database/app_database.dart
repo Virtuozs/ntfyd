@@ -1,4 +1,9 @@
 import 'package:drift/drift.dart';
+import 'package:ntfyd/core/database/daos/group_dao.dart';
+import 'package:ntfyd/core/database/daos/message_dao.dart';
+import 'package:ntfyd/core/database/daos/server_config_dao.dart';
+import 'package:ntfyd/core/database/daos/setting_dao.dart';
+import 'package:ntfyd/core/database/daos/subscription_dao.dart';
 
 import 'package:ntfyd/core/database/tables/app_settings_table.dart';
 import 'package:ntfyd/core/database/tables/group_members_table.dart';
@@ -18,6 +23,7 @@ part 'app_database.g.dart';
     GroupMembers,
     AppSettings,
   ],
+  daos: [ServerConfigDao, SubscriptionDao, MessageDao, GroupDao, SettingDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);

@@ -1,13 +1,12 @@
-/// Minimal stub Full implementation will use @freezed + json_serializable
-class HealthDto {
-  const HealthDto({required this.healthy});
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  final bool healthy;
+part 'health_dto.freezed.dart';
+part 'health_dto.g.dart';
 
-  @override
-  bool operator ==(Object other) =>
-      other is HealthDto && other.healthy == healthy;
+@freezed
+abstract class HealthDto with _$HealthDto {
+  const factory HealthDto({required bool healthy}) = _HealthDto;
 
-  @override
-  int get hashCode => healthy.hashCode;
+  factory HealthDto.fromJson(Map<String, dynamic> json) =>
+      _$HealthDtoFromJson(json);
 }

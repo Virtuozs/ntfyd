@@ -125,12 +125,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  idle,TResult Function()?  validating,TResult Function()?  success,TResult Function( Failure failure)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  idle,TResult Function()?  validating,TResult Function( String baseUrl)?  success,TResult Function( Failure failure)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case ServerFormIdle() when idle != null:
 return idle();case ServerFormValidating() when validating != null:
 return validating();case ServerFormSuccess() when success != null:
-return success();case ServerFormError() when error != null:
+return success(_that.baseUrl);case ServerFormError() when error != null:
 return error(_that.failure);case _:
   return orElse();
 
@@ -149,12 +149,12 @@ return error(_that.failure);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  idle,required TResult Function()  validating,required TResult Function()  success,required TResult Function( Failure failure)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  idle,required TResult Function()  validating,required TResult Function( String baseUrl)  success,required TResult Function( Failure failure)  error,}) {final _that = this;
 switch (_that) {
 case ServerFormIdle():
 return idle();case ServerFormValidating():
 return validating();case ServerFormSuccess():
-return success();case ServerFormError():
+return success(_that.baseUrl);case ServerFormError():
 return error(_that.failure);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -169,12 +169,12 @@ return error(_that.failure);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  idle,TResult? Function()?  validating,TResult? Function()?  success,TResult? Function( Failure failure)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  idle,TResult? Function()?  validating,TResult? Function( String baseUrl)?  success,TResult? Function( Failure failure)?  error,}) {final _that = this;
 switch (_that) {
 case ServerFormIdle() when idle != null:
 return idle();case ServerFormValidating() when validating != null:
 return validating();case ServerFormSuccess() when success != null:
-return success();case ServerFormError() when error != null:
+return success(_that.baseUrl);case ServerFormError() when error != null:
 return error(_that.failure);case _:
   return null;
 
@@ -251,33 +251,67 @@ String toString() {
 
 
 class ServerFormSuccess implements ServerFormState {
-  const ServerFormSuccess();
+  const ServerFormSuccess({required this.baseUrl});
   
 
+ final  String baseUrl;
 
-
+/// Create a copy of ServerFormState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ServerFormSuccessCopyWith<ServerFormSuccess> get copyWith => _$ServerFormSuccessCopyWithImpl<ServerFormSuccess>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ServerFormSuccess);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ServerFormSuccess&&(identical(other.baseUrl, baseUrl) || other.baseUrl == baseUrl));
 }
 
 
 @override
-int get hashCode => runtimeType.hashCode;
+int get hashCode => Object.hash(runtimeType,baseUrl);
 
 @override
 String toString() {
-  return 'ServerFormState.success()';
+  return 'ServerFormState.success(baseUrl: $baseUrl)';
 }
 
 
 }
 
+/// @nodoc
+abstract mixin class $ServerFormSuccessCopyWith<$Res> implements $ServerFormStateCopyWith<$Res> {
+  factory $ServerFormSuccessCopyWith(ServerFormSuccess value, $Res Function(ServerFormSuccess) _then) = _$ServerFormSuccessCopyWithImpl;
+@useResult
+$Res call({
+ String baseUrl
+});
 
 
+
+
+}
+/// @nodoc
+class _$ServerFormSuccessCopyWithImpl<$Res>
+    implements $ServerFormSuccessCopyWith<$Res> {
+  _$ServerFormSuccessCopyWithImpl(this._self, this._then);
+
+  final ServerFormSuccess _self;
+  final $Res Function(ServerFormSuccess) _then;
+
+/// Create a copy of ServerFormState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? baseUrl = null,}) {
+  return _then(ServerFormSuccess(
+baseUrl: null == baseUrl ? _self.baseUrl : baseUrl // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
 
 /// @nodoc
 

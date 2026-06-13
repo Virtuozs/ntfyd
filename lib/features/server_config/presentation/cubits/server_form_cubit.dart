@@ -7,7 +7,7 @@ import 'package:ntfyd/features/server_config/domain/entities/server_config.dart'
 import 'package:ntfyd/features/server_config/domain/usecases/add_server.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_state.dart';
 
-/// Drives the first-run login facade (health-only validation on
+/// Drives the first-run login facade (D14: health-only validation on
 /// Connect; credential validation deferred to first subscribe).
 @injectable
 class ServerFormCubit extends Cubit<ServerFormState> {
@@ -15,8 +15,9 @@ class ServerFormCubit extends Cubit<ServerFormState> {
 
   final AddServer _addServer;
 
-  /// Normalizes [url], derives an [AuthType]/[ServerCredential] from [user]/[password] (blank → anonymous, otherwise → Basic auth)
-  /// Delegates to [AddServer] (which performs server health validation).
+  /// Normalizes [url], derives an [AuthType]/[ServerCredential] from
+  /// [user]/[password] (blank → anonymous, otherwise → Basic auth), and
+  /// delegates to [AddServer] (which performs health validation per D14).
   ///
   /// No-op if a connect attempt is already in progress.
   Future<void> connect({
@@ -41,7 +42,7 @@ class ServerFormCubit extends Cubit<ServerFormState> {
 
     switch (result) {
       case Success<void>():
-        emit(const ServerFormState.success());
+        emit(ServerFormState.success(baseUrl: normalizedUrl));
       case Err<void>(failure: final failure):
         emit(ServerFormState.error(failure: failure));
     }
@@ -50,9 +51,9 @@ class ServerFormCubit extends Cubit<ServerFormState> {
   /// Blank username AND password → anonymous (NoAuth/none).
   /// Otherwise → Basic auth, using empty string for any unset field.
   (AuthType, ServerCredential) _buildCredential(
-    String? user,
-    String? password,
-  ) {
+      String? user,
+      String? password,
+      ) {
     final trimmedUser = user?.trim() ?? '';
     final trimmedPassword = password?.trim() ?? '';
 
@@ -61,11 +62,11 @@ class ServerFormCubit extends Cubit<ServerFormState> {
     }
 
     return (
-      AuthType.basic,
-      ServerCredential.basicAuth(
-        username: trimmedUser,
-        password: trimmedPassword,
-      ),
+    AuthType.basic,
+    ServerCredential.basicAuth(
+      username: trimmedUser,
+      password: trimmedPassword,
+    ),
     );
   }
 }

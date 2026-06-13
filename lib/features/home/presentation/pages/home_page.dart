@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ntfyd/core/usecase/result.dart';
 import 'package:ntfyd/di/injection_container.dart';
-import 'package:ntfyd/features/server_config/domain/repositories/server_config_repository.dart';
 import 'package:ntfyd/features/server_config/domain/usecases/validate_server_health.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_cubit.dart';
 import 'package:ntfyd/features/server_config/presentation/pages/login_page.dart';
@@ -14,7 +13,12 @@ import 'package:ntfyd/features/server_config/presentation/pages/login_page.dart'
 /// no hardcoded colors — so it renders correctly under both
 /// [AppTheme.defaultDark] and Material You (dynamic/seed) themes.
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.baseUrl});
+
+  /// The server the user just logged into (normalized base URL),
+  /// passed from [LoginPage] on success. Used by the debug connection
+  /// check below.
+  final String? baseUrl;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -29,35 +33,23 @@ class _HomePageState extends State<HomePage> {
     _statusFuture = _checkConnection();
   }
 
-  /// DEBUG ONLY (P2-4 milestone): fetches the persisted default server
-  /// and runs GET /v1/health against it to confirm login persisted
-  /// correctly and the server is reachable after relaunch.
-  /// Remove once HomePage (P4-9) has real connection-state wiring.
+  /// DEBUG ONLY: runs GET /v1/health against
+  /// [widget.baseUrl] (the server just logged into) to confirm the
+  /// just-completed login is reachable.
   Future<String> _checkConnection() async {
-    final repository = getIt<ServerConfigRepository>();
+    final baseUrl = widget.baseUrl;
+    if (baseUrl == null) {
+      return 'No server passed to HomePage (debug)';
+    }
+
     final validateHealth = getIt<ValidateServerHealth>();
+    final healthResult = await validateHealth.call(baseUrl);
 
-    final serversResult = await repository.getAll();
-    if (!serversResult.isSuccess) {
-      return 'getAll() failed: ${serversResult.failureOrThrow}';
-    }
-
-    final servers = serversResult.valueOrThrow;
-    if (servers.isEmpty) {
-      return 'No server configured (Drift is empty)';
-    }
-
-    final server = servers.firstWhere(
-      (s) => s.isDefault,
-      orElse: () => servers.first,
-    );
-
-    final healthResult = await validateHealth.call(server.baseUrl);
     if (!healthResult.isSuccess) {
-      return '${server.baseUrl} -> unreachable: ${healthResult.failureOrThrow}';
+      return '$baseUrl -> unreachable: ${healthResult.failureOrThrow}';
     }
 
-    return '${server.baseUrl} -> healthy';
+    return '$baseUrl -> healthy';
   }
 
   @override
@@ -67,34 +59,31 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('ntfyd'),
-        // DEBUG ONLY (P2-4 milestone): provides a way back to LoginPage
-        // since `pushReplacement` on success removes it from the stack.
-        // Remove once HomePage (P4-9) has its own navigation.
         leading: kDebugMode
             ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                tooltip: 'Back to Login (debug)',
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (_) => BlocProvider<ServerFormCubit>(
-                        create: (_) => getIt<ServerFormCubit>(),
-                        child: const LoginPage(),
-                      ),
-                    ),
-                  );
-                },
-              )
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back to Login (debug)',
+          onPressed: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (_) => BlocProvider<ServerFormCubit>(
+                  create: (_) => getIt<ServerFormCubit>(),
+                  child: const LoginPage(),
+                ),
+              ),
+            );
+          },
+        )
             : null,
         actions: kDebugMode
             ? [
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  tooltip: 'Re-check connection (debug)',
-                  onPressed: () =>
-                      setState(() => _statusFuture = _checkConnection()),
-                ),
-              ]
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Re-check connection (debug)',
+            onPressed: () =>
+                setState(() => _statusFuture = _checkConnection()),
+          ),
+        ]
             : null,
       ),
       body: Padding(
@@ -177,7 +166,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 32),
             Center(
               child: Text(
-                'Home Page - under construction',
+                'Home Page',
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),

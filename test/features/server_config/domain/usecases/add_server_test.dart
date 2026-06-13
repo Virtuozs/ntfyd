@@ -221,5 +221,41 @@ void main() {
         expect(addedConfig.credentialRef, fixedId);
       },
     );
+
+    test('re-adding same baseUrl updates existing config instead of inserting duplicate', () async {
+      final existing = ServerConfig(
+        id: 'existing-id',
+        baseUrl: 'https://ntfy.sh',
+        displayName: 'ntfy.sh',
+        authType: AuthType.none,
+        credentialRef: null,
+        isDefault: true,
+        createdAt: DateTime(2026, 1, 1),
+      );
+      when(() => mockRepository.getAll())
+          .thenAnswer((_) async => Result.success([existing]));
+      when(() => mockHealthDataSource.checkHealth(any()))
+          .thenAnswer((_) async => const HealthDto(healthy: true));
+      when(() => mockRepository.add(any(), any()))
+          .thenAnswer((_) async => const Result.success(null));
+
+      const params = AddServerParams(
+        baseUrl: 'https://ntfy.sh',
+        authType: AuthType.none,
+        credential: ServerCredential.noAuth(),
+      );
+
+      final result = await useCase.call(params);
+
+      expect(result.isSuccess, isTrue);
+      final captured = verify(
+            () => mockRepository.add(captureAny(), captureAny()),
+      ).captured;
+      final addedConfig = captured[0] as ServerConfig;
+
+      expect(addedConfig.id, 'existing-id');       // reused, not regenerated
+      expect(addedConfig.isDefault, isTrue);        // preserved
+      expect(addedConfig.createdAt, DateTime(2026, 1, 1)); // preserved
+    });
   });
 }

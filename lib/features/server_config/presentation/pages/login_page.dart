@@ -29,12 +29,12 @@ class _LoginPageState extends State<LoginPage> {
   String _failureMessage(Failure failure) {
     return failure.when(
       network: (message, statusCode) =>
-          "Couldn't reach the server. Check the URL and your connection.",
+      "Couldn't reach the server. Check the URL and your connection.",
       auth: (statusCode) => 'Invalid credentials for this server.',
       notFound: () => 'Server not found at this URL.',
       rateLimit: (retryAfter) => 'Too many requests. Please try again later.',
       server: (statusCode, message) =>
-          'Server error ($statusCode). Please try again.',
+      'Server error ($statusCode). Please try again.',
       cache: (message) => 'A local error occurred. Please try again.',
       validation: (field, message) => message,
       biometric: (reason) => reason,
@@ -49,14 +49,14 @@ class _LoginPageState extends State<LoginPage> {
     return BlocConsumer<ServerFormCubit, ServerFormState>(
       listener: (context, state) {
         switch (state) {
-          case ServerFormSuccess():
+          case ServerFormSuccess(baseUrl: final baseUrl):
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HomePage()),
+              MaterialPageRoute(builder: (_) => HomePage(baseUrl: baseUrl)),
             );
           case ServerFormError(failure: final failure):
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(_failureMessage(failure))));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(_failureMessage(failure))),
+            );
           case ServerFormIdle():
           case ServerFormValidating():
             break;
@@ -76,9 +76,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
-                      minHeight:
-                          constraints.maxHeight -
-                          48, // account for vertical padding
+                      minHeight: constraints.maxHeight - 48,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,6 +102,7 @@ class _LoginPageState extends State<LoginPage> {
                           enabled: !isValidating,
                           decoration: const InputDecoration(
                             hintText: 'Server URL (default:https://ntfy.sh)',
+                            border: InputBorder.none
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -112,6 +111,7 @@ class _LoginPageState extends State<LoginPage> {
                           enabled: !isValidating,
                           decoration: const InputDecoration(
                             hintText: 'Username',
+                            border: InputBorder.none
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -121,6 +121,7 @@ class _LoginPageState extends State<LoginPage> {
                           obscureText: true,
                           decoration: const InputDecoration(
                             hintText: 'Password',
+                            border: InputBorder.none
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -133,20 +134,22 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             onPressed: isValidating
                                 ? null
-                                : () => context.read<ServerFormCubit>().connect(
-                                    url: _urlController.text,
-                                    user: _userController.text,
-                                    password: _passwordController.text,
-                                  ),
+                                : () => context
+                                .read<ServerFormCubit>()
+                                .connect(
+                              url: _urlController.text,
+                              user: _userController.text,
+                              password: _passwordController.text,
+                            ),
                             child: isValidating
                                 ? SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      color: theme.colorScheme.onPrimary,
-                                    ),
-                                  )
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: theme.colorScheme.onPrimary,
+                              ),
+                            )
                                 : const Text('Connect'),
                           ),
                         ),

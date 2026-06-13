@@ -7,7 +7,8 @@ part 'server_form_state.freezed.dart';
 sealed class ServerFormState with _$ServerFormState {
   const factory ServerFormState.idle() = ServerFormIdle;
   const factory ServerFormState.validating() = ServerFormValidating;
-  const factory ServerFormState.success() = ServerFormSuccess;
+  const factory ServerFormState.success({required String baseUrl}) =
+  ServerFormSuccess;
   const factory ServerFormState.error({required Failure failure}) =
-      ServerFormError;
+  ServerFormError;
 }

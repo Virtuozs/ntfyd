@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:injectable/injectable.dart';
 import 'package:ntfyd/core/secure_storage/server_credential.dart';
 import 'package:ntfyd/core/usecase/result.dart';
@@ -51,9 +52,26 @@ class AddServer implements UseCase<AddServerParams, void> {
     if (!existingResult.isSuccess) {
       return Result.err(existingResult.failureOrThrow);
     }
-    final isFirstServer = existingResult.valueOrThrow.isEmpty;
+    final existingServers = existingResult.valueOrThrow;
+    final isFirstServer = existingServers.isEmpty;
 
-    final id = _idGenerator();
+    debugPrint(
+      '[AddServer] BEFORE: ${existingServers.length} existing server(s):',
+    );
+    for (final s in existingServers) {
+      debugPrint(
+        '[AddServer]   id=${s.id} baseUrl=${s.baseUrl} '
+            'isDefault=${s.isDefault} createdAt=${s.createdAt}',
+      );
+    }
+    debugPrint('[AddServer] params.baseUrl=${params.baseUrl}');
+
+    final existing = existingServers.cast<ServerConfig?>().firstWhere(
+          (s) => s!.baseUrl == params.baseUrl,
+      orElse: () => null,
+    );
+
+    final id = existing?.id ?? _idGenerator();
     final credentialRef = params.authType == AuthType.none ? null : id;
 
     final validateResult = ServerConfig.validate(
@@ -62,8 +80,8 @@ class AddServer implements UseCase<AddServerParams, void> {
       displayName: params.displayName,
       authType: params.authType,
       credentialRef: credentialRef,
-      isDefault: isFirstServer,
-      createdAt: _now(),
+      isDefault: existing?.isDefault ?? isFirstServer,
+      createdAt: existing?.createdAt ?? _now(),
     );
     if (!validateResult.isSuccess) {
       return Result.err(validateResult.failureOrThrow);
@@ -73,6 +91,20 @@ class AddServer implements UseCase<AddServerParams, void> {
     final healthResult = await _validateServerHealth.call(config.baseUrl);
     if (!healthResult.isSuccess) {
       return Result.err(healthResult.failureOrThrow);
+    }
+
+    if (existing != null && existing.credentialRef != null) {
+      // Clean up the old credential slot if the new authType is `none`
+      // (credentialRef becomes null) or if it's being replaced under
+      // the same id anyway and store() with the new credential below
+      // covers the replace case; only an explicit downgrade to NoAuth
+      // needs an explicit delete.
+      if (credentialRef == null) {
+        await _repository.editCredentials(
+          id,
+          const ServerCredential.noAuth(),
+        );
+      }
     }
 
     return _repository.add(config, params.credential);

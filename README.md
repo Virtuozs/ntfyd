@@ -1,7 +1,8 @@
 # ntfyd
 
-A Flutter client for [ntfy](https://ntfy.sh) — supports ntfy.sh and self-hosted instances.
+A Flutter client for [ntfy](https://ntfy.sh) notification servers that supports both the public ntfy.sh service and self-hosted mtfy instances.
 
+ntfyd allows users to subscribe to topics, receive push notifications, publish messages, and manage multiple server configurations from a single mobile application. The application supports both public and private deployments, making it suitable for personal, development, and organizational notification workflows.
 ## Architecture
 Clean Architecture · Bloc/Cubit · Drift · Hybrid delivery (FCM + Foreground Service)
 

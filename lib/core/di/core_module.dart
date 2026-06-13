@@ -1,6 +1,28 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
+import 'package:ntfyd/core/database/app_database.dart';
+import 'package:ntfyd/core/database/daos/server_config_dao.dart';
+import 'package:ntfyd/core/secure_storage/flutter_secure_credential_vault.dart';
+import 'package:ntfyd/core/secure_storage/secure_credential_vault.dart';
 
-/// Registers: NtfyHttpClient, WsConnector, SecureCredentialVault,
-/// AppLockService, AppDatabase, all DAOs.
+/// Core, cross-feature dependencies: database and secure storage.
 @module
-abstract class CoreModule {}
+abstract class CoreModule {
+  /// Singleton on-disk Drift database. Tests should bypass this module
+  /// and construct AppDatabase(NativeDatabase.memory()) directly.
+  @lazySingleton
+  AppDatabase get appDatabase => AppDatabase();
+
+  /// Drift auto-generates this getter on [AppDatabase]; exposing it as
+  /// its own provider lets DAOs be injected directly into repositories.
+  @lazySingleton
+  ServerConfigDao serverConfigDao(AppDatabase db) => db.serverConfigDao;
+
+  @lazySingleton
+  FlutterSecureStorage get secureStorage => const FlutterSecureStorage();
+
+  @LazySingleton(as: SecureCredentialVault)
+  FlutterSecureCredentialVault secureCredentialVault(
+    FlutterSecureStorage storage,
+  ) => FlutterSecureCredentialVault(storage);
+}

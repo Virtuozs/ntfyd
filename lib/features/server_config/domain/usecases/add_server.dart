@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:ntfyd/core/secure_storage/server_credential.dart';
 import 'package:ntfyd/core/usecase/result.dart';
 import 'package:ntfyd/core/usecase/use_case.dart';
@@ -29,24 +30,20 @@ class AddServerParams {
   final ServerCredential credential;
 }
 
-/// Adds a new server: validates health (D14), then persists the
-/// [ServerConfig] + [ServerCredential] via [ServerConfigRepository].
-///
-/// Sets `isDefault: true` if this is the first server being added,
-/// `false` otherwise.
+/// Adds a new server: validates health, then persists the [ServerConfig] + [ServerCredential] via [ServerConfigRepository].
+//
+/// Sets `isDefault: true` if this is the first server being added, `false` otherwise.
+@injectable
 class AddServer implements UseCase<AddServerParams, void> {
-  AddServer(
-    this._repository,
-    this._validateServerHealth, {
-    String Function()? idGenerator,
-    DateTime Function()? now,
-  }) : _idGenerator = idGenerator ?? (() => const Uuid().v4()),
-       _now = now ?? DateTime.now;
+  AddServer(this._repository, this._validateServerHealth);
 
   final ServerConfigRepository _repository;
   final ValidateServerHealth _validateServerHealth;
-  final String Function() _idGenerator;
-  final DateTime Function() _now;
+
+  String Function() get _idGenerator =>
+      AddServerTestHooks.idGenerator ?? (() => const Uuid().v4());
+
+  DateTime Function() get _now => AddServerTestHooks.now ?? DateTime.now;
 
   @override
   Future<Result<void>> call(AddServerParams params) async {
@@ -80,4 +77,12 @@ class AddServer implements UseCase<AddServerParams, void> {
 
     return _repository.add(config, params.credential);
   }
+}
+
+/// Test-only seams for [AddServer]'s ID generation and clock.
+//
+/// Not part of the public domain API. Tests MUST reset both fields to `null` in `tearDown` to avoid leaking state across tests.
+class AddServerTestHooks {
+  static String Function()? idGenerator;
+  static DateTime Function()? now;
 }

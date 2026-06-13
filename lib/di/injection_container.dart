@@ -1,14 +1,13 @@
-// lib/di/injection_container.dart
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 
-import 'package:ntfyd/di/injection_container.config.dart';
+import 'injection_container.config.dart';
 
-final GetIt getIt = GetIt.instance;
+final getIt = GetIt.instance;
 
 @InjectableInit(
   initializerName: 'init',
   preferRelativeImports: true,
-  asExtension: true,
+  asExtension: false,
 )
-Future<void> configureDependencies() async => getIt.init();
+Future<void> configureDependencies() async => init(getIt);

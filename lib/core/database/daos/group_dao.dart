@@ -39,6 +39,7 @@ class GroupDao extends DatabaseAccessor<AppDatabase> with _$GroupDaoMixin {
       final groupId = group.id.value;
 
       // Replace all members: delete existing, insert new set.
+
       await (delete(
         groupMembers,
       )..where((t) => t.groupId.equals(groupId))).go();

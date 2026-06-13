@@ -1,7 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:ntfyd/core/error/failures.dart';
 
-
 part 'result.freezed.dart';
 
 /// The single return type for every use case and repository method.

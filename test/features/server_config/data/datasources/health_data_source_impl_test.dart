@@ -7,6 +7,19 @@ import 'package:ntfyd/features/server_config/data/models/health_dto.dart';
 
 class MockNtfyHttpClient extends Mock implements NtfyHttpClient {}
 
+class FakeNtfyHttpClientFactory implements NtfyHttpClientFactory {
+  FakeNtfyHttpClientFactory(this._client, this._onCall);
+
+  final NtfyHttpClient _client;
+  final void Function(String baseUrl) _onCall;
+
+  @override
+  NtfyHttpClient call(String baseUrl) {
+    _onCall(baseUrl);
+    return _client;
+  }
+}
+
 void main() {
   late MockNtfyHttpClient mockHttpClient;
   late HealthDataSourceImpl dataSource;
@@ -16,10 +29,9 @@ void main() {
     mockHttpClient = MockNtfyHttpClient();
     requestedBaseUrl = null;
     dataSource = HealthDataSourceImpl(
-      clientFactory: (baseUrl) {
+      FakeNtfyHttpClientFactory(mockHttpClient, (baseUrl) {
         requestedBaseUrl = baseUrl;
-        return mockHttpClient;
-      },
+      }),
     );
   });
 

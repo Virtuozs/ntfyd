@@ -46,19 +46,21 @@ void main() {
     mockHealthDataSource = MockHealthDataSource();
     validateServerHealth = ValidateServerHealth(mockHealthDataSource);
 
-    useCase = AddServer(
-      mockRepository,
-      validateServerHealth,
-      idGenerator: () => fixedId,
-      now: () => fixedNow,
-    );
+    AddServerTestHooks.idGenerator = () => fixedId;
+    AddServerTestHooks.now = () => fixedNow;
+
+    useCase = AddServer(mockRepository, validateServerHealth);
+  });
+
+  tearDown(() {
+    AddServerTestHooks.idGenerator = null;
+    AddServerTestHooks.now = null;
   });
 
   group('AddServer', () {
     test(
       'sets isDefault=true and calls repository.add when no servers exist',
       () async {
-        // arrange
         when(
           () => mockRepository.getAll(),
         ).thenAnswer((_) async => const Result.success([]));
@@ -75,10 +77,8 @@ void main() {
           credential: ServerCredential.noAuth(),
         );
 
-        // act
         final result = await useCase.call(params);
 
-        // assert
         expect(result.isSuccess, isTrue);
         final captured = verify(
           () => mockRepository.add(captureAny(), captureAny()),
@@ -97,103 +97,100 @@ void main() {
       },
     );
 
-    test('sets isDefault=false and calls repository.add when servers already '
-        'exist', () async {
-      // arrange
-      final existing = ServerConfig(
-        id: 'existing-id',
-        baseUrl: 'https://existing.example.com',
-        displayName: 'existing.example.com',
-        authType: AuthType.none,
-        credentialRef: null,
-        isDefault: true,
-        createdAt: fixedNow,
-      );
-      when(
-        () => mockRepository.getAll(),
-      ).thenAnswer((_) async => Result.success([existing]));
-      when(
-        () => mockHealthDataSource.checkHealth(any()),
-      ).thenAnswer((_) async => const HealthDto(healthy: true));
-      when(
-        () => mockRepository.add(any(), any()),
-      ).thenAnswer((_) async => const Result.success(null));
+    test(
+      'sets isDefault=false and calls repository.add when servers already exist',
+      () async {
+        final existing = ServerConfig(
+          id: 'existing-id',
+          baseUrl: 'https://existing.example.com',
+          displayName: 'existing.example.com',
+          authType: AuthType.none,
+          credentialRef: null,
+          isDefault: true,
+          createdAt: fixedNow,
+        );
+        when(
+          () => mockRepository.getAll(),
+        ).thenAnswer((_) async => Result.success([existing]));
+        when(
+          () => mockHealthDataSource.checkHealth(any()),
+        ).thenAnswer((_) async => const HealthDto(healthy: true));
+        when(
+          () => mockRepository.add(any(), any()),
+        ).thenAnswer((_) async => const Result.success(null));
 
-      const params = AddServerParams(
-        baseUrl: 'https://ntfy.sh',
-        authType: AuthType.none,
-        credential: ServerCredential.noAuth(),
-      );
+        const params = AddServerParams(
+          baseUrl: 'https://ntfy.sh',
+          authType: AuthType.none,
+          credential: ServerCredential.noAuth(),
+        );
 
-      // act
-      final result = await useCase.call(params);
+        final result = await useCase.call(params);
 
-      // assert
-      expect(result.isSuccess, isTrue);
-      final captured = verify(
-        () => mockRepository.add(captureAny(), captureAny()),
-      ).captured;
-      final addedConfig = captured[0] as ServerConfig;
+        expect(result.isSuccess, isTrue);
+        final captured = verify(
+          () => mockRepository.add(captureAny(), captureAny()),
+        ).captured;
+        final addedConfig = captured[0] as ServerConfig;
 
-      expect(addedConfig.isDefault, isFalse);
-    });
+        expect(addedConfig.isDefault, isFalse);
+      },
+    );
 
-    test('returns ValidationFailure for invalid baseUrl without calling '
-        'health check or repository.add', () async {
-      // arrange
-      when(
-        () => mockRepository.getAll(),
-      ).thenAnswer((_) async => const Result.success([]));
+    test(
+      'returns ValidationFailure for invalid baseUrl without calling health check or repository.add',
+      () async {
+        when(
+          () => mockRepository.getAll(),
+        ).thenAnswer((_) async => const Result.success([]));
 
-      const params = AddServerParams(
-        baseUrl: 'ftp://example.com',
-        authType: AuthType.none,
-        credential: ServerCredential.noAuth(),
-      );
+        const params = AddServerParams(
+          baseUrl: 'ftp://example.com',
+          authType: AuthType.none,
+          credential: ServerCredential.noAuth(),
+        );
 
-      // act
-      final result = await useCase.call(params);
+        final result = await useCase.call(params);
 
-      // assert
-      expect(result.isSuccess, isFalse);
-      expect(result.failureOrThrow, isA<ValidationFailure>());
-      verifyNever(() => mockHealthDataSource.checkHealth(any()));
-      verifyNever(() => mockRepository.add(any(), any()));
-    });
+        // assert
+        expect(result.isSuccess, isFalse);
+        expect(result.failureOrThrow, isA<ValidationFailure>());
+        verifyNever(() => mockHealthDataSource.checkHealth(any()));
+        verifyNever(() => mockRepository.add(any(), any()));
+      },
+    );
 
-    test('returns NetworkFailure when health check fails and does not call '
-        'repository.add', () async {
-      // arrange
-      when(
-        () => mockRepository.getAll(),
-      ).thenAnswer((_) async => const Result.success([]));
-      when(() => mockHealthDataSource.checkHealth(any())).thenThrow(
-        DioException(
-          requestOptions: RequestOptions(path: '/v1/health'),
-          type: DioExceptionType.connectionError,
-          error: 'Connection refused',
-        ),
-      );
+    test(
+      'returns NetworkFailure when health check fails and does not call repository.add',
+      () async {
+        when(
+          () => mockRepository.getAll(),
+        ).thenAnswer((_) async => const Result.success([]));
+        when(() => mockHealthDataSource.checkHealth(any())).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/v1/health'),
+            type: DioExceptionType.connectionError,
+            error: 'Connection refused',
+          ),
+        );
 
-      const params = AddServerParams(
-        baseUrl: 'https://unreachable.example.com',
-        authType: AuthType.none,
-        credential: ServerCredential.noAuth(),
-      );
+        const params = AddServerParams(
+          baseUrl: 'https://unreachable.example.com',
+          authType: AuthType.none,
+          credential: ServerCredential.noAuth(),
+        );
 
-      // act
-      final result = await useCase.call(params);
+        final result = await useCase.call(params);
 
-      // assert
-      expect(result.isSuccess, isFalse);
-      expect(result.failureOrThrow, isA<NetworkFailure>());
-      verifyNever(() => mockRepository.add(any(), any()));
-    });
+        expect(result.isSuccess, isFalse);
+        expect(result.failureOrThrow, isA<NetworkFailure>());
+        verifyNever(() => mockRepository.add(any(), any()));
+      },
+    );
 
     test(
       'sets credentialRef equal to generated id when authType is basic',
       () async {
-        // arrange
         when(
           () => mockRepository.getAll(),
         ).thenAnswer((_) async => const Result.success([]));
@@ -213,10 +210,8 @@ void main() {
           ),
         );
 
-        // act
         final result = await useCase.call(params);
 
-        // assert
         expect(result.isSuccess, isTrue);
         final captured = verify(
           () => mockRepository.add(captureAny(), captureAny()),

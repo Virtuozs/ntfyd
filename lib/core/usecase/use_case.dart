@@ -1,4 +1,3 @@
-
 import 'package:ntfyd/core/usecase/result.dart';
 
 abstract class UseCase<Params, Return> {

@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart' show Value;
+import 'package:injectable/injectable.dart';
 import 'package:ntfyd/core/database/app_database.dart' as db;
 import 'package:ntfyd/core/database/daos/server_config_dao.dart';
 import 'package:ntfyd/core/error/failures.dart';
@@ -12,6 +13,7 @@ import 'package:ntfyd/features/server_config/domain/repositories/server_config_r
 /// Concrete [ServerConfigRepository] backed by [ServerConfigDao] for persistence and [SecureCredentialVault] (P1-5) for credentials.
 ///
 /// `credentialRef == null` (set only for [AuthType.none] servers per [AddServer]) means the server has no vault entry andault calls are skipped for such servers.
+@LazySingleton(as: ServerConfigRepository)
 class ServerConfigRepositoryImpl implements ServerConfigRepository {
   ServerConfigRepositoryImpl(this._dao, this._vault);
 

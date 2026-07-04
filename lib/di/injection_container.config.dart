@@ -18,12 +18,15 @@ import '../core/database/daos/server_config_dao.dart' as _i640;
 import '../core/database/daos/subscription_dao.dart' as _i245;
 import '../core/di/core_module.dart' as _i747;
 import '../core/secure_storage/secure_credential_vault.dart' as _i465;
+import '../features/server_config/data/datasources/account_data_source.dart'
+    as _i750;
 import '../features/server_config/data/datasources/health_data_source.dart'
     as _i394;
 import '../features/server_config/data/datasources/health_data_source_impl.dart'
     as _i201;
 import '../features/server_config/data/repositories/server_config_repository_impl.dart'
     as _i462;
+import '../features/server_config/di/server_config_module.dart' as _i22;
 import '../features/server_config/domain/repositories/server_config_repository.dart'
     as _i668;
 import '../features/server_config/domain/usecases/add_server.dart' as _i36;
@@ -35,6 +38,8 @@ import '../features/subscription/data/repositories/subscription_repository_impl.
     as _i221;
 import '../features/subscription/domain/repositories/subscription_repository.dart'
     as _i291;
+import '../features/subscription/domain/usecases/subscribe_to_topic.dart'
+    as _i349;
 
 // initializes the registration of main-scope dependencies inside of GetIt
 _i174.GetIt init(
@@ -44,6 +49,7 @@ _i174.GetIt init(
 }) {
   final gh = _i526.GetItHelper(getIt, environment, environmentFilter);
   final coreModule = _$CoreModule();
+  final serverConfigModule = _$ServerConfigModule();
   gh.lazySingleton<_i935.AppDatabase>(() => coreModule.appDatabase);
   gh.lazySingleton<_i558.FlutterSecureStorage>(() => coreModule.secureStorage);
   gh.lazySingleton<_i201.NtfyHttpClientFactory>(
@@ -54,6 +60,9 @@ _i174.GetIt init(
   );
   gh.lazySingleton<_i465.SecureCredentialVault>(
     () => coreModule.secureCredentialVault(gh<_i558.FlutterSecureStorage>()),
+  );
+  gh.lazySingleton<_i750.AccountDataSource>(
+    () => serverConfigModule.accountDataSource(),
   );
   gh.lazySingleton<_i640.ServerConfigDao>(
     () => coreModule.serverConfigDao(gh<_i935.AppDatabase>()),
@@ -73,6 +82,14 @@ _i174.GetIt init(
   gh.lazySingleton<_i291.SubscriptionRepository>(
     () => _i221.SubscriptionRepositoryImpl(gh<_i245.SubscriptionDao>()),
   );
+  gh.factory<_i349.SubscribeToTopic>(
+    () => _i349.SubscribeToTopic(
+      gh<_i668.ServerConfigRepository>(),
+      gh<_i465.SecureCredentialVault>(),
+      gh<_i750.AccountDataSource>(),
+      gh<_i291.SubscriptionRepository>(),
+    ),
+  );
   gh.factory<_i36.AddServer>(
     () => _i36.AddServer(
       gh<_i668.ServerConfigRepository>(),
@@ -86,3 +103,5 @@ _i174.GetIt init(
 }
 
 class _$CoreModule extends _i747.CoreModule {}
+
+class _$ServerConfigModule extends _i22.ServerConfigModule {}

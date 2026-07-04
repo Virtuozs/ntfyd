@@ -86,14 +86,9 @@ _i174.GetIt init(
     ),
   );
   gh.lazySingleton<_i291.SubscriptionRepository>(
-    () => _i221.SubscriptionRepositoryImpl(gh<_i245.SubscriptionDao>()),
-  );
-  gh.factory<_i349.SubscribeToTopic>(
-    () => _i349.SubscribeToTopic(
-      gh<_i668.ServerConfigRepository>(),
-      gh<_i465.SecureCredentialVault>(),
-      gh<_i750.AccountDataSource>(),
-      gh<_i291.SubscriptionRepository>(),
+    () => _i221.SubscriptionRepositoryImpl(
+      gh<_i245.SubscriptionDao>(),
+      gh<_i256.MessageDao>(),
     ),
   );
   gh.factory<_i36.AddServer>(
@@ -102,13 +97,18 @@ _i174.GetIt init(
       gh<_i285.ValidateServerHealth>(),
     ),
   );
+  gh.factory<_i436.UnsubscribeFromTopic>(
+    () => _i436.UnsubscribeFromTopic(gh<_i291.SubscriptionRepository>()),
+  );
   gh.factory<_i631.ServerFormCubit>(
     () => _i631.ServerFormCubit(gh<_i36.AddServer>()),
   );
-  gh.factory<_i436.UnsubscribeFromTopic>(
-    () => _i436.UnsubscribeFromTopic(
+  gh.factory<_i349.SubscribeToTopic>(
+    () => _i349.SubscribeToTopic(
+      gh<_i668.ServerConfigRepository>(),
+      gh<_i465.SecureCredentialVault>(),
+      gh<_i750.AccountDataSource>(),
       gh<_i291.SubscriptionRepository>(),
-      gh<_i256.MessageDao>(),
     ),
   );
   return getIt;

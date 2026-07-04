@@ -41,8 +41,12 @@ import '../features/subscription/domain/repositories/subscription_repository.dar
     as _i291;
 import '../features/subscription/domain/usecases/subscribe_to_topic.dart'
     as _i349;
+import '../features/subscription/domain/usecases/toggle_mute.dart' as _i110;
+import '../features/subscription/domain/usecases/toggle_pin.dart' as _i164;
 import '../features/subscription/domain/usecases/unsubscribe_from_topic.dart'
     as _i436;
+import '../features/subscription/domain/usecases/update_priority_threshold.dart'
+    as _i106;
 
 // initializes the registration of main-scope dependencies inside of GetIt
 _i174.GetIt init(
@@ -97,8 +101,17 @@ _i174.GetIt init(
       gh<_i285.ValidateServerHealth>(),
     ),
   );
+  gh.factory<_i110.ToggleMute>(
+    () => _i110.ToggleMute(gh<_i291.SubscriptionRepository>()),
+  );
+  gh.factory<_i164.TogglePin>(
+    () => _i164.TogglePin(gh<_i291.SubscriptionRepository>()),
+  );
   gh.factory<_i436.UnsubscribeFromTopic>(
     () => _i436.UnsubscribeFromTopic(gh<_i291.SubscriptionRepository>()),
+  );
+  gh.factory<_i106.UpdatePriorityThreshold>(
+    () => _i106.UpdatePriorityThreshold(gh<_i291.SubscriptionRepository>()),
   );
   gh.factory<_i631.ServerFormCubit>(
     () => _i631.ServerFormCubit(gh<_i36.AddServer>()),

@@ -1,11 +1,32 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:ntfyd/di/injection_container.dart';
+import 'package:ntfyd/features/server_config/presentation/cubits/server_form_cubit.dart';
+import 'package:ntfyd/features/server_config/presentation/cubits/server_form_state.dart';
 import 'package:ntfyd/shared/theme/design_tokens.dart';
 import 'package:ntfyd/shared/theme/dynamic_color_wrapper.dart';
 import 'package:ntfyd/shared/theme/material_you_controller.dart';
 
+class MockServerFormCubit extends Mock implements ServerFormCubit {}
+
 void main() {
+  late MockServerFormCubit mockServerFormCubit;
+
+  setUp(() {
+    mockServerFormCubit = MockServerFormCubit();
+    when(() => mockServerFormCubit.state).thenReturn(const ServerFormState.idle());
+    when(() => mockServerFormCubit.stream).thenAnswer((_) => const Stream.empty());
+    when(() => mockServerFormCubit.close()).thenAnswer((_) async {});
+
+    getIt.registerFactory<ServerFormCubit>(() => mockServerFormCubit);
+  });
+
+  tearDown(() async {
+    await getIt.reset();
+  });
+
   group('DynamicColorWrapper', () {
     testWidgets('should_use_defaultDark_when_materialYou_disabled', (
       tester,

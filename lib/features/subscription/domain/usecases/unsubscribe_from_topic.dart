@@ -11,6 +11,16 @@ class UnsubscribeFromTopicParams {
 
   final String serverId;
   final String topic;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UnsubscribeFromTopicParams &&
+          other.serverId == serverId &&
+          other.topic == topic);
+
+  @override
+  int get hashCode => Object.hash(serverId, topic);
 }
 
 /// Unsubscribes from a topic. Clearing cached messages for the topic is

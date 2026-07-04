@@ -47,6 +47,8 @@ import '../features/subscription/domain/usecases/unsubscribe_from_topic.dart'
     as _i436;
 import '../features/subscription/domain/usecases/update_priority_threshold.dart'
     as _i106;
+import '../features/subscription/presentation/blocs/subscription_bloc.dart'
+    as _i974;
 
 // initializes the registration of main-scope dependencies inside of GetIt
 _i174.GetIt init(
@@ -122,6 +124,16 @@ _i174.GetIt init(
       gh<_i465.SecureCredentialVault>(),
       gh<_i750.AccountDataSource>(),
       gh<_i291.SubscriptionRepository>(),
+    ),
+  );
+  gh.factory<_i974.SubscriptionBloc>(
+    () => _i974.SubscriptionBloc(
+      gh<_i291.SubscriptionRepository>(),
+      gh<_i349.SubscribeToTopic>(),
+      gh<_i436.UnsubscribeFromTopic>(),
+      gh<_i164.TogglePin>(),
+      gh<_i110.ToggleMute>(),
+      gh<_i106.UpdatePriorityThreshold>(),
     ),
   );
   return getIt;

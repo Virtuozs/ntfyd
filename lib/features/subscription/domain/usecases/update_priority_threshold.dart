@@ -11,6 +11,16 @@ class UpdatePriorityThresholdParams {
 
   final String subscriptionId;
   final int threshold;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UpdatePriorityThresholdParams &&
+          other.subscriptionId == subscriptionId &&
+          other.threshold == threshold);
+
+  @override
+  int get hashCode => Object.hash(subscriptionId, threshold);
 }
 
 @injectable

@@ -2,6 +2,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
 import 'package:ntfyd/core/database/app_database.dart';
 import 'package:ntfyd/core/database/daos/server_config_dao.dart';
+import 'package:ntfyd/core/database/daos/subscription_dao.dart';
 import 'package:ntfyd/core/secure_storage/flutter_secure_credential_vault.dart';
 import 'package:ntfyd/core/secure_storage/secure_credential_vault.dart';
 
@@ -17,6 +18,9 @@ abstract class CoreModule {
   /// its own provider lets DAOs be injected directly into repositories.
   @lazySingleton
   ServerConfigDao serverConfigDao(AppDatabase db) => db.serverConfigDao;
+
+  @lazySingleton
+  SubscriptionDao subscriptionDao(AppDatabase db) => db.subscriptionDao;
 
   @lazySingleton
   FlutterSecureStorage get secureStorage => const FlutterSecureStorage();

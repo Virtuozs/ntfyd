@@ -15,6 +15,7 @@ import 'package:injectable/injectable.dart' as _i526;
 
 import '../core/database/app_database.dart' as _i935;
 import '../core/database/daos/server_config_dao.dart' as _i640;
+import '../core/database/daos/subscription_dao.dart' as _i245;
 import '../core/di/core_module.dart' as _i747;
 import '../core/secure_storage/secure_credential_vault.dart' as _i465;
 import '../features/server_config/data/datasources/health_data_source.dart'
@@ -30,6 +31,10 @@ import '../features/server_config/domain/usecases/validate_server_health.dart'
     as _i285;
 import '../features/server_config/presentation/cubits/server_form_cubit.dart'
     as _i631;
+import '../features/subscription/data/repositories/subscription_repository_impl.dart'
+    as _i221;
+import '../features/subscription/domain/repositories/subscription_repository.dart'
+    as _i291;
 
 // initializes the registration of main-scope dependencies inside of GetIt
 _i174.GetIt init(
@@ -53,6 +58,9 @@ _i174.GetIt init(
   gh.lazySingleton<_i640.ServerConfigDao>(
     () => coreModule.serverConfigDao(gh<_i935.AppDatabase>()),
   );
+  gh.lazySingleton<_i245.SubscriptionDao>(
+    () => coreModule.subscriptionDao(gh<_i935.AppDatabase>()),
+  );
   gh.factory<_i285.ValidateServerHealth>(
     () => _i285.ValidateServerHealth(gh<_i394.HealthDataSource>()),
   );
@@ -61,6 +69,9 @@ _i174.GetIt init(
       gh<_i640.ServerConfigDao>(),
       gh<_i465.SecureCredentialVault>(),
     ),
+  );
+  gh.lazySingleton<_i291.SubscriptionRepository>(
+    () => _i221.SubscriptionRepositoryImpl(gh<_i245.SubscriptionDao>()),
   );
   gh.factory<_i36.AddServer>(
     () => _i36.AddServer(

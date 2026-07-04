@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:ntfyd/core/database/app_database.dart' as db;
+import 'package:ntfyd/core/database/daos/message_dao.dart';
 import 'package:ntfyd/core/database/daos/subscription_dao.dart';
 import 'package:ntfyd/core/error/failures.dart';
 import 'package:ntfyd/core/usecase/result.dart';
@@ -9,8 +10,11 @@ import 'package:ntfyd/features/subscription/domain/entities/subscription.dart';
 
 class MockSubscriptionDao extends Mock implements SubscriptionDao {}
 
+class MockMessageDao extends Mock implements MessageDao {}
+
 void main() {
   late MockSubscriptionDao dao;
+  late MockMessageDao messageDao;
   late SubscriptionRepositoryImpl repository;
 
   final now = DateTime.utc(2026, 1, 1);
@@ -40,7 +44,8 @@ void main() {
 
   setUp(() {
     dao = MockSubscriptionDao();
-    repository = SubscriptionRepositoryImpl(dao);
+    messageDao = MockMessageDao();
+    repository = SubscriptionRepositoryImpl(dao, messageDao);
   });
 
   group('watchByServer', () {
@@ -77,18 +82,37 @@ void main() {
   });
 
   group('unsubscribe', () {
-    test('deletes by topic on success', () async {
+    test('clears cached messages then deletes by topic on success', () async {
       when(
-        () => dao.deleteByTopic('srv-1', 'alerts'),
+        () => messageDao.clearByTopic('srv-1', 'alerts'),
       ).thenAnswer((_) async {});
+      when(() => dao.deleteByTopic('srv-1', 'alerts')).thenAnswer((_) async {});
 
       final result = await repository.unsubscribe('srv-1', 'alerts');
 
       expect(result.isSuccess, isTrue);
-      verify(() => dao.deleteByTopic('srv-1', 'alerts')).called(1);
+      verifyInOrder([
+        () => messageDao.clearByTopic('srv-1', 'alerts'),
+        () => dao.deleteByTopic('srv-1', 'alerts'),
+      ]);
+    });
+
+    test('returns Failure.cache when messageDao.clearByTopic throws', () async {
+      when(
+        () => messageDao.clearByTopic('srv-1', 'alerts'),
+      ).thenThrow(Exception('db error'));
+
+      final result = await repository.unsubscribe('srv-1', 'alerts');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.failureOrThrow, isA<CacheFailure>());
+      verifyNever(() => dao.deleteByTopic('srv-1', 'alerts'));
     });
 
     test('returns Failure.cache when dao throws', () async {
+      when(
+        () => messageDao.clearByTopic('srv-1', 'alerts'),
+      ).thenAnswer((_) async {});
       when(
         () => dao.deleteByTopic('srv-1', 'alerts'),
       ).thenThrow(Exception('db error'));

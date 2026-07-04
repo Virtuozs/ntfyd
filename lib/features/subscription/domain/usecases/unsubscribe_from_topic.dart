@@ -1,5 +1,4 @@
 import 'package:injectable/injectable.dart';
-import 'package:ntfyd/core/database/daos/message_dao.dart';
 import 'package:ntfyd/core/usecase/result.dart';
 import 'package:ntfyd/core/usecase/use_case.dart';
 import 'package:ntfyd/features/subscription/domain/repositories/subscription_repository.dart';
@@ -14,19 +13,19 @@ class UnsubscribeFromTopicParams {
   final String topic;
 }
 
-/// Unsubscribes from a topic: clears any locally cached messages for
-/// `(serverId, topic)` first, then removes the subscription row.
+/// Unsubscribes from a topic. Clearing cached messages for the topic is
+/// handled by [SubscriptionRepository.unsubscribe] itself (data layer),
+/// keeping this use case free of Drift/DAO dependencies per the
+/// domain-purity constraint.
 @injectable
 class UnsubscribeFromTopic
     implements UseCase<UnsubscribeFromTopicParams, void> {
-  UnsubscribeFromTopic(this._repository, this._messageDao);
+  UnsubscribeFromTopic(this._repository);
 
   final SubscriptionRepository _repository;
-  final MessageDao _messageDao;
 
   @override
-  Future<Result<void>> call(UnsubscribeFromTopicParams params) async {
-    await _messageDao.clearByTopic(params.serverId, params.topic);
+  Future<Result<void>> call(UnsubscribeFromTopicParams params) {
     return _repository.unsubscribe(params.serverId, params.topic);
   }
 }

@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:ntfyd/core/database/daos/message_dao.dart';
 import 'package:ntfyd/core/database/daos/subscription_dao.dart';
 import 'package:ntfyd/core/error/failures.dart';
 import 'package:ntfyd/core/usecase/result.dart';
@@ -8,9 +9,10 @@ import 'package:ntfyd/features/subscription/domain/repositories/subscription_rep
 
 @LazySingleton(as: SubscriptionRepository)
 class SubscriptionRepositoryImpl implements SubscriptionRepository {
-  SubscriptionRepositoryImpl(this._dao);
+  SubscriptionRepositoryImpl(this._dao, this._messageDao);
 
   final SubscriptionDao _dao;
+  final MessageDao _messageDao;
 
   @override
   Stream<List<Subscription>> watchByServer(String serverId) {
@@ -32,6 +34,7 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
   @override
   Future<Result<void>> unsubscribe(String serverId, String topic) async {
     try {
+      await _messageDao.clearByTopic(serverId, topic);
       await _dao.deleteByTopic(serverId, topic);
       return const Result.success(null);
     } catch (e) {
@@ -60,10 +63,7 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
   }
 
   @override
-  Future<Result<void>> updatePriorityThreshold(
-    String id,
-    int threshold,
-  ) async {
+  Future<Result<void>> updatePriorityThreshold(String id, int threshold) async {
     try {
       await _dao.updatePriorityThreshold(id, threshold);
       return const Result.success(null);

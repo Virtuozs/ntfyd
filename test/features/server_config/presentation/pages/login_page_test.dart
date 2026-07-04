@@ -130,7 +130,7 @@ void main() {
       cubit,
       Stream.fromIterable([
         const ServerFormState.validating(),
-        const ServerFormState.success(),
+        const ServerFormState.success(baseUrl: 'https://ntfy.sh'),
       ]),
       initialState: const ServerFormState.idle(),
     );
@@ -138,7 +138,7 @@ void main() {
     await pumpPage(tester);
     await tester.pump(); // validating
     await tester.pump(); // success
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 400)); // wait for navigation animation
 
     expect(find.byType(HomePage), findsOneWidget);
   });

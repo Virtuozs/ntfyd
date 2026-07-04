@@ -54,7 +54,7 @@ void main(){
         dio: Dio()..httpClientAdapter = mockAdapter,
       );
 
-      await client.get('/v1/health');
+      await client.get<dynamic>('/v1/health');
       
       expect(capturedAuthHeader, isNull);
     });
@@ -74,7 +74,7 @@ void main(){
         dio: Dio()..httpClientAdapter = mockAdapter
       );
 
-      await client.get('/v1/health');
+      await client.get<dynamic>('/v1/health');
 
       expect(capturedAuthHeader, 'Basic amFuZTpkb2U=');
     });
@@ -94,7 +94,7 @@ void main(){
         dio: Dio()..httpClientAdapter = mockAdapter,
       );
 
-      await client.get('/v1/health');
+      await client.get<dynamic>('/v1/health');
 
       expect(capturedAuthHeader, 'Bearer tk_xyz213');
     });
@@ -116,7 +116,7 @@ void main(){
         dio: Dio()..httpClientAdapter = mockAdapter,
       );
 
-      await client.get('/v1/health');
+      await client.get<dynamic>('/v1/health');
 
       final queryString = capturedUri?.query ?? '';
       expect(queryString.contains('jane'), isFalse);
@@ -133,7 +133,7 @@ void main(){
         dio: Dio()..httpClientAdapter = mockAdapter,
       );
 
-      final response = await client.get('/v1/health');
+      final response = await client.get<dynamic>('/v1/health');
 
       expect(response.statusCode, 200);
     });
@@ -179,7 +179,7 @@ void main(){
       // Repositories depend on this — they catch DioException
       // and call ExceptionMapper.map() on it.
       await expectLater(
-        () => client.get('/v1/account'),
+        () => client.get<dynamic>('/v1/account'),
         throwsA(isA<DioException>()),
       );
     });
@@ -193,7 +193,7 @@ void main(){
       );
 
       await expectLater(
-        () => client.get('/v1/health'),
+        () => client.get<dynamic>('/v1/health'),
         throwsA(isA<DioException>()),
       );
     });
@@ -211,7 +211,7 @@ void main(){
       // catch the DioException and map it.
       Failure? mappedFailure;
       try {
-        await client.get('/v1/account');
+        await client.get<dynamic>('/v1/account');
       } on DioException catch (e) {
         mappedFailure = ExceptionMapper.map(e);
       }
@@ -231,7 +231,7 @@ void main(){
 
       Failure? mappedFailure;
       try {
-        await client.get('/mytopic');
+        await client.get<dynamic>('/mytopic');
       } on DioException catch (e) {
         mappedFailure = ExceptionMapper.map(e);
       }
@@ -256,7 +256,7 @@ void main(){
         onLog: (message) => loggedMessages.add(message),
       );
 
-      await client.get('/v1/health');
+      await client.get<dynamic>('/v1/health');
 
       // None of the log output should contain the raw password
       final allLogs = loggedMessages.join(' ');

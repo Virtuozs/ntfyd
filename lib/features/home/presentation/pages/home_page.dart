@@ -65,7 +65,7 @@ class _HomePageState extends State<HomePage> {
           tooltip: 'Back to Login (debug)',
           onPressed: () {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
+              MaterialPageRoute<void>(
                 builder: (_) => BlocProvider<ServerFormCubit>(
                   create: (_) => getIt<ServerFormCubit>(),
                   child: const LoginPage(),
@@ -75,16 +75,20 @@ class _HomePageState extends State<HomePage> {
           },
         )
             : null,
-        actions: kDebugMode
-            ? [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Re-check connection (debug)',
-            onPressed: () =>
-                setState(() => _statusFuture = _checkConnection()),
-          ),
-        ]
-            : null,
+          actions: kDebugMode
+              ? [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Re-check connection (debug)',
+              onPressed: () {
+                final future = _checkConnection();
+                setState(() {
+                  _statusFuture = future;
+                });
+              },
+            ),
+          ]
+              : null,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

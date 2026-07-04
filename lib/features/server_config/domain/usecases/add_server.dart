@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:injectable/injectable.dart';
 import 'package:ntfyd/core/secure_storage/server_credential.dart';
 import 'package:ntfyd/core/usecase/result.dart';
@@ -31,9 +30,14 @@ class AddServerParams {
   final ServerCredential credential;
 }
 
-/// Adds a new server: validates health, then persists the [ServerConfig] + [ServerCredential] via [ServerConfigRepository].
-//
-/// Sets `isDefault: true` if this is the first server being added, `false` otherwise.
+/// Adds a new server: validates health (D14), then persists the
+/// [ServerConfig] + [ServerCredential] via [ServerConfigRepository].
+///
+/// If a [ServerConfig] with the same [AddServerParams.baseUrl] already
+/// exists (e.g. the user re-enters the same server on the login screen
+/// after a restart), this updates that existing entry's credentials in
+/// place rather than inserting a duplicate row — avoids violating the
+/// `server_configs.base_url` unique constraint.
 @injectable
 class AddServer implements UseCase<AddServerParams, void> {
   AddServer(this._repository, this._validateServerHealth);
@@ -54,17 +58,6 @@ class AddServer implements UseCase<AddServerParams, void> {
     }
     final existingServers = existingResult.valueOrThrow;
     final isFirstServer = existingServers.isEmpty;
-
-    debugPrint(
-      '[AddServer] BEFORE: ${existingServers.length} existing server(s):',
-    );
-    for (final s in existingServers) {
-      debugPrint(
-        '[AddServer]   id=${s.id} baseUrl=${s.baseUrl} '
-            'isDefault=${s.isDefault} createdAt=${s.createdAt}',
-      );
-    }
-    debugPrint('[AddServer] params.baseUrl=${params.baseUrl}');
 
     final existing = existingServers.cast<ServerConfig?>().firstWhere(
           (s) => s!.baseUrl == params.baseUrl,
@@ -93,18 +86,13 @@ class AddServer implements UseCase<AddServerParams, void> {
       return Result.err(healthResult.failureOrThrow);
     }
 
-    if (existing != null && existing.credentialRef != null) {
-      // Clean up the old credential slot if the new authType is `none`
-      // (credentialRef becomes null) or if it's being replaced under
-      // the same id anyway and store() with the new credential below
-      // covers the replace case; only an explicit downgrade to NoAuth
-      // needs an explicit delete.
-      if (credentialRef == null) {
-        await _repository.editCredentials(
-          id,
-          const ServerCredential.noAuth(),
-        );
-      }
+    if (existing != null &&
+        existing.credentialRef != null &&
+        credentialRef == null) {
+      await _repository.editCredentials(
+        id,
+        const ServerCredential.noAuth(),
+      );
     }
 
     return _repository.add(config, params.credential);
@@ -112,8 +100,9 @@ class AddServer implements UseCase<AddServerParams, void> {
 }
 
 /// Test-only seams for [AddServer]'s ID generation and clock.
-//
-/// Not part of the public domain API. Tests MUST reset both fields to `null` in `tearDown` to avoid leaking state across tests.
+///
+/// Not part of the public domain API. Tests MUST reset both fields to
+/// `null` in `tearDown` to avoid leaking state across tests.
 class AddServerTestHooks {
   static String Function()? idGenerator;
   static DateTime Function()? now;

@@ -7,15 +7,14 @@ import 'package:ntfyd/core/database/daos/message_dao.dart';
 import 'package:ntfyd/core/database/daos/server_config_dao.dart';
 import 'package:ntfyd/core/database/daos/setting_dao.dart';
 import 'package:ntfyd/core/database/daos/subscription_dao.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
-
 import 'package:ntfyd/core/database/tables/app_settings_table.dart';
 import 'package:ntfyd/core/database/tables/group_members_table.dart';
 import 'package:ntfyd/core/database/tables/groups_table.dart';
 import 'package:ntfyd/core/database/tables/notification_messages_table.dart';
 import 'package:ntfyd/core/database/tables/server_configs_table.dart';
 import 'package:ntfyd/core/database/tables/subscriptions_table.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 part 'app_database.g.dart';
 

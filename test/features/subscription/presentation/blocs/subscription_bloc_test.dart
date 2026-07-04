@@ -37,6 +37,7 @@ void main() {
   late MockTogglePin togglePin;
   late MockToggleMute toggleMute;
   late MockUpdatePriorityThreshold updatePriorityThreshold;
+  late StreamController<List<Subscription>> watchByServerController;
 
   final now = DateTime.utc(2026, 1, 1);
   final sub1 = Subscription(
@@ -107,16 +108,21 @@ void main() {
       'a successful Subscribe surfaces the new row via the active '
       'watchByServer stream (Option A: repository stream is single source)',
       build: () {
-        final controller = StreamController<List<Subscription>>();
-        addTearDown(controller.close);
+        watchByServerController = StreamController<List<Subscription>>();
+        addTearDown(watchByServerController.close);
         when(
           () => repository.watchByServer('srv-1'),
-        ).thenAnswer((_) => controller.stream);
+        ).thenAnswer((_) => watchByServerController.stream);
         when(
           () => subscribeToTopic.call(any()),
         ).thenAnswer((_) async => Result.success(sub1));
-        controller.add(const []);
-        controller.add([sub1]);
+        // Only the initial empty snapshot is queued before the bloc exists.
+        // [sub1] is pushed later, from act(), only after `subscribe` has
+        // been dispatched and processed — proving that the new row reaches
+        // `loaded` state because the mutation's DB write caused the
+        // already-active watchByServer stream to react, not because the
+        // stream was pre-loaded before the mutation ever fired.
+        watchByServerController.add(const []);
         return buildBloc();
       },
       act: (bloc) async {
@@ -128,12 +134,26 @@ void main() {
             topic: 'alerts',
           ),
         );
+        await Future<void>.delayed(Duration.zero);
+        // Simulates SubscriptionRepositoryImpl.watchByServer reacting to the
+        // DB write performed by the (already-completed, successful) subscribe
+        // mutation above.
+        watchByServerController.add([sub1]);
+        await Future<void>.delayed(Duration.zero);
       },
       expect: () => [
         const SubscriptionState.loading(),
         const SubscriptionState.loaded(subscriptions: []),
         SubscriptionState.loaded(subscriptions: [sub1]),
       ],
+      verify: (_) {
+        // Ties the emitted [sub1] row to the mutation actually having run:
+        // without this, the expect-block above would pass identically even
+        // if `subscribe` were never dispatched, since watchByServerController
+        // emitting [sub1] is what drives `loaded([sub1])` regardless of the
+        // mutation. This verify is what actually catches that regression.
+        verify(() => subscribeToTopic.call(any())).called(1);
+      },
     );
 
     blocTest<SubscriptionBloc, SubscriptionState>(

@@ -11,6 +11,12 @@ typedef NtfyAuthHttpClientFactory =
 ///
 /// Calls `GET {baseUrl}/v1/account` with the given [ServerCredential]  attached via the `Authorization` header.
 /// Constructs a new [NtfyHttpClient] per [getAccount] call (via [_clientFactory]) because each call may target a different server with different credentials.
+///
+/// Registered for DI via [ServerConfigModule.accountDataSource] rather than
+/// a class-level `@LazySingleton` annotation: `injectable` cannot resolve
+/// the bare `NtfyAuthHttpClientFactory` (`Function`-typed) constructor
+/// param, even though it's optional, so the module provides this class
+/// using its default (production) factory instead.
 class AccountDataSourceImpl implements AccountDataSource {
   AccountDataSourceImpl({NtfyAuthHttpClientFactory? clientFactory})
     : _clientFactory =

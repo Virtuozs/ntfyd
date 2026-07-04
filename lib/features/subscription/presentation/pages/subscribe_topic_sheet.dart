@@ -26,11 +26,25 @@ class _SubscribeTopicSheetState extends State<SubscribeTopicSheet> {
   final _displayNameController = TextEditingController();
   ServerConfig? _selectedServer;
 
+  /// Topic the user most recently submitted via [_onSubscribePressed].
+  ///
+  /// Cleared once the corresponding subscription is observed in a
+  /// [SubscriptionLoaded] emission from the `watchByServer` stream (Option
+  /// A: mutating handlers never emit `loaded` directly — this is how the
+  /// sheet recognizes its own successful submission).
+  String? _pendingSubscribeTopic;
+
   @override
   void initState() {
     super.initState();
     if (widget.servers.isNotEmpty) {
       _selectedServer = widget.servers.first;
+    }
+    final server = _selectedServer;
+    if (server != null) {
+      context.read<SubscriptionBloc>().add(
+        SubscriptionEvent.load(serverId: server.id),
+      );
     }
   }
 
@@ -47,6 +61,7 @@ class _SubscribeTopicSheetState extends State<SubscribeTopicSheet> {
     if (server == null || topic.isEmpty) return;
 
     final displayName = _displayNameController.text.trim();
+    _pendingSubscribeTopic = topic;
 
     context.read<SubscriptionBloc>().add(
       SubscriptionEvent.subscribe(
@@ -67,6 +82,20 @@ class _SubscribeTopicSheetState extends State<SubscribeTopicSheet> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(_messageFor(state.failure))),
           );
+          return;
+        }
+
+        final pendingTopic = _pendingSubscribeTopic;
+        if (state is SubscriptionLoaded &&
+            pendingTopic != null &&
+            state.subscriptions.any((s) => s.topic == pendingTopic)) {
+          _pendingSubscribeTopic = null;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Subscribed to $pendingTopic')),
+          );
+          if (mounted) {
+            Navigator.of(context).maybePop();
+          }
         }
       },
       child: Padding(

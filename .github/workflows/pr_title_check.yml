@@ -1,0 +1,21 @@
+name: PR Title Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  check-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title follows conventional commits
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          if echo "$TITLE" | grep -qP '^(feat|fix|chore|test|refactor|docs|ci|build|perf)\(.+\): .+'; then
+            echo "   PR title is valid: $TITLE"
+          else
+            echo "   PR title must follow: type(scope): description"
+            echo "   Examples: feat(feed): add message card widget"
+            echo "   Types: feat | fix | chore | test | refactor | docs | ci | build | perf"
+            exit 1
+          fi

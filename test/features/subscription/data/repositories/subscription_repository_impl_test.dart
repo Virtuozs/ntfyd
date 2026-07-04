@@ -1,0 +1,166 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:ntfyd/core/database/app_database.dart' as db;
+import 'package:ntfyd/core/database/daos/subscription_dao.dart';
+import 'package:ntfyd/core/error/failures.dart';
+import 'package:ntfyd/core/usecase/result.dart';
+import 'package:ntfyd/features/subscription/data/repositories/subscription_repository_impl.dart';
+import 'package:ntfyd/features/subscription/domain/entities/subscription.dart';
+
+class MockSubscriptionDao extends Mock implements SubscriptionDao {}
+
+void main() {
+  late MockSubscriptionDao dao;
+  late SubscriptionRepositoryImpl repository;
+
+  final now = DateTime.utc(2026, 1, 1);
+
+  final row = db.Subscription(
+    id: 'sub-1',
+    serverId: 'srv-1',
+    topic: 'alerts',
+    displayName: 'Alerts',
+    priorityThreshold: 1,
+    muted: 0,
+    pinned: 0,
+    createdAt: now.millisecondsSinceEpoch,
+  );
+
+  final entity = Subscription(
+    id: 'sub-1',
+    serverId: 'srv-1',
+    topic: 'alerts',
+    displayName: 'Alerts',
+    createdAt: now,
+  );
+
+  setUpAll(() {
+    registerFallbackValue(const db.SubscriptionsCompanion());
+  });
+
+  setUp(() {
+    dao = MockSubscriptionDao();
+    repository = SubscriptionRepositoryImpl(dao);
+  });
+
+  group('watchByServer', () {
+    test('maps DAO rows to domain entities', () async {
+      when(
+        () => dao.watchByServer('srv-1'),
+      ).thenAnswer((_) => Stream.value([row]));
+
+      final result = await repository.watchByServer('srv-1').first;
+
+      expect(result, [entity]);
+    });
+  });
+
+  group('subscribe', () {
+    test('upserts and returns Success(sub) on success', () async {
+      when(() => dao.upsert(any())).thenAnswer((_) async {});
+
+      final result = await repository.subscribe(entity);
+
+      expect(result.isSuccess, isTrue);
+      expect(result.valueOrThrow, entity);
+      verify(() => dao.upsert(any())).called(1);
+    });
+
+    test('returns Failure.cache when dao.upsert throws', () async {
+      when(() => dao.upsert(any())).thenThrow(Exception('unique violation'));
+
+      final result = await repository.subscribe(entity);
+
+      expect(result.isSuccess, isFalse);
+      expect(result.failureOrThrow, isA<CacheFailure>());
+    });
+  });
+
+  group('unsubscribe', () {
+    test('deletes by topic on success', () async {
+      when(
+        () => dao.deleteByTopic('srv-1', 'alerts'),
+      ).thenAnswer((_) async {});
+
+      final result = await repository.unsubscribe('srv-1', 'alerts');
+
+      expect(result.isSuccess, isTrue);
+      verify(() => dao.deleteByTopic('srv-1', 'alerts')).called(1);
+    });
+
+    test('returns Failure.cache when dao throws', () async {
+      when(
+        () => dao.deleteByTopic('srv-1', 'alerts'),
+      ).thenThrow(Exception('db error'));
+
+      final result = await repository.unsubscribe('srv-1', 'alerts');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.failureOrThrow, isA<CacheFailure>());
+    });
+  });
+
+  group('togglePin', () {
+    test('delegates to dao.togglePin', () async {
+      when(() => dao.togglePin('sub-1')).thenAnswer((_) async {});
+
+      final result = await repository.togglePin('sub-1');
+
+      expect(result.isSuccess, isTrue);
+      verify(() => dao.togglePin('sub-1')).called(1);
+    });
+
+    test('returns Failure.cache when dao throws', () async {
+      when(() => dao.togglePin('sub-1')).thenThrow(Exception('db error'));
+
+      final result = await repository.togglePin('sub-1');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.failureOrThrow, isA<CacheFailure>());
+    });
+  });
+
+  group('toggleMute', () {
+    test('delegates to dao.toggleMute', () async {
+      when(() => dao.toggleMute('sub-1')).thenAnswer((_) async {});
+
+      final result = await repository.toggleMute('sub-1');
+
+      expect(result.isSuccess, isTrue);
+      verify(() => dao.toggleMute('sub-1')).called(1);
+    });
+
+    test('returns Failure.cache when dao throws', () async {
+      when(() => dao.toggleMute('sub-1')).thenThrow(Exception('db error'));
+
+      final result = await repository.toggleMute('sub-1');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.failureOrThrow, isA<CacheFailure>());
+    });
+  });
+
+  group('updatePriorityThreshold', () {
+    test('delegates to dao.updatePriorityThreshold', () async {
+      when(
+        () => dao.updatePriorityThreshold('sub-1', 4),
+      ).thenAnswer((_) async {});
+
+      final result = await repository.updatePriorityThreshold('sub-1', 4);
+
+      expect(result.isSuccess, isTrue);
+      verify(() => dao.updatePriorityThreshold('sub-1', 4)).called(1);
+    });
+
+    test('returns Failure.cache when dao throws', () async {
+      when(
+        () => dao.updatePriorityThreshold('sub-1', 4),
+      ).thenThrow(Exception('db error'));
+
+      final result = await repository.updatePriorityThreshold('sub-1', 4);
+
+      expect(result.isSuccess, isFalse);
+      expect(result.failureOrThrow, isA<CacheFailure>());
+    });
+  });
+}

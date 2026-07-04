@@ -51,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
         switch (state) {
           case ServerFormSuccess(baseUrl: final baseUrl):
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => HomePage(baseUrl: baseUrl)),
+              MaterialPageRoute<void>(builder: (_) => HomePage(baseUrl: baseUrl)),
             );
           case ServerFormError(failure: final failure):
             ScaffoldMessenger.of(context).showSnackBar(

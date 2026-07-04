@@ -44,7 +44,7 @@ void main() {
       act: (c) => c.connect(url: 'https://ntfy.sh'),
       expect: () => [
         const ServerFormState.validating(),
-        const ServerFormState.success(),
+        const ServerFormState.success(baseUrl: 'https://ntfy.sh'),
       ],
     );
 

@@ -360,7 +360,7 @@ void main() {
   });
 
   group('app_settings', () {
-    AppSettingsCompanion _defaultSettings() => const AppSettingsCompanion(
+    AppSettingsCompanion defaultSettings() => const AppSettingsCompanion(
       id: Value(1),
       themeMode: Value('system'),
       dynamicColor: Value(1),
@@ -371,7 +371,7 @@ void main() {
     );
     test('upsert inserts first row with id=1', () async {
       // Act
-      await db.into(db.appSettings).insertOnConflictUpdate(_defaultSettings());
+      await db.into(db.appSettings).insertOnConflictUpdate(defaultSettings());
       final all = await db.select(db.appSettings).get();
 
       // Assert
@@ -387,12 +387,12 @@ void main() {
       () async {
         await db
             .into(db.appSettings)
-            .insertOnConflictUpdate(_defaultSettings());
+            .insertOnConflictUpdate(defaultSettings());
         // Arrange
         await db
             .into(db.appSettings)
             .insertOnConflictUpdate(
-              _defaultSettings().copyWith(themeMode: const Value('dark')),
+              defaultSettings().copyWith(themeMode: const Value('dark')),
             );
 
         final all = await db.select(db.appSettings).get();
@@ -405,7 +405,7 @@ void main() {
 
     test('default values are correct', () async {
       // Arrange & Act
-      await db.into(db.appSettings).insertOnConflictUpdate(_defaultSettings());
+      await db.into(db.appSettings).insertOnConflictUpdate(defaultSettings());
       final row = await db.select(db.appSettings).getSingle();
 
       // Assert

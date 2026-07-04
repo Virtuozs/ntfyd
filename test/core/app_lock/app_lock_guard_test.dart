@@ -138,7 +138,7 @@ void main() {
     testWidgets('keeps overlay after failed authentication', (tester) async {
       // Arrange
       when(() => service.authenticate(any())).thenAnswer(
-        (_) async => Result.err(const Failure.biometric(reason: 'cancelled')),
+        (_) async => const Result.err(Failure.biometric(reason: 'cancelled')),
       );
 
       await tester.pumpWidget(
@@ -172,7 +172,7 @@ void main() {
       (tester) async {
         // Arrange
         when(() => service.authenticate(any())).thenAnswer(
-          (_) async => Result.err(const Failure.biometric(reason: 'failed')),
+          (_) async => const Result.err(Failure.biometric(reason: 'failed')),
         );
 
         await tester.pumpWidget(
@@ -196,7 +196,7 @@ void main() {
     ) async {
       // Arrange
       when(() => service.authenticate(any())).thenAnswer(
-        (_) async => Result.err(const Failure.biometric(reason: 'failed')),
+        (_) async => const Result.err(Failure.biometric(reason: 'failed')),
       );
 
       await tester.pumpWidget(

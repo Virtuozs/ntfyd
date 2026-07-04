@@ -33,30 +33,27 @@ WebSocketChannel _defaultChannelFactory(
 ///   - Resume from the last seen `message` id via `?since=` on reconnect.
 class WsConnector {
   WsConnector({
-    required String baseUrl,
-    required String topic,
-    String? authHeader,
+    required this.baseUrl,
+    required this.topic,
+    this.authHeader,
     WsChannelFactory? channelFactory,
     BackoffStrategy? backoff,
     DelayFn? delay,
-  }) : _baseUrl = baseUrl,
-       _topic = topic,
-       _authHeader = authHeader,
-       _channelFactory = channelFactory ?? _defaultChannelFactory,
-       _backoff =
+  }) : channelFactory = channelFactory ?? _defaultChannelFactory,
+       backoff =
            backoff ??
            const BackoffStrategy(
              initial: Duration(seconds: 1),
              max: Duration(seconds: 60),
            ),
-       _delay = delay ?? Future<void>.delayed;
+       delay = delay ?? Future<void>.delayed;
 
-  final String _baseUrl;
-  final String _topic;
-  final String? _authHeader;
-  final WsChannelFactory _channelFactory;
-  final BackoffStrategy _backoff;
-  final DelayFn _delay;
+  final String baseUrl;
+  final String topic;
+  final String? authHeader;
+  final WsChannelFactory channelFactory;
+  final BackoffStrategy backoff;
+  final DelayFn delay;
 
   bool _reconnecting = false;
 
@@ -89,12 +86,12 @@ class WsConnector {
   Future<void> _open() async {
     _stateController.add(const WsState.connecting());
     final Uri uri = _buildUri();
-    final Map<String, dynamic>? headers = _authHeader == null
+    final Map<String, dynamic>? headers = authHeader == null
         ? null
-        : <String, dynamic>{'Authorization': _authHeader};
+        : <String, dynamic>{'Authorization': authHeader};
 
     try {
-      final WebSocketChannel channel = _channelFactory(uri, headers: headers);
+      final WebSocketChannel channel = channelFactory(uri, headers: headers);
       _channel = channel;
       _subscription = channel.stream.listen(
         _onFrame,
@@ -158,7 +155,7 @@ class WsConnector {
       _stateController.add(WsState.reconnecting(attempt: _attempt));
 
       // next(0) == initial for the first retry (deterministic when jitter == 0).
-      await _delay(_backoff.next(_attempt - 1));
+      await delay(backoff.next(_attempt - 1));
 
       if (_manuallyClosed) return;
       await _open();
@@ -184,7 +181,7 @@ class WsConnector {
   }
 
   Uri _buildUri() {
-    String normalized = _baseUrl.trim();
+    String normalized = baseUrl.trim();
     while (normalized.endsWith('/')) {
       normalized = normalized.substring(0, normalized.length - 1);
     }
@@ -196,7 +193,7 @@ class WsConnector {
         ? 'ws'
         : parsed.scheme; // already ws/wss
 
-    final String path = '${parsed.path}/$_topic/ws';
+    final String path = '${parsed.path}/$topic/ws';
     final Map<String, String> query = <String, String>{};
     if (_lastMessageId != null) {
       query['since'] = _lastMessageId!;

@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:ntfyd/core/error/failures.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_state.dart';
 
@@ -9,7 +8,7 @@ void main() {
       const states = <ServerFormState>[
         ServerFormState.idle(),
         ServerFormState.validating(),
-        ServerFormState.success(),
+        ServerFormState.success(baseUrl: 'https://ntfy.sh'),
         ServerFormState.error(failure: Failure.network(message: 'x')),
       ];
 
@@ -17,7 +16,7 @@ void main() {
         final result = state.when(
           idle: () => 'idle',
           validating: () => 'validating',
-          success: () => 'success',
+          success: (baseUrl) => 'success',
           error: (failure) => 'error: ${failure.runtimeType}',
         );
         expect(result, isNotEmpty);

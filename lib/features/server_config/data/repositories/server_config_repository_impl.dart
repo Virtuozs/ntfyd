@@ -1,6 +1,4 @@
-import 'package:drift/drift.dart' show Value;
 import 'package:injectable/injectable.dart';
-import 'package:ntfyd/core/database/app_database.dart' as db;
 import 'package:ntfyd/core/database/daos/server_config_dao.dart';
 import 'package:ntfyd/core/error/failures.dart';
 import 'package:ntfyd/core/secure_storage/secure_credential_vault.dart';

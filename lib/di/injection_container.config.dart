@@ -14,6 +14,7 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
 import '../core/database/app_database.dart' as _i935;
+import '../core/database/daos/message_dao.dart' as _i256;
 import '../core/database/daos/server_config_dao.dart' as _i640;
 import '../core/database/daos/subscription_dao.dart' as _i245;
 import '../core/di/core_module.dart' as _i747;
@@ -40,6 +41,8 @@ import '../features/subscription/domain/repositories/subscription_repository.dar
     as _i291;
 import '../features/subscription/domain/usecases/subscribe_to_topic.dart'
     as _i349;
+import '../features/subscription/domain/usecases/unsubscribe_from_topic.dart'
+    as _i436;
 
 // initializes the registration of main-scope dependencies inside of GetIt
 _i174.GetIt init(
@@ -70,6 +73,9 @@ _i174.GetIt init(
   gh.lazySingleton<_i245.SubscriptionDao>(
     () => coreModule.subscriptionDao(gh<_i935.AppDatabase>()),
   );
+  gh.lazySingleton<_i256.MessageDao>(
+    () => coreModule.messageDao(gh<_i935.AppDatabase>()),
+  );
   gh.factory<_i285.ValidateServerHealth>(
     () => _i285.ValidateServerHealth(gh<_i394.HealthDataSource>()),
   );
@@ -98,6 +104,12 @@ _i174.GetIt init(
   );
   gh.factory<_i631.ServerFormCubit>(
     () => _i631.ServerFormCubit(gh<_i36.AddServer>()),
+  );
+  gh.factory<_i436.UnsubscribeFromTopic>(
+    () => _i436.UnsubscribeFromTopic(
+      gh<_i291.SubscriptionRepository>(),
+      gh<_i256.MessageDao>(),
+    ),
   );
   return getIt;
 }

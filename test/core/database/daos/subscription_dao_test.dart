@@ -138,4 +138,15 @@ void main() {
       expect(result!.muted, equals(0));
     });
   });
+
+  group('updatePriorityThreshold', () {
+    test('updates priorityThreshold for the given id', () async {
+      await db.subscriptionDao.upsert(_sub('sub-1', 'srv-1', 'alerts'));
+
+      await db.subscriptionDao.updatePriorityThreshold('sub-1', 4);
+
+      final result = await db.subscriptionDao.findByTopic('srv-1', 'alerts');
+      expect(result!.priorityThreshold, equals(4));
+    });
+  });
 }

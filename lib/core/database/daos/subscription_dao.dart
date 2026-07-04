@@ -39,6 +39,14 @@ class SubscriptionDao extends DatabaseAccessor<AppDatabase>
     return _toggleBoolColumn(id, (t) => t.muted);
   }
 
+  Future<void> updatePriorityThreshold(String id, int threshold) {
+    return (update(
+      subscriptions,
+    )..where((t) => t.id.equals(id))).write(
+      SubscriptionsCompanion(priorityThreshold: Value(threshold)),
+    );
+  }
+
   Future<void> _toggleBoolColumn(
     String id,
     GeneratedColumn<int> Function($SubscriptionsTable t) column,

@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ntfyd/core/usecase/result.dart';
 import 'package:ntfyd/di/injection_container.dart';
+import 'package:ntfyd/features/server_config/domain/repositories/server_config_repository.dart';
 import 'package:ntfyd/features/server_config/domain/usecases/validate_server_health.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_cubit.dart';
 import 'package:ntfyd/features/server_config/presentation/pages/login_page.dart';
+import 'package:ntfyd/features/subscription/presentation/blocs/subscription_bloc.dart';
+import 'package:ntfyd/features/subscription/presentation/pages/subscribe_topic_sheet.dart';
 
 /// Temporary placeholder for the post-login Home screen.
 ///
@@ -179,6 +184,30 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
+      floatingActionButton: kDebugMode
+          ? FloatingActionButton(
+              tooltip: 'Subscribe to topic (debug)',
+              onPressed: () async {
+                final serversResult = await getIt<ServerConfigRepository>()
+                    .getAll();
+                if (!serversResult.isSuccess || !context.mounted) return;
+
+                unawaited(
+                  showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (_) => BlocProvider<SubscriptionBloc>(
+                      create: (_) => getIt<SubscriptionBloc>(),
+                      child: SubscribeTopicSheet(
+                        servers: serversResult.valueOrThrow,
+                      ),
+                    ),
+                  ),
+                );
+              },
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 }

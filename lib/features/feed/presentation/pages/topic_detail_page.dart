@@ -43,6 +43,7 @@ class TopicDetailPage extends StatelessWidget {
         topic: subscription.topic,
       ),
       body: BlocConsumer<FeedBloc, FeedState>(
+        listenWhen: (previous, current) => previous is FeedLoaded && current is FeedError,
         listener: (context, state) {
           if (state is FeedError) {
             ScaffoldMessenger.of(context).showSnackBar(

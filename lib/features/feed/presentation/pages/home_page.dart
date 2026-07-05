@@ -11,6 +11,7 @@ import 'package:ntfyd/features/feed/presentation/cubits/home_feed_state.dart';
 import 'package:ntfyd/features/feed/presentation/cubits/home_topic_summary.dart';
 import 'package:ntfyd/features/feed/presentation/pages/topic_detail_page.dart';
 import 'package:ntfyd/features/feed/presentation/widgets/subscription_card.dart';
+import 'package:ntfyd/features/publish/presentation/cubits/publish_cubit.dart';
 import 'package:ntfyd/features/server_config/domain/entities/server_config.dart';
 import 'package:ntfyd/features/server_config/domain/repositories/server_config_repository.dart';
 import 'package:ntfyd/features/server_config/domain/usecases/validate_server_health.dart';
@@ -99,14 +100,19 @@ class _HomePageState extends State<HomePage> {
   void _openTopicDetail(HomeTopicSummary summary) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => BlocProvider<FeedBloc>(
-          create: (_) => getIt<FeedBloc>()
-            ..add(
-              FeedEvent.load(
-                serverId: summary.subscription.serverId,
-                topic: summary.subscription.topic,
-              ),
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider<FeedBloc>(
+              create: (_) => getIt<FeedBloc>()
+                ..add(
+                  FeedEvent.load(
+                    serverId: summary.subscription.serverId,
+                    topic: summary.subscription.topic,
+                  ),
+                ),
             ),
+            BlocProvider<PublishCubit>(create: (_) => getIt<PublishCubit>()),
+          ],
           child: TopicDetailPage(subscription: summary.subscription),
         ),
       ),

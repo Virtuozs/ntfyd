@@ -7,6 +7,7 @@ import 'package:ntfyd/features/feed/presentation/blocs/feed_event.dart';
 import 'package:ntfyd/features/feed/presentation/blocs/feed_state.dart';
 import 'package:ntfyd/features/feed/presentation/pages/message_detail_page.dart';
 import 'package:ntfyd/features/feed/presentation/widgets/message_card.dart';
+import 'package:ntfyd/features/publish/presentation/widgets/composer_bar.dart';
 import 'package:ntfyd/features/subscription/domain/entities/subscription.dart';
 
 /// Live feed for a single topic (§8.3): connection indicator ("Live ●" /
@@ -37,6 +38,10 @@ class TopicDetailPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(subscription.topic)),
+      bottomNavigationBar: ComposerBar(
+        serverId: subscription.serverId,
+        topic: subscription.topic,
+      ),
       body: BlocBuilder<FeedBloc, FeedState>(
         builder: (context, state) {
           return switch (state) {

@@ -10,13 +10,19 @@ import 'package:ntfyd/features/feed/presentation/blocs/feed_bloc.dart';
 import 'package:ntfyd/features/feed/presentation/blocs/feed_event.dart';
 import 'package:ntfyd/features/feed/presentation/blocs/feed_state.dart';
 import 'package:ntfyd/features/feed/presentation/pages/topic_detail_page.dart';
+import 'package:ntfyd/features/publish/presentation/cubits/publish_cubit.dart';
+import 'package:ntfyd/features/publish/presentation/cubits/publish_state.dart';
 import 'package:ntfyd/features/subscription/domain/entities/subscription.dart';
 
 class MockFeedBloc extends MockBloc<FeedEvent, FeedState>
     implements FeedBloc {}
 
+class MockPublishCubit extends MockCubit<PublishState>
+    implements PublishCubit {}
+
 void main() {
   late MockFeedBloc bloc;
+  late MockPublishCubit publishCubit;
 
   final subscription = Subscription(
     id: 'sub-1',
@@ -42,13 +48,22 @@ void main() {
 
   setUp(() {
     bloc = MockFeedBloc();
+    publishCubit = MockPublishCubit();
+    whenListen(
+      publishCubit,
+      const Stream<PublishState>.empty(),
+      initialState: const PublishState.idle(),
+    );
   });
 
   Future<void> pumpPage(WidgetTester tester) {
     return tester.pumpWidget(
       MaterialApp(
-        home: BlocProvider<FeedBloc>.value(
-          value: bloc,
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider<FeedBloc>.value(value: bloc),
+            BlocProvider<PublishCubit>.value(value: publishCubit),
+          ],
           child: TopicDetailPage(subscription: subscription),
         ),
       ),
@@ -124,5 +139,20 @@ void main() {
     await pumpPage(tester);
 
     expect(find.textContaining('Something went wrong'), findsOneWidget);
+  });
+
+  testWidgets('renders the composer bar', (tester) async {
+    whenListen(
+      bloc,
+      const Stream<FeedState>.empty(),
+      initialState: const FeedState.loaded(
+        messages: [],
+        connectionState: FeedConnectionState.live,
+      ),
+    );
+
+    await pumpPage(tester);
+
+    expect(find.text('Send'), findsOneWidget);
   });
 }

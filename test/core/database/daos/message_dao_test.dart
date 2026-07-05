@@ -430,4 +430,65 @@ void main() {
       expect(result, equals(0));
     });
   });
+
+  group('watchLatestByTopic', () {
+    test('emits null when no messages exist for the topic', () async {
+      final result = await db.messageDao.watchLatestByTopic('srv-1', 'alerts').first;
+      expect(result, equals(null));
+    });
+
+    test('emits the most recent message by time', () async {
+      await db.messageDao.insertOrReplace(
+        _msg(id: 'msg-1', serverId: 'srv-1', topic: 'alerts', time: 100),
+      );
+      await db.messageDao.insertOrReplace(
+        _msg(id: 'msg-2', serverId: 'srv-1', topic: 'alerts', time: 200),
+      );
+
+      final result = await db.messageDao.watchLatestByTopic('srv-1', 'alerts').first;
+      expect(result?.id, 'msg-2');
+    });
+
+    test('pinned messages take priority over newer unpinned ones', () async {
+      await db.messageDao.insertOrReplace(
+        _msg(
+          id: 'msg-1',
+          serverId: 'srv-1',
+          topic: 'alerts',
+          time: 100,
+          isPinned: true,
+        ),
+      );
+      await db.messageDao.insertOrReplace(
+        _msg(id: 'msg-2', serverId: 'srv-1', topic: 'alerts', time: 200),
+      );
+
+      final result = await db.messageDao.watchLatestByTopic('srv-1', 'alerts').first;
+      expect(result?.id, 'msg-1');
+    });
+  });
+
+  group('toggleRead', () {
+    test('flips isRead from 0 to 1', () async {
+      await db.messageDao.insertOrReplace(
+        _msg(id: 'msg-1', serverId: 'srv-1', topic: 'alerts', isRead: false),
+      );
+
+      await db.messageDao.toggleRead('srv-1', 'msg-1');
+
+      final all = await db.messageDao.watchByTopic('srv-1', 'alerts').first;
+      expect(all.first.isRead, equals(1));
+    });
+
+    test('flips isRead from 1 back to 0', () async {
+      await db.messageDao.insertOrReplace(
+        _msg(id: 'msg-1', serverId: 'srv-1', topic: 'alerts', isRead: true),
+      );
+
+      await db.messageDao.toggleRead('srv-1', 'msg-1');
+
+      final all = await db.messageDao.watchByTopic('srv-1', 'alerts').first;
+      expect(all.first.isRead, equals(0));
+    });
+  });
 }

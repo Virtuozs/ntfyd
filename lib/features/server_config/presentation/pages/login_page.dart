@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ntfyd/core/error/failures.dart';
-import 'package:ntfyd/features/home/presentation/pages/home_page.dart';
+import 'package:ntfyd/features/feed/presentation/pages/home_page.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_cubit.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_state.dart';
 
@@ -49,9 +49,9 @@ class _LoginPageState extends State<LoginPage> {
     return BlocConsumer<ServerFormCubit, ServerFormState>(
       listener: (context, state) {
         switch (state) {
-          case ServerFormSuccess(baseUrl: final baseUrl):
+          case ServerFormSuccess():
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute<void>(builder: (_) => HomePage(baseUrl: baseUrl)),
+              MaterialPageRoute<void>(builder: (_) => const HomePage()),
             );
           case ServerFormError(failure: final failure):
             ScaffoldMessenger.of(context).showSnackBar(

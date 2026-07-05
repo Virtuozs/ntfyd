@@ -48,6 +48,9 @@ app.*.map.json
 
 # Git worktrees used for isolated feature work
 .worktrees/
+.docs/*
+.claude/*
+.Plan/*
 docs/
 .claude/*
 Plan/

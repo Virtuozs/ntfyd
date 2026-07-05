@@ -19,6 +19,21 @@ import '../core/database/daos/server_config_dao.dart' as _i640;
 import '../core/database/daos/subscription_dao.dart' as _i245;
 import '../core/di/core_module.dart' as _i747;
 import '../core/secure_storage/secure_credential_vault.dart' as _i465;
+import '../features/feed/data/datasources/feed_poll_data_source.dart' as _i839;
+import '../features/feed/di/feed_module.dart' as _i172;
+import '../features/feed/domain/repositories/feed_repository.dart' as _i917;
+import '../features/feed/domain/usecases/connect_feed.dart' as _i106;
+import '../features/feed/domain/usecases/disconnect_feed.dart' as _i120;
+import '../features/feed/domain/usecases/refresh_feed_history.dart' as _i959;
+import '../features/feed/domain/usecases/toggle_message_pin.dart' as _i294;
+import '../features/feed/domain/usecases/toggle_message_read.dart' as _i57;
+import '../features/feed/presentation/blocs/feed_bloc.dart' as _i916;
+import '../features/feed/presentation/cubits/home_feed_cubit.dart' as _i955;
+import '../features/publish/di/publish_module.dart' as _i973;
+import '../features/publish/domain/repositories/publish_repository.dart'
+    as _i476;
+import '../features/publish/domain/usecases/publish_message.dart' as _i228;
+import '../features/publish/presentation/cubits/publish_cubit.dart' as _i461;
 import '../features/server_config/data/datasources/account_data_source.dart'
     as _i750;
 import '../features/server_config/data/datasources/health_data_source.dart'
@@ -58,9 +73,14 @@ _i174.GetIt init(
 }) {
   final gh = _i526.GetItHelper(getIt, environment, environmentFilter);
   final coreModule = _$CoreModule();
+  final feedModule = _$FeedModule();
   final serverConfigModule = _$ServerConfigModule();
+  final publishModule = _$PublishModule();
   gh.lazySingleton<_i935.AppDatabase>(() => coreModule.appDatabase);
   gh.lazySingleton<_i558.FlutterSecureStorage>(() => coreModule.secureStorage);
+  gh.lazySingleton<_i839.FeedPollDataSource>(
+    () => feedModule.feedPollDataSource(),
+  );
   gh.lazySingleton<_i201.NtfyHttpClientFactory>(
     () => _i201.NtfyHttpClientFactory(),
   );
@@ -91,6 +111,15 @@ _i174.GetIt init(
       gh<_i465.SecureCredentialVault>(),
     ),
   );
+  gh.lazySingleton<_i476.PublishRepository>(
+    () => publishModule.publishRepository(
+      gh<_i668.ServerConfigRepository>(),
+      gh<_i465.SecureCredentialVault>(),
+    ),
+  );
+  gh.factory<_i228.PublishMessage>(
+    () => _i228.PublishMessage(gh<_i476.PublishRepository>()),
+  );
   gh.lazySingleton<_i291.SubscriptionRepository>(
     () => _i221.SubscriptionRepositoryImpl(
       gh<_i245.SubscriptionDao>(),
@@ -115,8 +144,50 @@ _i174.GetIt init(
   gh.factory<_i106.UpdatePriorityThreshold>(
     () => _i106.UpdatePriorityThreshold(gh<_i291.SubscriptionRepository>()),
   );
+  gh.factory<_i461.PublishCubit>(
+    () => _i461.PublishCubit(gh<_i228.PublishMessage>()),
+  );
+  gh.lazySingleton<_i917.FeedRepository>(
+    () => feedModule.feedRepository(
+      gh<_i668.ServerConfigRepository>(),
+      gh<_i465.SecureCredentialVault>(),
+      gh<_i256.MessageDao>(),
+      gh<_i839.FeedPollDataSource>(),
+    ),
+  );
   gh.factory<_i631.ServerFormCubit>(
     () => _i631.ServerFormCubit(gh<_i36.AddServer>()),
+  );
+  gh.factory<_i106.ConnectFeed>(
+    () => _i106.ConnectFeed(gh<_i917.FeedRepository>()),
+  );
+  gh.factory<_i120.DisconnectFeed>(
+    () => _i120.DisconnectFeed(gh<_i917.FeedRepository>()),
+  );
+  gh.factory<_i959.RefreshFeedHistory>(
+    () => _i959.RefreshFeedHistory(gh<_i917.FeedRepository>()),
+  );
+  gh.factory<_i294.ToggleMessagePin>(
+    () => _i294.ToggleMessagePin(gh<_i917.FeedRepository>()),
+  );
+  gh.factory<_i57.ToggleMessageRead>(
+    () => _i57.ToggleMessageRead(gh<_i917.FeedRepository>()),
+  );
+  gh.factory<_i916.FeedBloc>(
+    () => _i916.FeedBloc(
+      gh<_i917.FeedRepository>(),
+      gh<_i106.ConnectFeed>(),
+      gh<_i120.DisconnectFeed>(),
+      gh<_i959.RefreshFeedHistory>(),
+      gh<_i57.ToggleMessageRead>(),
+      gh<_i294.ToggleMessagePin>(),
+    ),
+  );
+  gh.factory<_i955.HomeFeedCubit>(
+    () => _i955.HomeFeedCubit(
+      gh<_i291.SubscriptionRepository>(),
+      gh<_i917.FeedRepository>(),
+    ),
   );
   gh.factory<_i349.SubscribeToTopic>(
     () => _i349.SubscribeToTopic(
@@ -141,4 +212,8 @@ _i174.GetIt init(
 
 class _$CoreModule extends _i747.CoreModule {}
 
+class _$FeedModule extends _i172.FeedModule {}
+
 class _$ServerConfigModule extends _i22.ServerConfigModule {}
+
+class _$PublishModule extends _i973.PublishModule {}

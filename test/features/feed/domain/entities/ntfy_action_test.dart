@@ -1,0 +1,70 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:ntfyd/features/feed/domain/entities/ntfy_action.dart';
+
+void main() {
+  group('NtfyAction', () {
+    test('ViewAction holds label/url and defaults clear to false', () {
+      const action = NtfyAction.view(label: 'Open', url: 'https://example.com');
+
+      expect(action, isA<ViewAction>());
+      action.when(
+        view: (label, url, clear) {
+          expect(label, 'Open');
+          expect(url, 'https://example.com');
+          expect(clear, isFalse);
+        },
+        http: (_, _, _, _, _, _) => fail('expected view'),
+        broadcast: (_, _, _, _) => fail('expected view'),
+        copy: (_, _, _) => fail('expected view'),
+      );
+    });
+
+    test('HttpAction defaults method to POST and headers to empty map', () {
+      const action = NtfyAction.http(
+        label: 'Ping',
+        url: 'https://example.com/ping',
+      );
+
+      expect(action, isA<HttpAction>());
+      action.when(
+        view: (_, _, _) => fail('expected http'),
+        http: (label, url, method, headers, body, clear) {
+          expect(method, 'POST');
+          expect(headers, isEmpty);
+          expect(body, isNull);
+          expect(clear, isFalse);
+        },
+        broadcast: (_, _, _, _) => fail('expected http'),
+        copy: (_, _, _) => fail('expected http'),
+      );
+    });
+
+    test('BroadcastAction defaults intent to io.heckel.ntfy.USER_ACTION', () {
+      const action = NtfyAction.broadcast(label: 'Trigger');
+
+      action.when(
+        view: (_, _, _) => fail('expected broadcast'),
+        http: (_, _, _, _, _, _) => fail('expected broadcast'),
+        broadcast: (label, intent, extras, clear) {
+          expect(intent, 'io.heckel.ntfy.USER_ACTION');
+          expect(extras, isEmpty);
+        },
+        copy: (_, _, _) => fail('expected broadcast'),
+      );
+    });
+
+    test('CopyAction holds label/value', () {
+      const action = NtfyAction.copy(label: 'Copy code', value: '123456');
+
+      action.when(
+        view: (_, _, _) => fail('expected copy'),
+        http: (_, _, _, _, _, _) => fail('expected copy'),
+        broadcast: (_, _, _, _) => fail('expected copy'),
+        copy: (label, value, clear) {
+          expect(label, 'Copy code');
+          expect(value, '123456');
+        },
+      );
+    });
+  });
+}

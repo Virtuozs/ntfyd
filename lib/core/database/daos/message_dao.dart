@@ -137,4 +137,31 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
 
     return query.watch().map((rows) => rows.length);
   }
+
+  /// Returns the single most-recent message for (serverId, topic), ordered
+  /// the same as [watchByTopic] (pinned first, then time desc). Powers
+  /// Home's per-subscription preview.
+  Stream<NotificationMessage?> watchLatestByTopic(String serverId, String topic) {
+    final query = select(notificationMessages)
+      ..where((t) => t.serverId.equals(serverId) & t.topic.equals(topic))
+      ..orderBy([
+        (t) => OrderingTerm(expression: t.isPinned, mode: OrderingMode.desc),
+        (t) => OrderingTerm(expression: t.time, mode: OrderingMode.desc),
+      ])
+      ..limit(1);
+
+    return query.watchSingleOrNull();
+  }
+
+  Future<void> toggleRead(String serverId, String id) async {
+    final row = await (select(
+      notificationMessages,
+    )..where((t) => t.serverId.equals(serverId) & t.id.equals(id))).getSingle();
+
+    final newValue = row.isRead == 1 ? 0 : 1;
+
+    await (update(notificationMessages)
+          ..where((t) => t.serverId.equals(serverId) & t.id.equals(id)))
+        .write(NotificationMessagesCompanion(isRead: Value(newValue)));
+  }
 }

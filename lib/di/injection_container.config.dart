@@ -32,6 +32,7 @@ import '../features/feed/presentation/cubits/home_feed_cubit.dart' as _i955;
 import '../features/publish/domain/repositories/publish_repository.dart'
     as _i476;
 import '../features/publish/domain/usecases/publish_message.dart' as _i228;
+import '../features/publish/presentation/cubits/publish_cubit.dart' as _i461;
 import '../features/server_config/data/datasources/account_data_source.dart'
     as _i750;
 import '../features/server_config/data/datasources/health_data_source.dart'
@@ -104,6 +105,9 @@ _i174.GetIt init(
   );
   gh.factory<_i285.ValidateServerHealth>(
     () => _i285.ValidateServerHealth(gh<_i394.HealthDataSource>()),
+  );
+  gh.factory<_i461.PublishCubit>(
+    () => _i461.PublishCubit(gh<_i228.PublishMessage>()),
   );
   gh.lazySingleton<_i668.ServerConfigRepository>(
     () => _i462.ServerConfigRepositoryImpl(

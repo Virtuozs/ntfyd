@@ -58,7 +58,7 @@ class MessageDetailPage extends StatelessWidget {
                 label: Text('Priority ${message.priority}'),
                 backgroundColor: PriorityColors.forPriority(
                   message.priority,
-                ).withOpacity(0.2),
+                ).withValues(alpha: 0.2),
               ),
               const SizedBox(width: Spacing.sm),
               Text(

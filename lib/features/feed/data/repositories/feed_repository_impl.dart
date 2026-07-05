@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:rxdart/rxdart.dart';
 import 'package:ntfyd/core/database/daos/message_dao.dart';
 import 'package:ntfyd/core/database/value_objects/message_filter.dart';
 import 'package:ntfyd/core/error/exception_mapper.dart';
@@ -18,6 +17,7 @@ import 'package:ntfyd/features/feed/domain/entities/feed_connection_state.dart';
 import 'package:ntfyd/features/feed/domain/entities/notification_message.dart';
 import 'package:ntfyd/features/feed/domain/repositories/feed_repository.dart';
 import 'package:ntfyd/features/server_config/domain/repositories/server_config_repository.dart';
+import 'package:rxdart/rxdart.dart';
 
 typedef FeedWsDataSourceFactory = FeedWsDataSource Function({
   required String baseUrl,
@@ -120,9 +120,17 @@ class FeedRepositoryImpl implements FeedRepository {
         authHeader: _authHeaderFor(credential),
       );
 
+      // False positive: the analyzer can't trace subscriptions stored in a
+      // `_FeedSession` inside `_sessions` (a Map). Both are cancelled via
+      // `disconnect()` (session.stateSub.cancel()/session.frameSub.cancel())
+      // and in the catch block just below on connect failure.
+      // ignore: cancel_subscriptions
       final stateSub = ws.connectionState.listen(
         (state) => _getOrCreateConnectionSubject(key).add(state),
       );
+      // Same false positive as stateSub above — cancelled via the stored
+      // `_FeedSession` in `disconnect()` / the catch block below.
+      // ignore: cancel_subscriptions
       final frameSub = ws.frames.listen(
         (frame) => _handleFrame(serverId, topic, frame),
       );

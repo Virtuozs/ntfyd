@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:path/path.dart' as p;
 import 'package:ntfyd/core/error/exception_mapper.dart';
 import 'package:ntfyd/core/network/ntfy_http_client.dart';
 import 'package:ntfyd/core/secure_storage/secure_credential_vault.dart';
@@ -10,6 +9,7 @@ import 'package:ntfyd/core/usecase/result.dart';
 import 'package:ntfyd/features/publish/domain/entities/publish_draft.dart';
 import 'package:ntfyd/features/publish/domain/repositories/publish_repository.dart';
 import 'package:ntfyd/features/server_config/domain/repositories/server_config_repository.dart';
+import 'package:path/path.dart' as p;
 
 typedef NtfyPublishHttpClientFactory =
     NtfyHttpClient Function(String baseUrl, ServerCredential credential);

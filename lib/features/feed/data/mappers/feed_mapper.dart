@@ -166,7 +166,7 @@ class FeedMapper {
       'url': url,
       'method': method,
       'headers': headers,
-      if (body != null) 'body': body,
+      'body': ?body,
       'clear': clear,
     },
     broadcast: (label, intent, extras, clear) => {

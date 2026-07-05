@@ -51,7 +51,7 @@ void main() {
     });
 
     test('maps a full message DTO', () {
-      final dto = MessageDto(
+      const dto = MessageDto(
         id: 'msg-1',
         time: 1751700000,
         expires: 1751710000,
@@ -59,14 +59,14 @@ void main() {
         topic: 'alerts',
         message: 'Backup failed',
         title: 'NAS',
-        tags: const ['warning', 'skull'],
+        tags: ['warning', 'skull'],
         priority: 5,
         click: 'https://example.com',
         icon: 'https://example.com/icon.png',
-        actions: const [
+        actions: [
           {'action': 'copy', 'label': 'Copy', 'value': 'x'},
         ],
-        attachment: const {
+        attachment: {
           'name': 'log.txt',
           'url': 'https://ntfy.sh/file/abc.txt',
         },
@@ -101,7 +101,7 @@ void main() {
     });
 
     test('defaults priority to 3 and tags/actions to empty when absent', () {
-      final dto = MessageDto(
+      const dto = MessageDto(
         id: 'msg-1',
         time: 1751700000,
         event: 'message',

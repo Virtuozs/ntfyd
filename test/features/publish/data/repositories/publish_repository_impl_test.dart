@@ -118,7 +118,7 @@ void main() {
         when(
           () => client.post<void>(
             any(),
-            data: any(named: 'data'),
+            data: any<String>(named: 'data'),
             options: any(named: 'options'),
           ),
         ).thenAnswer(
@@ -144,7 +144,7 @@ void main() {
       when(
         () => client.post<void>(
           any(),
-          data: any(named: 'data'),
+          data: any<String>(named: 'data'),
           options: any(named: 'options'),
         ),
       ).thenThrow(
@@ -181,7 +181,7 @@ void main() {
       when(
         () => client.put<void>(
           '/alerts',
-          data: any(named: 'data'),
+          data: any<List<int>>(named: 'data'),
           options: any(named: 'options'),
         ),
       ).thenAnswer(
@@ -201,7 +201,7 @@ void main() {
       final captured = verify(
         () => client.put<void>(
           '/alerts',
-          data: captureAny(named: 'data'),
+          data: captureAny<List<int>>(named: 'data'),
           options: captureAny(named: 'options'),
         ),
       ).captured;

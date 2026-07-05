@@ -13,9 +13,9 @@ void main() {
           expect(url, 'https://example.com');
           expect(clear, isFalse);
         },
-        http: (_, __, ___, ____, _____, ______) => fail('expected view'),
-        broadcast: (_, __, ___, ____) => fail('expected view'),
-        copy: (_, __, ___) => fail('expected view'),
+        http: (_, _, _, _, _, _) => fail('expected view'),
+        broadcast: (_, _, _, _) => fail('expected view'),
+        copy: (_, _, _) => fail('expected view'),
       );
     });
 
@@ -27,15 +27,15 @@ void main() {
 
       expect(action, isA<HttpAction>());
       action.when(
-        view: (_, __, ___) => fail('expected http'),
+        view: (_, _, _) => fail('expected http'),
         http: (label, url, method, headers, body, clear) {
           expect(method, 'POST');
           expect(headers, isEmpty);
           expect(body, isNull);
           expect(clear, isFalse);
         },
-        broadcast: (_, __, ___, ____) => fail('expected http'),
-        copy: (_, __, ___) => fail('expected http'),
+        broadcast: (_, _, _, _) => fail('expected http'),
+        copy: (_, _, _) => fail('expected http'),
       );
     });
 
@@ -43,13 +43,13 @@ void main() {
       const action = NtfyAction.broadcast(label: 'Trigger');
 
       action.when(
-        view: (_, __, ___) => fail('expected broadcast'),
-        http: (_, __, ___, ____, _____, ______) => fail('expected broadcast'),
+        view: (_, _, _) => fail('expected broadcast'),
+        http: (_, _, _, _, _, _) => fail('expected broadcast'),
         broadcast: (label, intent, extras, clear) {
           expect(intent, 'io.heckel.ntfy.USER_ACTION');
           expect(extras, isEmpty);
         },
-        copy: (_, __, ___) => fail('expected broadcast'),
+        copy: (_, _, _) => fail('expected broadcast'),
       );
     });
 
@@ -57,9 +57,9 @@ void main() {
       const action = NtfyAction.copy(label: 'Copy code', value: '123456');
 
       action.when(
-        view: (_, __, ___) => fail('expected copy'),
-        http: (_, __, ___, ____, _____, ______) => fail('expected copy'),
-        broadcast: (_, __, ___, ____) => fail('expected copy'),
+        view: (_, _, _) => fail('expected copy'),
+        http: (_, _, _, _, _, _) => fail('expected copy'),
+        broadcast: (_, _, _, _) => fail('expected copy'),
         copy: (label, value, clear) {
           expect(label, 'Copy code');
           expect(value, '123456');

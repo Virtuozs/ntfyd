@@ -29,6 +29,7 @@ import '../features/feed/domain/usecases/toggle_message_pin.dart' as _i294;
 import '../features/feed/domain/usecases/toggle_message_read.dart' as _i57;
 import '../features/feed/presentation/blocs/feed_bloc.dart' as _i916;
 import '../features/feed/presentation/cubits/home_feed_cubit.dart' as _i955;
+import '../features/publish/di/publish_module.dart' as _i973;
 import '../features/publish/domain/repositories/publish_repository.dart'
     as _i476;
 import '../features/publish/domain/usecases/publish_message.dart' as _i228;
@@ -74,6 +75,7 @@ _i174.GetIt init(
   final coreModule = _$CoreModule();
   final feedModule = _$FeedModule();
   final serverConfigModule = _$ServerConfigModule();
+  final publishModule = _$PublishModule();
   gh.lazySingleton<_i935.AppDatabase>(() => coreModule.appDatabase);
   gh.lazySingleton<_i558.FlutterSecureStorage>(() => coreModule.secureStorage);
   gh.lazySingleton<_i839.FeedPollDataSource>(
@@ -87,9 +89,6 @@ _i174.GetIt init(
   );
   gh.lazySingleton<_i465.SecureCredentialVault>(
     () => coreModule.secureCredentialVault(gh<_i558.FlutterSecureStorage>()),
-  );
-  gh.factory<_i228.PublishMessage>(
-    () => _i228.PublishMessage(gh<_i476.PublishRepository>()),
   );
   gh.lazySingleton<_i750.AccountDataSource>(
     () => serverConfigModule.accountDataSource(),
@@ -106,14 +105,20 @@ _i174.GetIt init(
   gh.factory<_i285.ValidateServerHealth>(
     () => _i285.ValidateServerHealth(gh<_i394.HealthDataSource>()),
   );
-  gh.factory<_i461.PublishCubit>(
-    () => _i461.PublishCubit(gh<_i228.PublishMessage>()),
-  );
   gh.lazySingleton<_i668.ServerConfigRepository>(
     () => _i462.ServerConfigRepositoryImpl(
       gh<_i640.ServerConfigDao>(),
       gh<_i465.SecureCredentialVault>(),
     ),
+  );
+  gh.lazySingleton<_i476.PublishRepository>(
+    () => publishModule.publishRepository(
+      gh<_i668.ServerConfigRepository>(),
+      gh<_i465.SecureCredentialVault>(),
+    ),
+  );
+  gh.factory<_i228.PublishMessage>(
+    () => _i228.PublishMessage(gh<_i476.PublishRepository>()),
   );
   gh.lazySingleton<_i291.SubscriptionRepository>(
     () => _i221.SubscriptionRepositoryImpl(
@@ -138,6 +143,9 @@ _i174.GetIt init(
   );
   gh.factory<_i106.UpdatePriorityThreshold>(
     () => _i106.UpdatePriorityThreshold(gh<_i291.SubscriptionRepository>()),
+  );
+  gh.factory<_i461.PublishCubit>(
+    () => _i461.PublishCubit(gh<_i228.PublishMessage>()),
   );
   gh.lazySingleton<_i917.FeedRepository>(
     () => feedModule.feedRepository(
@@ -207,3 +215,5 @@ class _$CoreModule extends _i747.CoreModule {}
 class _$FeedModule extends _i172.FeedModule {}
 
 class _$ServerConfigModule extends _i22.ServerConfigModule {}
+
+class _$PublishModule extends _i973.PublishModule {}

@@ -85,7 +85,7 @@ class MessageCard extends StatelessWidget {
                           child: GestureDetector(
                             onTap: onTogglePin,
                             child: Padding(
-                              padding: const EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(12.0),
                               child: Icon(
                                 Icons.push_pin,
                                 color: message.pinned
@@ -100,7 +100,7 @@ class MessageCard extends StatelessWidget {
                           child: GestureDetector(
                             onTap: onToggleRead,
                             child: Padding(
-                              padding: const EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(12.0),
                               child: Icon(
                                 Icons.check,
                                 color: message.read

@@ -29,6 +29,9 @@ import '../features/feed/domain/usecases/toggle_message_pin.dart' as _i294;
 import '../features/feed/domain/usecases/toggle_message_read.dart' as _i57;
 import '../features/feed/presentation/blocs/feed_bloc.dart' as _i916;
 import '../features/feed/presentation/cubits/home_feed_cubit.dart' as _i955;
+import '../features/publish/domain/repositories/publish_repository.dart'
+    as _i476;
+import '../features/publish/domain/usecases/publish_message.dart' as _i228;
 import '../features/server_config/data/datasources/account_data_source.dart'
     as _i750;
 import '../features/server_config/data/datasources/health_data_source.dart'
@@ -83,6 +86,9 @@ _i174.GetIt init(
   );
   gh.lazySingleton<_i465.SecureCredentialVault>(
     () => coreModule.secureCredentialVault(gh<_i558.FlutterSecureStorage>()),
+  );
+  gh.factory<_i228.PublishMessage>(
+    () => _i228.PublishMessage(gh<_i476.PublishRepository>()),
   );
   gh.lazySingleton<_i750.AccountDataSource>(
     () => serverConfigModule.accountDataSource(),

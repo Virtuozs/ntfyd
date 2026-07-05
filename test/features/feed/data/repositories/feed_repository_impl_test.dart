@@ -180,6 +180,44 @@ void main() {
       verifyNever(() => ws.connect());
     });
 
+    test('disconnects the WS and clears the session when catch-up history fetch throws', () async {
+      when(
+        () => serverConfigRepository.getById('srv-1'),
+      ).thenAnswer((_) async => Result.success(anonServer));
+      when(
+        () => messageDao.getLastId('srv-1', 'alerts'),
+      ).thenAnswer((_) async => null);
+      when(
+        () => pollDataSource.fetchHistory(
+          baseUrl: any(named: 'baseUrl'),
+          topic: any(named: 'topic'),
+          credential: any(named: 'credential'),
+          since: any(named: 'since'),
+        ),
+      ).thenThrow(Exception('poll failed'));
+
+      final result = await repository.connect('srv-1', 'alerts');
+
+      expect(result.isSuccess, isFalse);
+      verify(() => ws.disconnect()).called(1);
+
+      // The failed session must have been cleaned up rather than cached: a
+      // subsequent connect() re-resolves the server instead of treating the
+      // half-broken state as an idempotent no-op.
+      when(
+        () => pollDataSource.fetchHistory(
+          baseUrl: any(named: 'baseUrl'),
+          topic: any(named: 'topic'),
+          credential: any(named: 'credential'),
+          since: any(named: 'since'),
+        ),
+      ).thenAnswer((_) async => []);
+
+      await repository.connect('srv-1', 'alerts');
+
+      verify(() => serverConfigRepository.getById('srv-1')).called(2);
+    });
+
     test('forwards frame events to MessageDao (message/message_delete/message_clear)', () async {
       when(
         () => serverConfigRepository.getById('srv-1'),
@@ -253,6 +291,36 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       verifyNever(() => ws.disconnect());
+    });
+
+    test('resets watchConnectionState to offline after tearing down a session', () async {
+      when(
+        () => serverConfigRepository.getById('srv-1'),
+      ).thenAnswer((_) async => Result.success(anonServer));
+      when(
+        () => messageDao.getLastId('srv-1', 'alerts'),
+      ).thenAnswer((_) async => null);
+      when(
+        () => pollDataSource.fetchHistory(
+          baseUrl: any(named: 'baseUrl'),
+          topic: any(named: 'topic'),
+          credential: any(named: 'credential'),
+          since: any(named: 'since'),
+        ),
+      ).thenAnswer((_) async => []);
+
+      final states = <FeedConnectionState>[];
+      repository.watchConnectionState('srv-1', 'alerts').listen(states.add);
+      await Future<void>.delayed(Duration.zero);
+
+      await repository.connect('srv-1', 'alerts');
+      connectionStateController.add(FeedConnectionState.live);
+      await Future<void>.delayed(Duration.zero);
+
+      await repository.disconnect('srv-1', 'alerts');
+      await Future<void>.delayed(Duration.zero);
+
+      expect(states.last, FeedConnectionState.offline);
     });
   });
 

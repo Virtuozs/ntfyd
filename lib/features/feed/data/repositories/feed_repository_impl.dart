@@ -139,6 +139,11 @@ class FeedRepositoryImpl implements FeedRepository {
       return const Result.success(null);
     } catch (e) {
       final session = _sessions.remove(key);
+      try {
+        await session?.ws.disconnect();
+      } catch (_) {
+        // best-effort teardown regardless of disconnect failures
+      }
       await session?.frameSub.cancel();
       await session?.stateSub.cancel();
       return Result.err(ExceptionMapper.map(e));
@@ -157,6 +162,9 @@ class FeedRepositoryImpl implements FeedRepository {
     }
     await session.frameSub.cancel();
     await session.stateSub.cancel();
+    _getOrCreateConnectionSubject(
+      _key(serverId, topic),
+    ).add(FeedConnectionState.offline);
     return const Result.success(null);
   }
 

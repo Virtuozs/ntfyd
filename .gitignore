@@ -51,3 +51,6 @@ app.*.map.json
 .docs/*
 .claude/*
 .Plan/*
+docs/
+.claude/*
+Plan/

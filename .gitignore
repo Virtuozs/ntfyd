@@ -52,5 +52,9 @@ app.*.map.json
 .claude/*
 .Plan/*
 docs/
-.claude/*
+
+# Local tooling and planning docs
+CLAUDE.md
+AGENTS.md
+graphify-out/
 Plan/

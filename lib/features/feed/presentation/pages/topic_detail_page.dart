@@ -42,7 +42,16 @@ class TopicDetailPage extends StatelessWidget {
         serverId: subscription.serverId,
         topic: subscription.topic,
       ),
-      body: BlocBuilder<FeedBloc, FeedState>(
+      body: BlocConsumer<FeedBloc, FeedState>(
+        listener: (context, state) {
+          if (state is FeedError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Refresh failed. Showing cached messages.'),
+              ),
+            );
+          }
+        },
         builder: (context, state) {
           return switch (state) {
             FeedLoading() => const Center(child: CircularProgressIndicator()),

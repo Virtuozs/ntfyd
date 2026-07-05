@@ -141,6 +141,38 @@ void main() {
     expect(find.textContaining('Something went wrong'), findsOneWidget);
   });
 
+  testWidgets(
+    'shows a snackbar and restores the list when a refresh fails',
+    (tester) async {
+      final loaded = FeedState.loaded(
+        messages: [message],
+        connectionState: FeedConnectionState.live,
+      );
+      const error = FeedState.error(
+        failure: Failure.network(message: 'refresh failed'),
+      );
+
+      whenListen(
+        bloc,
+        Stream<FeedState>.fromIterable([error, loaded]),
+        initialState: loaded,
+      );
+
+      await pumpPage(tester);
+      await tester.pump();
+      await tester.pump();
+
+      expect(
+        find.text('Refresh failed. Showing cached messages.'),
+        findsOneWidget,
+      );
+      // The builder settles back on the restored FeedLoaded content rather
+      // than the full-screen error message.
+      expect(find.text('Login detected'), findsOneWidget);
+      expect(find.textContaining('Something went wrong'), findsNothing);
+    },
+  );
+
   testWidgets('renders the composer bar', (tester) async {
     whenListen(
       bloc,

@@ -177,6 +177,63 @@ void main() {
         ).called(1);
       },
     );
+
+    blocTest<FeedBloc, FeedState>(
+      'restores the previous FeedLoaded state after a failed refresh, '
+      'transiently surfacing the error',
+      build: () {
+        when(
+          () => connectFeed.call(any()),
+        ).thenAnswer((_) async => const Result.success(null));
+        when(() => refreshFeedHistory.call(any())).thenAnswer(
+          (_) async =>
+              const Result.err(Failure.network(message: 'refresh failed')),
+        );
+        return buildBloc();
+      },
+      act: (bloc) async {
+        bloc.add(const FeedEvent.load(serverId: 'srv-1', topic: 'alerts'));
+        await Future<void>.delayed(Duration.zero);
+        messagesController.add([message]);
+        connectionController.add(FeedConnectionState.live);
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(const FeedEvent.refresh());
+        await Future<void>.delayed(Duration.zero);
+      },
+      expect: () => [
+        const FeedState.loading(),
+        FeedState.loaded(
+          messages: [message],
+          connectionState: FeedConnectionState.live,
+        ),
+        isA<FeedError>(),
+        FeedState.loaded(
+          messages: [message],
+          connectionState: FeedConnectionState.live,
+        ),
+      ],
+    );
+
+    blocTest<FeedBloc, FeedState>(
+      'stays in error when refresh fails before the initial load completes',
+      build: () {
+        when(
+          () => connectFeed.call(any()),
+        ).thenAnswer((_) async => const Result.success(null));
+        when(() => refreshFeedHistory.call(any())).thenAnswer(
+          (_) async =>
+              const Result.err(Failure.network(message: 'refresh failed')),
+        );
+        return buildBloc();
+      },
+      act: (bloc) async {
+        bloc.add(const FeedEvent.load(serverId: 'srv-1', topic: 'alerts'));
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(const FeedEvent.refresh());
+        await Future<void>.delayed(Duration.zero);
+      },
+      expect: () => [const FeedState.loading(), isA<FeedError>()],
+    );
   });
 
   group('FeedToggleRead / FeedTogglePin', () {

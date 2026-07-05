@@ -82,7 +82,17 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
       RefreshFeedHistoryParams(serverId: serverId, topic: topic),
     );
     if (!result.isSuccess) {
+      final previousState = state;
       emit(FeedState.error(failure: result.failureOrThrow));
+      // A failed refresh writes nothing to the DB, so the `watchMessages`/
+      // `watchConnectionState` streams from `_onLoad`'s still-running
+      // `emit.forEach` won't produce a new value to overwrite this error
+      // state. Restore the previously-loaded list immediately so the error
+      // is a transient blip (for a BlocListener to surface as a snackbar)
+      // rather than a full-screen error that replaces the feed indefinitely.
+      if (previousState is FeedLoaded) {
+        emit(previousState);
+      }
     }
   }
 

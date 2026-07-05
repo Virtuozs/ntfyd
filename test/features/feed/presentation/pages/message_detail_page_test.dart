@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:ntfyd/features/feed/domain/entities/attachment.dart';
+import 'package:ntfyd/features/feed/domain/entities/feed_connection_state.dart';
 import 'package:ntfyd/features/feed/domain/entities/notification_message.dart';
 import 'package:ntfyd/features/feed/domain/entities/ntfy_action.dart';
 import 'package:ntfyd/features/feed/presentation/blocs/feed_bloc.dart';
@@ -44,7 +45,10 @@ void main() {
     whenListen(
       bloc,
       const Stream<FeedState>.empty(),
-      initialState: const FeedState.loading(),
+      initialState: FeedState.loaded(
+        messages: [message],
+        connectionState: FeedConnectionState.live,
+      ),
     );
   });
 
@@ -102,4 +106,33 @@ void main() {
 
     verify(() => bloc.add(const FeedEvent.toggleRead(id: 'msg-1'))).called(1);
   });
+
+  testWidgets(
+    'reflects a pin toggle from bloc state, not just the constructor '
+    'snapshot',
+    (tester) async {
+      final pinnedMessage = message.copyWith(pinned: true);
+
+      whenListen(
+        bloc,
+        Stream<FeedState>.fromIterable([
+          FeedState.loaded(
+            messages: [pinnedMessage],
+            connectionState: FeedConnectionState.live,
+          ),
+        ]),
+        initialState: FeedState.loaded(
+          messages: [message],
+          connectionState: FeedConnectionState.live,
+        ),
+      );
+
+      await pumpPage(tester);
+      await tester.pump();
+
+      final theme = Theme.of(tester.element(find.byType(MessageDetailPage)));
+      final icon = tester.widget<Icon>(find.byIcon(Icons.push_pin));
+      expect(icon.color, theme.colorScheme.error);
+    },
+  );
 }

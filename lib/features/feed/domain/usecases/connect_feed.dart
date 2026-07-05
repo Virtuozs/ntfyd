@@ -8,6 +8,16 @@ class ConnectFeedParams {
 
   final String serverId;
   final String topic;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ConnectFeedParams &&
+          other.serverId == serverId &&
+          other.topic == topic);
+
+  @override
+  int get hashCode => Object.hash(serverId, topic);
 }
 
 /// Opens (or reuses) the screen-scoped WS session for a topic, per

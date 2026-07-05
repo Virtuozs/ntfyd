@@ -8,6 +8,16 @@ class ToggleMessageReadParams {
 
   final String serverId;
   final String id;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ToggleMessageReadParams &&
+          other.serverId == serverId &&
+          other.id == id);
+
+  @override
+  int get hashCode => Object.hash(serverId, id);
 }
 
 /// Toggles read/unread on a single message (D19: the ✓ on each message

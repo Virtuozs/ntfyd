@@ -8,6 +8,16 @@ class ToggleMessagePinParams {
 
   final String serverId;
   final String id;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ToggleMessagePinParams &&
+          other.serverId == serverId &&
+          other.id == id);
+
+  @override
+  int get hashCode => Object.hash(serverId, id);
 }
 
 /// Toggles pin on a single message (D17: `NotificationMessage.pinned`).

@@ -11,6 +11,16 @@ class RefreshFeedHistoryParams {
 
   final String serverId;
   final String topic;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RefreshFeedHistoryParams &&
+          other.serverId == serverId &&
+          other.topic == topic);
+
+  @override
+  int get hashCode => Object.hash(serverId, topic);
 }
 
 /// Manual pull-to-refresh: fetches history since the last known message id

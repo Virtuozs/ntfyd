@@ -27,6 +27,7 @@ import '../features/feed/domain/usecases/disconnect_feed.dart' as _i120;
 import '../features/feed/domain/usecases/refresh_feed_history.dart' as _i959;
 import '../features/feed/domain/usecases/toggle_message_pin.dart' as _i294;
 import '../features/feed/domain/usecases/toggle_message_read.dart' as _i57;
+import '../features/feed/presentation/blocs/feed_bloc.dart' as _i916;
 import '../features/server_config/data/datasources/account_data_source.dart'
     as _i750;
 import '../features/server_config/data/datasources/health_data_source.dart'
@@ -152,6 +153,16 @@ _i174.GetIt init(
   );
   gh.factory<_i57.ToggleMessageRead>(
     () => _i57.ToggleMessageRead(gh<_i917.FeedRepository>()),
+  );
+  gh.factory<_i916.FeedBloc>(
+    () => _i916.FeedBloc(
+      gh<_i917.FeedRepository>(),
+      gh<_i106.ConnectFeed>(),
+      gh<_i120.DisconnectFeed>(),
+      gh<_i959.RefreshFeedHistory>(),
+      gh<_i57.ToggleMessageRead>(),
+      gh<_i294.ToggleMessagePin>(),
+    ),
   );
   gh.factory<_i349.SubscribeToTopic>(
     () => _i349.SubscribeToTopic(

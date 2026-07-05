@@ -8,6 +8,16 @@ class DisconnectFeedParams {
 
   final String serverId;
   final String topic;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DisconnectFeedParams &&
+          other.serverId == serverId &&
+          other.topic == topic);
+
+  @override
+  int get hashCode => Object.hash(serverId, topic);
 }
 
 /// Tears down the screen-scoped WS session — called from `FeedBloc.close()`

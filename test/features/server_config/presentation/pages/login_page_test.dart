@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:ntfyd/core/error/failures.dart';
-import 'package:ntfyd/features/home/presentation/pages/home_page.dart';
+import 'package:ntfyd/features/feed/presentation/pages/home_page.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_cubit.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_state.dart';
 import 'package:ntfyd/features/server_config/presentation/pages/login_page.dart';

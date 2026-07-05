@@ -49,9 +49,9 @@ class _LoginPageState extends State<LoginPage> {
     return BlocConsumer<ServerFormCubit, ServerFormState>(
       listener: (context, state) {
         switch (state) {
-          case ServerFormSuccess(baseUrl: final baseUrl):
+          case ServerFormSuccess():
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute<void>(builder: (_) => HomePage(baseUrl: baseUrl)),
+              MaterialPageRoute<void>(builder: (_) => const HomePage()),
             );
           case ServerFormError(failure: final failure):
             ScaffoldMessenger.of(context).showSnackBar(

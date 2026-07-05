@@ -146,6 +146,7 @@ class FeedRepositoryImpl implements FeedRepository {
       }
       await session?.frameSub.cancel();
       await session?.stateSub.cancel();
+      _getOrCreateConnectionSubject(key).add(FeedConnectionState.offline);
       return Result.err(ExceptionMapper.map(e));
     }
   }

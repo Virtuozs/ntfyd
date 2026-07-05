@@ -218,6 +218,46 @@ void main() {
       verify(() => serverConfigRepository.getById('srv-1')).called(2);
     });
 
+    test('resets watchConnectionState to offline when connect() fails after the WS session already opened', () async {
+      when(
+        () => serverConfigRepository.getById('srv-1'),
+      ).thenAnswer((_) async => Result.success(anonServer));
+      when(
+        () => messageDao.getLastId('srv-1', 'alerts'),
+      ).thenAnswer((_) async => null);
+
+      final fetchCompleter = Completer<List<MessageDto>>();
+      when(
+        () => pollDataSource.fetchHistory(
+          baseUrl: any(named: 'baseUrl'),
+          topic: any(named: 'topic'),
+          credential: any(named: 'credential'),
+          since: any(named: 'since'),
+        ),
+      ).thenAnswer((_) => fetchCompleter.future);
+
+      final states = <FeedConnectionState>[];
+      repository.watchConnectionState('srv-1', 'alerts').listen(states.add);
+      await Future<void>.delayed(Duration.zero);
+
+      final connectFuture = repository.connect('srv-1', 'alerts');
+      await Future<void>.delayed(Duration.zero);
+
+      // The WS session is open and forwarding real lifecycle events while
+      // catch-up is in flight — simulate a real "live" event arriving before
+      // the catch-up fetch fails.
+      connectionStateController.add(FeedConnectionState.live);
+      await Future<void>.delayed(Duration.zero);
+      expect(states.last, FeedConnectionState.live);
+
+      fetchCompleter.completeError(Exception('poll failed'));
+      final result = await connectFuture;
+      await Future<void>.delayed(Duration.zero);
+
+      expect(result.isSuccess, isFalse);
+      expect(states.last, FeedConnectionState.offline);
+    });
+
     test('forwards frame events to MessageDao (message/message_delete/message_clear)', () async {
       when(
         () => serverConfigRepository.getById('srv-1'),

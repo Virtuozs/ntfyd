@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 import 'package:ntfyd/core/database/app_database.dart';
 import 'package:ntfyd/core/database/tables/notification_messages_table.dart';
@@ -34,8 +36,30 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     return query.watch();
   }
 
-  Future<void> insertOrReplace(NotificationMessagesCompanion row) {
-    return into(notificationMessages).insertOnConflictUpdate(row);
+  final StreamController<NotificationMessage> _insertedController =
+      StreamController<NotificationMessage>.broadcast();
+
+  /// Emits a row only the first time its `(serverId, id)` is written —
+  /// i.e. a genuine new arrival, not a dedupe/update overwrite. Drives
+  /// [NotificationsCoordinator] (Task 7).
+  Stream<NotificationMessage> watchInserted() => _insertedController.stream;
+
+  Future<void> insertOrReplace(NotificationMessagesCompanion row) async {
+    final serverId = row.serverId.value;
+    final id = row.id.value;
+
+    final existing = await (select(notificationMessages)
+          ..where((t) => t.serverId.equals(serverId) & t.id.equals(id)))
+        .getSingleOrNull();
+
+    await into(notificationMessages).insertOnConflictUpdate(row);
+
+    if (existing == null) {
+      final inserted = await (select(notificationMessages)
+            ..where((t) => t.serverId.equals(serverId) & t.id.equals(id)))
+          .getSingle();
+      _insertedController.add(inserted);
+    }
   }
 
   Future<void> markRead(String serverId, String id, bool read) {

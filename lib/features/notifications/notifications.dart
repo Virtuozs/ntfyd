@@ -1,1 +1,9 @@
-// notifications feature exports
+export 'data/background_delivery_service.dart';
+export 'data/foreground_service_controller.dart';
+export 'data/notification_channel_manager.dart';
+export 'data/notification_presenter.dart';
+export 'data/notifications_coordinator.dart';
+export 'domain/entities/notification_channel_spec.dart';
+export 'domain/entities/notification_decision.dart';
+export 'domain/services/notification_policy.dart';
+export 'presentation/currently_viewed_topic.dart';

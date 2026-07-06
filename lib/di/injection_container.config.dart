@@ -9,6 +9,8 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'
+    as _i163;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
@@ -30,6 +32,18 @@ import '../features/feed/domain/usecases/toggle_message_pin.dart' as _i294;
 import '../features/feed/domain/usecases/toggle_message_read.dart' as _i57;
 import '../features/feed/presentation/blocs/feed_bloc.dart' as _i916;
 import '../features/feed/presentation/cubits/home_feed_cubit.dart' as _i955;
+import '../features/notifications/data/background_delivery_service.dart'
+    as _i985;
+import '../features/notifications/data/foreground_service_controller.dart'
+    as _i810;
+import '../features/notifications/data/notification_channel_manager.dart'
+    as _i0;
+import '../features/notifications/data/notification_presenter.dart' as _i598;
+import '../features/notifications/data/notifications_coordinator.dart'
+    as _i1055;
+import '../features/notifications/di/notifications_module.dart' as _i473;
+import '../features/notifications/domain/services/notification_policy.dart'
+    as _i966;
 import '../features/notifications/presentation/currently_viewed_topic.dart'
     as _i76;
 import '../features/publish/di/publish_module.dart' as _i973;
@@ -77,12 +91,22 @@ _i174.GetIt init(
   final gh = _i526.GetItHelper(getIt, environment, environmentFilter);
   final coreModule = _$CoreModule();
   final feedModule = _$FeedModule();
+  final notificationsModule = _$NotificationsModule();
   final serverConfigModule = _$ServerConfigModule();
   final publishModule = _$PublishModule();
   gh.lazySingleton<_i935.AppDatabase>(() => coreModule.appDatabase);
   gh.lazySingleton<_i558.FlutterSecureStorage>(() => coreModule.secureStorage);
   gh.lazySingleton<_i839.FeedPollDataSource>(
     () => feedModule.feedPollDataSource(),
+  );
+  gh.lazySingleton<_i163.FlutterLocalNotificationsPlugin>(
+    () => notificationsModule.flutterLocalNotificationsPlugin(),
+  );
+  gh.lazySingleton<_i966.NotificationPolicy>(
+    () => notificationsModule.notificationPolicy(),
+  );
+  gh.lazySingleton<_i810.ForegroundServiceController>(
+    () => notificationsModule.foregroundServiceController(),
   );
   gh.lazySingleton<_i76.CurrentlyViewedTopic>(
     () => _i76.CurrentlyViewedTopic(),
@@ -98,6 +122,16 @@ _i174.GetIt init(
   );
   gh.lazySingleton<_i750.AccountDataSource>(
     () => serverConfigModule.accountDataSource(),
+  );
+  gh.lazySingleton<_i0.NotificationChannelManager>(
+    () => notificationsModule.notificationChannelManager(
+      gh<_i163.FlutterLocalNotificationsPlugin>(),
+    ),
+  );
+  gh.lazySingleton<_i598.NotificationPresenter>(
+    () => notificationsModule.notificationPresenter(
+      gh<_i163.FlutterLocalNotificationsPlugin>(),
+    ),
   );
   gh.lazySingleton<_i640.ServerConfigDao>(
     () => coreModule.serverConfigDao(gh<_i935.AppDatabase>()),
@@ -128,6 +162,16 @@ _i174.GetIt init(
   );
   gh.factory<_i228.PublishMessage>(
     () => _i228.PublishMessage(gh<_i476.PublishRepository>()),
+  );
+  gh.lazySingleton<_i1055.NotificationsCoordinator>(
+    () => notificationsModule.notificationsCoordinator(
+      gh<_i256.MessageDao>(),
+      gh<_i245.SubscriptionDao>(),
+      gh<_i922.SettingDao>(),
+      gh<_i598.NotificationPresenter>(),
+      gh<_i76.CurrentlyViewedTopic>(),
+      gh<_i966.NotificationPolicy>(),
+    ),
   );
   gh.lazySingleton<_i291.SubscriptionRepository>(
     () => _i221.SubscriptionRepositoryImpl(
@@ -162,6 +206,13 @@ _i174.GetIt init(
       gh<_i465.SecureCredentialVault>(),
       gh<_i256.MessageDao>(),
       gh<_i839.FeedPollDataSource>(),
+    ),
+  );
+  gh.lazySingleton<_i985.BackgroundDeliveryService>(
+    () => notificationsModule.backgroundDeliveryService(
+      gh<_i291.SubscriptionRepository>(),
+      gh<_i917.FeedRepository>(),
+      gh<_i810.ForegroundServiceController>(),
     ),
   );
   gh.factory<_i631.ServerFormCubit>(
@@ -223,6 +274,8 @@ _i174.GetIt init(
 class _$CoreModule extends _i747.CoreModule {}
 
 class _$FeedModule extends _i172.FeedModule {}
+
+class _$NotificationsModule extends _i473.NotificationsModule {}
 
 class _$ServerConfigModule extends _i22.ServerConfigModule {}
 

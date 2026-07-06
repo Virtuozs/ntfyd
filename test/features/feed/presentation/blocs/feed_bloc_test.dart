@@ -16,6 +16,7 @@ import 'package:ntfyd/features/feed/domain/usecases/toggle_message_read.dart';
 import 'package:ntfyd/features/feed/presentation/blocs/feed_bloc.dart';
 import 'package:ntfyd/features/feed/presentation/blocs/feed_event.dart';
 import 'package:ntfyd/features/feed/presentation/blocs/feed_state.dart';
+import 'package:ntfyd/features/notifications/presentation/currently_viewed_topic.dart';
 
 class MockFeedRepository extends Mock implements FeedRepository {}
 
@@ -36,6 +37,7 @@ void main() {
   late MockRefreshFeedHistory refreshFeedHistory;
   late MockToggleMessageRead toggleMessageRead;
   late MockToggleMessagePin toggleMessagePin;
+  late CurrentlyViewedTopic currentlyViewedTopic;
 
   late StreamController<List<NotificationMessage>> messagesController;
   late StreamController<FeedConnectionState> connectionController;
@@ -75,6 +77,7 @@ void main() {
     refreshFeedHistory = MockRefreshFeedHistory();
     toggleMessageRead = MockToggleMessageRead();
     toggleMessagePin = MockToggleMessagePin();
+    currentlyViewedTopic = CurrentlyViewedTopic();
 
     messagesController =
         StreamController<List<NotificationMessage>>.broadcast();
@@ -108,6 +111,7 @@ void main() {
     refreshFeedHistory,
     toggleMessageRead,
     toggleMessagePin,
+    currentlyViewedTopic,
   );
 
   group('FeedLoad', () {
@@ -318,6 +322,44 @@ void main() {
       await bloc.close();
 
       verifyNever(() => disconnectFeed.call(any()));
+    });
+  });
+
+  group('CurrentlyViewedTopic wiring', () {
+    // Plain `test()` (not `blocTest`) — `blocTest`'s harness always calls
+    // `bloc.close()` internally before running `verify`, which would clear
+    // `currentlyViewedTopic` before this assertion could see it set. Manual
+    // control over `close()` timing (as in the `close` group above) is
+    // needed to observe both pre-close and post-close state.
+    test('records the topic as currently viewed on load', () async {
+      when(
+        () => connectFeed.call(any()),
+      ).thenAnswer((_) async => const Result.success(null));
+
+      final bloc = buildBloc();
+      bloc.add(const FeedEvent.load(serverId: 'srv-1', topic: 'alerts'));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(
+        currentlyViewedTopic.current,
+        equals((serverId: 'srv-1', topic: 'alerts')),
+      );
+
+      await bloc.close();
+    });
+
+    test('clears the currently-viewed topic on close', () async {
+      when(
+        () => connectFeed.call(any()),
+      ).thenAnswer((_) async => const Result.success(null));
+
+      final bloc = buildBloc();
+      bloc.add(const FeedEvent.load(serverId: 'srv-1', topic: 'alerts'));
+      await Future<void>.delayed(Duration.zero);
+
+      await bloc.close();
+
+      expect(currentlyViewedTopic.current, isNull);
     });
   });
 }

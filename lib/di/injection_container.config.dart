@@ -29,6 +29,8 @@ import '../features/feed/domain/usecases/toggle_message_pin.dart' as _i294;
 import '../features/feed/domain/usecases/toggle_message_read.dart' as _i57;
 import '../features/feed/presentation/blocs/feed_bloc.dart' as _i916;
 import '../features/feed/presentation/cubits/home_feed_cubit.dart' as _i955;
+import '../features/notifications/presentation/currently_viewed_topic.dart'
+    as _i76;
 import '../features/publish/di/publish_module.dart' as _i973;
 import '../features/publish/domain/repositories/publish_repository.dart'
     as _i476;
@@ -80,6 +82,9 @@ _i174.GetIt init(
   gh.lazySingleton<_i558.FlutterSecureStorage>(() => coreModule.secureStorage);
   gh.lazySingleton<_i839.FeedPollDataSource>(
     () => feedModule.feedPollDataSource(),
+  );
+  gh.lazySingleton<_i76.CurrentlyViewedTopic>(
+    () => _i76.CurrentlyViewedTopic(),
   );
   gh.lazySingleton<_i201.NtfyHttpClientFactory>(
     () => _i201.NtfyHttpClientFactory(),
@@ -173,16 +178,6 @@ _i174.GetIt init(
   gh.factory<_i57.ToggleMessageRead>(
     () => _i57.ToggleMessageRead(gh<_i917.FeedRepository>()),
   );
-  gh.factory<_i916.FeedBloc>(
-    () => _i916.FeedBloc(
-      gh<_i917.FeedRepository>(),
-      gh<_i106.ConnectFeed>(),
-      gh<_i120.DisconnectFeed>(),
-      gh<_i959.RefreshFeedHistory>(),
-      gh<_i57.ToggleMessageRead>(),
-      gh<_i294.ToggleMessagePin>(),
-    ),
-  );
   gh.factory<_i955.HomeFeedCubit>(
     () => _i955.HomeFeedCubit(
       gh<_i291.SubscriptionRepository>(),
@@ -205,6 +200,17 @@ _i174.GetIt init(
       gh<_i164.TogglePin>(),
       gh<_i110.ToggleMute>(),
       gh<_i106.UpdatePriorityThreshold>(),
+    ),
+  );
+  gh.factory<_i916.FeedBloc>(
+    () => _i916.FeedBloc(
+      gh<_i917.FeedRepository>(),
+      gh<_i106.ConnectFeed>(),
+      gh<_i120.DisconnectFeed>(),
+      gh<_i959.RefreshFeedHistory>(),
+      gh<_i57.ToggleMessageRead>(),
+      gh<_i294.ToggleMessagePin>(),
+      gh<_i76.CurrentlyViewedTopic>(),
     ),
   );
   return getIt;

@@ -11,6 +11,7 @@ import 'package:ntfyd/features/feed/domain/usecases/toggle_message_pin.dart';
 import 'package:ntfyd/features/feed/domain/usecases/toggle_message_read.dart';
 import 'package:ntfyd/features/feed/presentation/blocs/feed_event.dart';
 import 'package:ntfyd/features/feed/presentation/blocs/feed_state.dart';
+import 'package:ntfyd/features/notifications/presentation/currently_viewed_topic.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// Follows the app's "Option A" feed data-flow (Base-Plan D9):
@@ -27,6 +28,7 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
     this._refreshFeedHistory,
     this._toggleMessageRead,
     this._toggleMessagePin,
+    this._currentlyViewedTopic,
   ) : super(const FeedState.loading()) {
     on<FeedLoad>(_onLoad);
     on<FeedRefresh>(_onRefresh);
@@ -40,6 +42,7 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
   final RefreshFeedHistory _refreshFeedHistory;
   final ToggleMessageRead _toggleMessageRead;
   final ToggleMessagePin _toggleMessagePin;
+  final CurrentlyViewedTopic _currentlyViewedTopic;
 
   String? _serverId;
   String? _topic;
@@ -47,6 +50,7 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
   Future<void> _onLoad(FeedLoad event, Emitter<FeedState> emit) async {
     _serverId = event.serverId;
     _topic = event.topic;
+    _currentlyViewedTopic.set(event.serverId, event.topic);
 
     emit(const FeedState.loading());
 
@@ -123,6 +127,7 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
     final serverId = _serverId;
     final topic = _topic;
     if (serverId != null && topic != null) {
+      _currentlyViewedTopic.clear(serverId, topic);
       await _disconnectFeed.call(
         DisconnectFeedParams(serverId: serverId, topic: topic),
       );

@@ -8,7 +8,7 @@ import 'package:ntfyd/features/publish/domain/entities/publish_draft.dart';
 
 typedef PickFileFn = Future<FilePickerResult?> Function();
 
-Future<FilePickerResult?> _defaultPickFile() => FilePicker.platform.pickFiles();
+Future<FilePickerResult?> _defaultPickFile() => FilePicker.pickFiles();
 
 /// `^` advanced publish sheet (D20/OI2): title, priority (1–5), tags (CSV),
 /// attachment (local file picker), Markdown toggle, schedule (`delay`).

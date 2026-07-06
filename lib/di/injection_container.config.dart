@@ -16,6 +16,7 @@ import 'package:injectable/injectable.dart' as _i526;
 import '../core/database/app_database.dart' as _i935;
 import '../core/database/daos/message_dao.dart' as _i256;
 import '../core/database/daos/server_config_dao.dart' as _i640;
+import '../core/database/daos/setting_dao.dart' as _i922;
 import '../core/database/daos/subscription_dao.dart' as _i245;
 import '../core/di/core_module.dart' as _i747;
 import '../core/secure_storage/secure_credential_vault.dart' as _i465;
@@ -106,6 +107,9 @@ _i174.GetIt init(
   );
   gh.lazySingleton<_i256.MessageDao>(
     () => coreModule.messageDao(gh<_i935.AppDatabase>()),
+  );
+  gh.lazySingleton<_i922.SettingDao>(
+    () => coreModule.settingDao(gh<_i935.AppDatabase>()),
   );
   gh.factory<_i285.ValidateServerHealth>(
     () => _i285.ValidateServerHealth(gh<_i394.HealthDataSource>()),

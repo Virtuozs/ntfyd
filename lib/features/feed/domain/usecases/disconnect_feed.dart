@@ -1,6 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:ntfyd/core/usecase/result.dart';
 import 'package:ntfyd/core/usecase/use_case.dart';
+import 'package:ntfyd/features/feed/domain/entities/connection_owner.dart';
 import 'package:ntfyd/features/feed/domain/repositories/feed_repository.dart';
 
 class DisconnectFeedParams {
@@ -30,5 +31,9 @@ class DisconnectFeed implements UseCase<DisconnectFeedParams, void> {
 
   @override
   Future<Result<void>> call(DisconnectFeedParams params) =>
-      _repository.disconnect(params.serverId, params.topic);
+      _repository.disconnect(
+        params.serverId,
+        params.topic,
+        owner: ConnectionOwner.screen,
+      );
 }

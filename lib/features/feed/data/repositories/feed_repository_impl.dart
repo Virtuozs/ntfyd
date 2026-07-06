@@ -13,6 +13,7 @@ import 'package:ntfyd/features/feed/data/datasources/feed_poll_data_source.dart'
 import 'package:ntfyd/features/feed/data/datasources/feed_ws_data_source.dart';
 import 'package:ntfyd/features/feed/data/mappers/feed_mapper.dart';
 import 'package:ntfyd/features/feed/data/models/message_dto.dart';
+import 'package:ntfyd/features/feed/domain/entities/connection_owner.dart';
 import 'package:ntfyd/features/feed/domain/entities/feed_connection_state.dart';
 import 'package:ntfyd/features/feed/domain/entities/notification_message.dart';
 import 'package:ntfyd/features/feed/domain/repositories/feed_repository.dart';
@@ -72,6 +73,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
   final Map<String, _FeedSession> _sessions = {};
   final Map<String, BehaviorSubject<FeedConnectionState>> _connectionSubjects = {};
+  final Map<String, Set<ConnectionOwner>> _owners = {};
 
   @override
   Stream<List<NotificationMessage>> watchMessages(
@@ -105,12 +107,21 @@ class FeedRepositoryImpl implements FeedRepository {
   ) => _getOrCreateConnectionSubject(_key(serverId, topic)).stream;
 
   @override
-  Future<Result<void>> connect(String serverId, String topic) async {
+  Future<Result<void>> connect(
+    String serverId,
+    String topic, {
+    required ConnectionOwner owner,
+  }) async {
     final key = _key(serverId, topic);
+    _owners.putIfAbsent(key, () => <ConnectionOwner>{}).add(owner);
+
     if (_sessions.containsKey(key)) return const Result.success(null);
 
     final resolved = await _resolveServer(serverId);
-    if (!resolved.isSuccess) return Result.err(resolved.failureOrThrow);
+    if (!resolved.isSuccess) {
+      _owners.remove(key);
+      return Result.err(resolved.failureOrThrow);
+    }
     final (baseUrl: baseUrl, credential: credential) = resolved.valueOrThrow;
 
     try {
@@ -154,14 +165,25 @@ class FeedRepositoryImpl implements FeedRepository {
       }
       await session?.frameSub.cancel();
       await session?.stateSub.cancel();
+      _owners.remove(key);
       _getOrCreateConnectionSubject(key).add(FeedConnectionState.offline);
       return Result.err(ExceptionMapper.map(e));
     }
   }
 
   @override
-  Future<Result<void>> disconnect(String serverId, String topic) async {
-    final session = _sessions.remove(_key(serverId, topic));
+  Future<Result<void>> disconnect(
+    String serverId,
+    String topic, {
+    required ConnectionOwner owner,
+  }) async {
+    final key = _key(serverId, topic);
+    final owners = _owners[key];
+    owners?.remove(owner);
+    if (owners != null && owners.isNotEmpty) return const Result.success(null);
+    _owners.remove(key);
+
+    final session = _sessions.remove(key);
     if (session == null) return const Result.success(null);
 
     try {

@@ -12,6 +12,7 @@ import 'package:ntfyd/features/feed/data/datasources/feed_poll_data_source.dart'
 import 'package:ntfyd/features/feed/data/datasources/feed_ws_data_source.dart';
 import 'package:ntfyd/features/feed/data/models/message_dto.dart';
 import 'package:ntfyd/features/feed/data/repositories/feed_repository_impl.dart';
+import 'package:ntfyd/features/feed/domain/entities/connection_owner.dart';
 import 'package:ntfyd/features/feed/domain/entities/feed_connection_state.dart';
 import 'package:ntfyd/features/server_config/domain/entities/auth_type.dart';
 import 'package:ntfyd/features/server_config/domain/entities/server_config.dart';
@@ -109,7 +110,7 @@ void main() {
       );
       when(() => messageDao.insertOrReplace(any())).thenAnswer((_) async {});
 
-      final result = await repository.connect('srv-1', 'alerts');
+      final result = await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
 
       expect(result.isSuccess, isTrue);
       verify(() => ws.connect()).called(1);
@@ -132,8 +133,8 @@ void main() {
         ),
       ).thenAnswer((_) async => []);
 
-      await repository.connect('srv-1', 'alerts');
-      await repository.connect('srv-1', 'alerts');
+      await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
+      await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
 
       verify(() => ws.connect()).called(1);
       verify(() => serverConfigRepository.getById('srv-1')).called(1);
@@ -155,7 +156,7 @@ void main() {
         ),
       ).thenAnswer((_) async => []);
 
-      final result = await repository.connect('srv-1', 'alerts');
+      final result = await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
 
       expect(result.isSuccess, isTrue);
       verify(
@@ -173,7 +174,7 @@ void main() {
         (_) async => const Result.err(Failure.notFound()),
       );
 
-      final result = await repository.connect('srv-1', 'alerts');
+      final result = await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
 
       expect(result.isSuccess, isFalse);
       expect(result.failureOrThrow, isA<NotFoundFailure>());
@@ -196,7 +197,7 @@ void main() {
         ),
       ).thenThrow(Exception('poll failed'));
 
-      final result = await repository.connect('srv-1', 'alerts');
+      final result = await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
 
       expect(result.isSuccess, isFalse);
       verify(() => ws.disconnect()).called(1);
@@ -213,7 +214,7 @@ void main() {
         ),
       ).thenAnswer((_) async => []);
 
-      await repository.connect('srv-1', 'alerts');
+      await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
 
       verify(() => serverConfigRepository.getById('srv-1')).called(2);
     });
@@ -240,7 +241,7 @@ void main() {
       repository.watchConnectionState('srv-1', 'alerts').listen(states.add);
       await Future<void>.delayed(Duration.zero);
 
-      final connectFuture = repository.connect('srv-1', 'alerts');
+      final connectFuture = repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
       await Future<void>.delayed(Duration.zero);
 
       // The WS session is open and forwarding real lifecycle events while
@@ -281,7 +282,7 @@ void main() {
         () => messageDao.clearByTopic('srv-1', 'alerts'),
       ).thenAnswer((_) async {});
 
-      await repository.connect('srv-1', 'alerts');
+      await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
 
       framesController.add({
         'id': 'msg-1',
@@ -319,15 +320,15 @@ void main() {
         ),
       ).thenAnswer((_) async => []);
 
-      await repository.connect('srv-1', 'alerts');
-      final result = await repository.disconnect('srv-1', 'alerts');
+      await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
+      final result = await repository.disconnect('srv-1', 'alerts', owner: ConnectionOwner.screen);
 
       expect(result.isSuccess, isTrue);
       verify(() => ws.disconnect()).called(1);
     });
 
     test('disconnecting a topic with no session is a no-op success', () async {
-      final result = await repository.disconnect('srv-1', 'alerts');
+      final result = await repository.disconnect('srv-1', 'alerts', owner: ConnectionOwner.screen);
 
       expect(result.isSuccess, isTrue);
       verifyNever(() => ws.disconnect());
@@ -353,11 +354,11 @@ void main() {
       repository.watchConnectionState('srv-1', 'alerts').listen(states.add);
       await Future<void>.delayed(Duration.zero);
 
-      await repository.connect('srv-1', 'alerts');
+      await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
       connectionStateController.add(FeedConnectionState.live);
       await Future<void>.delayed(Duration.zero);
 
-      await repository.disconnect('srv-1', 'alerts');
+      await repository.disconnect('srv-1', 'alerts', owner: ConnectionOwner.screen);
       await Future<void>.delayed(Duration.zero);
 
       expect(states.last, FeedConnectionState.offline);
@@ -385,7 +386,7 @@ void main() {
       repository.watchConnectionState('srv-1', 'alerts').listen(states.add);
       await Future<void>.delayed(Duration.zero);
 
-      await repository.connect('srv-1', 'alerts');
+      await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
       connectionStateController.add(FeedConnectionState.live);
       await Future<void>.delayed(Duration.zero);
 
@@ -459,6 +460,82 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       verify(() => messageDao.togglePin('srv-1', 'msg-1')).called(1);
+    });
+  });
+
+  group('reference-counted connections', () {
+    test('a background connect after a screen connect keeps the session open on screen disconnect', () async {
+      when(
+        () => serverConfigRepository.getById('srv-1'),
+      ).thenAnswer((_) async => Result.success(anonServer));
+      when(
+        () => messageDao.getLastId('srv-1', 'alerts'),
+      ).thenAnswer((_) async => null);
+      when(
+        () => pollDataSource.fetchHistory(
+          baseUrl: any(named: 'baseUrl'),
+          topic: any(named: 'topic'),
+          credential: any(named: 'credential'),
+          since: any(named: 'since'),
+        ),
+      ).thenAnswer((_) async => []);
+
+      await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
+      await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.background);
+
+      await repository.disconnect('srv-1', 'alerts', owner: ConnectionOwner.screen);
+      verifyNever(() => ws.disconnect());
+
+      await repository.disconnect('srv-1', 'alerts', owner: ConnectionOwner.background);
+      verify(() => ws.disconnect()).called(1);
+    });
+
+    test('disconnecting an owner that never connected is a no-op while the other owner holds the session', () async {
+      when(
+        () => serverConfigRepository.getById('srv-1'),
+      ).thenAnswer((_) async => Result.success(anonServer));
+      when(
+        () => messageDao.getLastId('srv-1', 'alerts'),
+      ).thenAnswer((_) async => null);
+      when(
+        () => pollDataSource.fetchHistory(
+          baseUrl: any(named: 'baseUrl'),
+          topic: any(named: 'topic'),
+          credential: any(named: 'credential'),
+          since: any(named: 'since'),
+        ),
+      ).thenAnswer((_) async => []);
+
+      await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
+
+      await repository.disconnect('srv-1', 'alerts', owner: ConnectionOwner.background);
+      verifyNever(() => ws.disconnect());
+
+      await repository.disconnect('srv-1', 'alerts', owner: ConnectionOwner.screen);
+      verify(() => ws.disconnect()).called(1);
+    });
+
+    test('a second connect from the same owner does not duplicate ownership', () async {
+      when(
+        () => serverConfigRepository.getById('srv-1'),
+      ).thenAnswer((_) async => Result.success(anonServer));
+      when(
+        () => messageDao.getLastId('srv-1', 'alerts'),
+      ).thenAnswer((_) async => null);
+      when(
+        () => pollDataSource.fetchHistory(
+          baseUrl: any(named: 'baseUrl'),
+          topic: any(named: 'topic'),
+          credential: any(named: 'credential'),
+          since: any(named: 'since'),
+        ),
+      ).thenAnswer((_) async => []);
+
+      await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
+      await repository.connect('srv-1', 'alerts', owner: ConnectionOwner.screen);
+
+      await repository.disconnect('srv-1', 'alerts', owner: ConnectionOwner.screen);
+      verify(() => ws.disconnect()).called(1);
     });
   });
 }

@@ -12,9 +12,14 @@ import 'package:ntfyd/shared/theme/material_you_controller.dart';
 /// - When [controller] is `false` (default): the app uses the fixed [AppTheme.defaultDark]
 /// - When [controller] is `true`: falls back to [DynamicColorBuilder],
 class DynamicColorWrapper extends StatelessWidget {
-  const DynamicColorWrapper({super.key, required this.controller});
+  const DynamicColorWrapper({
+    super.key,
+    required this.controller,
+    required this.navigatorKey,
+  });
 
   final MaterialYouController controller;
+  final GlobalKey<NavigatorState> navigatorKey;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +31,7 @@ class DynamicColorWrapper extends StatelessWidget {
           return MaterialApp(
             title: 'ntfyd',
             debugShowCheckedModeBanner: false,
+            navigatorKey: navigatorKey,
             theme: theme,
             darkTheme: theme,
             themeMode: ThemeMode.system,
@@ -38,6 +44,7 @@ class DynamicColorWrapper extends StatelessWidget {
             return MaterialApp(
               title: 'ntfyd',
               debugShowCheckedModeBanner: false,
+              navigatorKey: navigatorKey,
               theme: AppTheme.light(dynamicScheme: lightDynamic),
               darkTheme: AppTheme.dark(dynamicScheme: darkDynamic),
               themeMode: ThemeMode.system,

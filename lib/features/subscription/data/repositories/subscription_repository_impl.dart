@@ -22,6 +22,13 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
   }
 
   @override
+  Stream<List<Subscription>> watchAll() {
+    return _dao.watchAll().map(
+      (rows) => rows.map(SubscriptionMapper.toDomain).toList(),
+    );
+  }
+
+  @override
   Future<Result<Subscription>> subscribe(Subscription sub) async {
     try {
       await _dao.upsert(SubscriptionMapper.toCompanion(sub));
@@ -72,5 +79,12 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
         Failure.cache(message: 'Failed to update priority threshold: $e'),
       );
     }
+  }
+
+  @override
+  Future<Result<Subscription>> getByTopic(String serverId, String topic) async {
+    final row = await _dao.findByTopic(serverId, topic);
+    if (row == null) return const Result.err(Failure.notFound());
+    return Result.success(SubscriptionMapper.toDomain(row));
   }
 }

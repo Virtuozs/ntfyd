@@ -119,7 +119,8 @@ class FeedRepositoryImpl implements FeedRepository {
 
     final resolved = await _resolveServer(serverId);
     if (!resolved.isSuccess) {
-      _owners.remove(key);
+      _owners[key]?.remove(owner);
+      if (_owners[key]?.isEmpty ?? true) _owners.remove(key);
       return Result.err(resolved.failureOrThrow);
     }
     final (baseUrl: baseUrl, credential: credential) = resolved.valueOrThrow;
@@ -165,7 +166,8 @@ class FeedRepositoryImpl implements FeedRepository {
       }
       await session?.frameSub.cancel();
       await session?.stateSub.cancel();
-      _owners.remove(key);
+      _owners[key]?.remove(owner);
+      if (_owners[key]?.isEmpty ?? true) _owners.remove(key);
       _getOrCreateConnectionSubject(key).add(FeedConnectionState.offline);
       return Result.err(ExceptionMapper.map(e));
     }

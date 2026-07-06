@@ -537,5 +537,59 @@ void main() {
       await repository.disconnect('srv-1', 'alerts', owner: ConnectionOwner.screen);
       verify(() => ws.disconnect()).called(1);
     });
+
+    test('a failed connect from one owner does not erase ownership registered by another owner on the same key', () async {
+      // Both owners call connect() for the same key around the same time:
+      // the screen owner's resolve is the first to fail, the background
+      // owner's resolve is the second call and succeeds.
+      var getByIdCallCount = 0;
+      when(() => serverConfigRepository.getById('srv-1')).thenAnswer((_) async {
+        getByIdCallCount++;
+        if (getByIdCallCount == 1) {
+          return const Result.err(Failure.notFound());
+        }
+        return Result.success(anonServer);
+      });
+      when(
+        () => messageDao.getLastId('srv-1', 'alerts'),
+      ).thenAnswer((_) async => null);
+      when(
+        () => pollDataSource.fetchHistory(
+          baseUrl: any(named: 'baseUrl'),
+          topic: any(named: 'topic'),
+          credential: any(named: 'credential'),
+          since: any(named: 'since'),
+        ),
+      ).thenAnswer((_) async => []);
+
+      // Neither call is awaited individually here so both owners register
+      // themselves against the key before the screen owner's failure runs
+      // its cleanup.
+      final screenFuture = repository.connect(
+        'srv-1',
+        'alerts',
+        owner: ConnectionOwner.screen,
+      );
+      final backgroundFuture = repository.connect(
+        'srv-1',
+        'alerts',
+        owner: ConnectionOwner.background,
+      );
+
+      final screenResult = await screenFuture;
+      final backgroundResult = await backgroundFuture;
+
+      expect(screenResult.isSuccess, isFalse);
+      expect(backgroundResult.isSuccess, isTrue);
+      verify(() => ws.connect()).called(1);
+
+      // The screen owner's failed attempt must not have wiped out the
+      // background owner's registration: the background owner is the only
+      // real owner left, so a disconnect() from the (already-failed) screen
+      // owner must be a no-op that leaves the background owner's session
+      // running.
+      await repository.disconnect('srv-1', 'alerts', owner: ConnectionOwner.screen);
+      verifyNever(() => ws.disconnect());
+    });
   });
 }

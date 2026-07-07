@@ -36,6 +36,8 @@ import '../features/feed/presentation/cubits/home_feed_cubit.dart' as _i955;
 import '../features/groups/data/repositories/group_repository_impl.dart'
     as _i868;
 import '../features/groups/domain/repositories/group_repository.dart' as _i1048;
+import '../features/groups/domain/usecases/delete_group.dart' as _i649;
+import '../features/groups/domain/usecases/save_group.dart' as _i1063;
 import '../features/notifications/data/background_delivery_service.dart'
     as _i985;
 import '../features/notifications/data/foreground_service_controller.dart'
@@ -217,6 +219,12 @@ _i174.GetIt init(
       gh<_i256.MessageDao>(),
       gh<_i839.FeedPollDataSource>(),
     ),
+  );
+  gh.factory<_i649.DeleteGroup>(
+    () => _i649.DeleteGroup(gh<_i1048.GroupRepository>()),
+  );
+  gh.factory<_i1063.SaveGroup>(
+    () => _i1063.SaveGroup(gh<_i1048.GroupRepository>()),
   );
   gh.lazySingleton<_i985.BackgroundDeliveryService>(
     () => notificationsModule.backgroundDeliveryService(

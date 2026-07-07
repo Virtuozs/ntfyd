@@ -1,6 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:ntfyd/core/usecase/result.dart';
 import 'package:ntfyd/core/usecase/use_case.dart';
+import 'package:ntfyd/features/feed/domain/entities/connection_owner.dart';
 import 'package:ntfyd/features/feed/domain/repositories/feed_repository.dart';
 
 class ConnectFeedParams {
@@ -29,6 +30,9 @@ class ConnectFeed implements UseCase<ConnectFeedParams, void> {
   final FeedRepository _repository;
 
   @override
-  Future<Result<void>> call(ConnectFeedParams params) =>
-      _repository.connect(params.serverId, params.topic);
+  Future<Result<void>> call(ConnectFeedParams params) => _repository.connect(
+    params.serverId,
+    params.topic,
+    owner: ConnectionOwner.screen,
+  );
 }

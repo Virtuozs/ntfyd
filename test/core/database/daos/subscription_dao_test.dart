@@ -58,6 +58,31 @@ void main() {
     });
   });
 
+  group('watchAll', () {
+    test('emits subscriptions across every server', () async {
+      await db.subscriptionDao.upsert(_sub('sub-1', 'srv-1', 'alerts'));
+      await db.subscriptionDao.upsert(_sub('sub-2', 'srv-2', 'alerts'));
+
+      final result = await db.subscriptionDao.watchAll().first;
+
+      expect(result.length, equals(2));
+      expect(result.map((r) => r.serverId), containsAll(['srv-1', 'srv-2']));
+    });
+
+    test('emits an updated list when a subscription is added', () async {
+      final stream = db.subscriptionDao.watchAll();
+      final emissions = <int>[];
+      final sub = stream.listen((rows) => emissions.add(rows.length));
+
+      await Future<void>.delayed(Duration.zero);
+      await db.subscriptionDao.upsert(_sub('sub-1', 'srv-1', 'alerts'));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(emissions, containsAllInOrder([0, 1]));
+      await sub.cancel();
+    });
+  });
+
   group('findByTopic', () {
     test('returns matching subscription', () async {
       await db.subscriptionDao.upsert(_sub('sub-1', 'srv-1', 'alerts'));

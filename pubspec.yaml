@@ -58,7 +58,7 @@ dependencies:
   uuid: ^4.5.3
   logger: ^2.7.0
   rxdart: ^0.28.0
-  file_picker: ^3.0.4
+  file_picker: ^11.0.2
 
 dev_dependencies:
   flutter_test:

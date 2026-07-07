@@ -70,6 +70,61 @@ void main() {
     });
   });
 
+  group('watchInserted', () {
+    test('emits when a new (serverId, id) is inserted', () async {
+      final stream = db.messageDao.watchInserted();
+      final emissions = <String>[];
+      final sub = stream.listen((row) => emissions.add(row.id));
+
+      await Future<void>.delayed(Duration.zero);
+      await db.messageDao.insertOrReplace(
+        _msg(id: 'msg-1', serverId: 'srv-1', topic: 'alerts'),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(emissions, equals(['msg-1']));
+      await sub.cancel();
+    });
+
+    test('does not emit when replacing an existing (serverId, id)', () async {
+      await db.messageDao.insertOrReplace(
+        _msg(id: 'msg-1', serverId: 'srv-1', topic: 'alerts', isRead: false),
+      );
+
+      final stream = db.messageDao.watchInserted();
+      final emissions = <String>[];
+      final sub = stream.listen((row) => emissions.add(row.id));
+      await Future<void>.delayed(Duration.zero);
+
+      await db.messageDao.insertOrReplace(
+        _msg(id: 'msg-1', serverId: 'srv-1', topic: 'alerts', isRead: true),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(emissions, isEmpty);
+      await sub.cancel();
+    });
+
+    test('treats the same id on a different serverId as a new insert', () async {
+      await db.messageDao.insertOrReplace(
+        _msg(id: 'msg-1', serverId: 'srv-1', topic: 'alerts'),
+      );
+
+      final stream = db.messageDao.watchInserted();
+      final emissions = <String>[];
+      final sub = stream.listen((row) => emissions.add(row.serverId));
+      await Future<void>.delayed(Duration.zero);
+
+      await db.messageDao.insertOrReplace(
+        _msg(id: 'msg-1', serverId: 'srv-2', topic: 'alerts'),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(emissions, equals(['srv-2']));
+      await sub.cancel();
+    });
+  });
+
   group('watchByTopic', () {
     test('emits updated list on insert', () async {
       final stream = db.messageDao.watchByTopic('srv-1', 'alerts');

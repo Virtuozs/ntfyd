@@ -13,11 +13,17 @@ class MockServerFormCubit extends Mock implements ServerFormCubit {}
 
 void main() {
   late MockServerFormCubit mockServerFormCubit;
+  late GlobalKey<NavigatorState> navigatorKey;
 
   setUp(() {
+    navigatorKey = GlobalKey<NavigatorState>();
     mockServerFormCubit = MockServerFormCubit();
-    when(() => mockServerFormCubit.state).thenReturn(const ServerFormState.idle());
-    when(() => mockServerFormCubit.stream).thenAnswer((_) => const Stream.empty());
+    when(
+      () => mockServerFormCubit.state,
+    ).thenReturn(const ServerFormState.idle());
+    when(
+      () => mockServerFormCubit.stream,
+    ).thenAnswer((_) => const Stream.empty());
     when(() => mockServerFormCubit.close()).thenAnswer((_) async {});
 
     getIt.registerFactory<ServerFormCubit>(() => mockServerFormCubit);
@@ -33,7 +39,9 @@ void main() {
     ) async {
       final controller = MaterialYouController(); // defaults to false
 
-      await tester.pumpWidget(DynamicColorWrapper(controller: controller));
+      await tester.pumpWidget(
+        DynamicColorWrapper(controller: controller, navigatorKey: navigatorKey),
+      );
       await tester.pumpAndSettle();
 
       final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
@@ -56,7 +64,9 @@ void main() {
     ) async {
       final controller = MaterialYouController(initial: true);
 
-      await tester.pumpWidget(DynamicColorWrapper(controller: controller));
+      await tester.pumpWidget(
+        DynamicColorWrapper(controller: controller, navigatorKey: navigatorKey),
+      );
       await tester.pumpAndSettle();
 
       final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
@@ -72,7 +82,9 @@ void main() {
     testWidgets('should_rebuild_on_controller_toggle', (tester) async {
       final controller = MaterialYouController(); // false
 
-      await tester.pumpWidget(DynamicColorWrapper(controller: controller));
+      await tester.pumpWidget(
+        DynamicColorWrapper(controller: controller, navigatorKey: navigatorKey),
+      );
       await tester.pumpAndSettle();
 
       var app = tester.widget<MaterialApp>(find.byType(MaterialApp));
@@ -88,7 +100,9 @@ void main() {
     testWidgets('should_keep_themeMode_system_in_both_states', (tester) async {
       final controller = MaterialYouController();
 
-      await tester.pumpWidget(DynamicColorWrapper(controller: controller));
+      await tester.pumpWidget(
+        DynamicColorWrapper(controller: controller, navigatorKey: navigatorKey),
+      );
       await tester.pumpAndSettle();
       var app = tester.widget<MaterialApp>(find.byType(MaterialApp));
       expect(app.themeMode, ThemeMode.system);
@@ -104,7 +118,9 @@ void main() {
     ) async {
       final controller = MaterialYouController(); // false
 
-      await tester.pumpWidget(DynamicColorWrapper(controller: controller));
+      await tester.pumpWidget(
+        DynamicColorWrapper(controller: controller, navigatorKey: navigatorKey),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(DynamicColorBuilder), findsNothing);

@@ -187,4 +187,38 @@ void main() {
       expect(result.failureOrThrow, isA<CacheFailure>());
     });
   });
+
+  group('watchAll', () {
+    test('maps every dao row to a domain Subscription', () async {
+      when(() => dao.watchAll()).thenAnswer((_) => Stream.value([row]));
+
+      final result = await repository.watchAll().first;
+
+      expect(result, equals([entity]));
+    });
+  });
+
+  group('getByTopic', () {
+    test('returns the mapped Subscription when found', () async {
+      when(
+        () => dao.findByTopic('srv-1', 'alerts'),
+      ).thenAnswer((_) async => row);
+
+      final result = await repository.getByTopic('srv-1', 'alerts');
+
+      expect(result.isSuccess, isTrue);
+      expect(result.valueOrThrow, equals(entity));
+    });
+
+    test('returns Failure.notFound when no subscription matches', () async {
+      when(
+        () => dao.findByTopic('srv-1', 'alerts'),
+      ).thenAnswer((_) async => null);
+
+      final result = await repository.getByTopic('srv-1', 'alerts');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.failureOrThrow, isA<NotFoundFailure>());
+    });
+  });
 }

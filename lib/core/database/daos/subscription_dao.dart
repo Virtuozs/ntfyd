@@ -15,6 +15,10 @@ class SubscriptionDao extends DatabaseAccessor<AppDatabase>
     )..where((t) => t.serverId.equals(serverId))).watch();
   }
 
+  Stream<List<Subscription>> watchAll() {
+    return select(subscriptions).watch();
+  }
+
   Future<Subscription?> findByTopic(String serverId, String topic) {
     return (select(subscriptions)
           ..where((t) => t.serverId.equals(serverId) & t.topic.equals(topic)))

@@ -15,12 +15,18 @@ class MessageCard extends StatelessWidget {
     required this.onTap,
     required this.onTogglePin,
     required this.onToggleRead,
+    this.sourceLabel,
   });
 
   final NotificationMessage message;
   final VoidCallback onTap;
   final VoidCallback onTogglePin;
   final VoidCallback onToggleRead;
+
+  /// Shown next to the relative time (e.g. `message.topic`) when this card
+  /// is rendered in a merged, multi-topic feed (`GroupFeedPage`). `null` in
+  /// the single-topic `TopicDetailPage` context.
+  final String? sourceLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +78,9 @@ class MessageCard extends StatelessWidget {
                               ],
                               const SizedBox(height: Spacing.xs),
                               Text(
-                                relativeTime(message.time),
+                                sourceLabel == null
+                                    ? relativeTime(message.time)
+                                    : '$sourceLabel · ${relativeTime(message.time)}',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),

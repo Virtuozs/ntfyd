@@ -86,4 +86,32 @@ void main() {
     await tester.tap(find.byIcon(Icons.check));
     expect(toggled, isTrue);
   });
+
+  testWidgets('shows sourceLabel next to the relative time when provided', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: MessageCard(
+            message: message,
+            sourceLabel: 'security',
+            onTap: () {},
+            onTogglePin: () {},
+            onToggleRead: () {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.textContaining('security ·'), findsOneWidget);
+  });
+
+  testWidgets('omits the source separator when sourceLabel is null', (
+    tester,
+  ) async {
+    await pumpCard(tester, onTap: () {}, onTogglePin: () {}, onToggleRead: () {});
+
+    expect(find.textContaining('·'), findsNothing);
+  });
 }

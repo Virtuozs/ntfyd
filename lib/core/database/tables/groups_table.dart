@@ -6,6 +6,7 @@ class Groups extends Table {
   TextColumn get icon => text().nullable()();
   IntColumn get color => integer().nullable()();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+  TextColumn get filterPriorities => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

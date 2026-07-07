@@ -16,6 +16,7 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
 import '../core/database/app_database.dart' as _i935;
+import '../core/database/daos/group_dao.dart' as _i978;
 import '../core/database/daos/message_dao.dart' as _i256;
 import '../core/database/daos/server_config_dao.dart' as _i640;
 import '../core/database/daos/setting_dao.dart' as _i922;
@@ -32,6 +33,9 @@ import '../features/feed/domain/usecases/toggle_message_pin.dart' as _i294;
 import '../features/feed/domain/usecases/toggle_message_read.dart' as _i57;
 import '../features/feed/presentation/blocs/feed_bloc.dart' as _i916;
 import '../features/feed/presentation/cubits/home_feed_cubit.dart' as _i955;
+import '../features/groups/data/repositories/group_repository_impl.dart'
+    as _i868;
+import '../features/groups/domain/repositories/group_repository.dart' as _i1048;
 import '../features/notifications/data/background_delivery_service.dart'
     as _i985;
 import '../features/notifications/data/foreground_service_controller.dart'
@@ -145,6 +149,9 @@ _i174.GetIt init(
   gh.lazySingleton<_i922.SettingDao>(
     () => coreModule.settingDao(gh<_i935.AppDatabase>()),
   );
+  gh.lazySingleton<_i978.GroupDao>(
+    () => coreModule.groupDao(gh<_i935.AppDatabase>()),
+  );
   gh.factory<_i285.ValidateServerHealth>(
     () => _i285.ValidateServerHealth(gh<_i394.HealthDataSource>()),
   );
@@ -159,6 +166,9 @@ _i174.GetIt init(
       gh<_i668.ServerConfigRepository>(),
       gh<_i465.SecureCredentialVault>(),
     ),
+  );
+  gh.lazySingleton<_i1048.GroupRepository>(
+    () => _i868.GroupRepositoryImpl(gh<_i978.GroupDao>()),
   );
   gh.factory<_i228.PublishMessage>(
     () => _i228.PublishMessage(gh<_i476.PublishRepository>()),

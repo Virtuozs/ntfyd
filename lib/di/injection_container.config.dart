@@ -253,12 +253,6 @@ _i174.GetIt init(
   gh.factory<_i57.ToggleMessageRead>(
     () => _i57.ToggleMessageRead(gh<_i917.FeedRepository>()),
   );
-  gh.factory<_i955.HomeFeedCubit>(
-    () => _i955.HomeFeedCubit(
-      gh<_i291.SubscriptionRepository>(),
-      gh<_i917.FeedRepository>(),
-    ),
-  );
   gh.factory<_i221.GroupSelectorCubit>(
     () => _i221.GroupSelectorCubit(
       gh<_i1048.GroupRepository>(),
@@ -292,6 +286,13 @@ _i174.GetIt init(
       gh<_i57.ToggleMessageRead>(),
       gh<_i294.ToggleMessagePin>(),
       gh<_i76.CurrentlyViewedTopic>(),
+    ),
+  );
+  gh.factory<_i955.HomeFeedCubit>(
+    () => _i955.HomeFeedCubit(
+      gh<_i291.SubscriptionRepository>(),
+      gh<_i917.FeedRepository>(),
+      gh<_i1048.GroupRepository>(),
     ),
   );
   return getIt;

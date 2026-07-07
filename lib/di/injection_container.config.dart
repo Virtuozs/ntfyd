@@ -41,6 +41,7 @@ import '../features/groups/domain/repositories/group_repository.dart' as _i1048;
 import '../features/groups/domain/usecases/delete_group.dart' as _i649;
 import '../features/groups/domain/usecases/save_group.dart' as _i1063;
 import '../features/groups/presentation/blocs/group_feed_bloc.dart' as _i491;
+import '../features/groups/presentation/cubits/group_form_cubit.dart' as _i764;
 import '../features/notifications/data/background_delivery_service.dart'
     as _i985;
 import '../features/notifications/data/foreground_service_controller.dart'
@@ -277,6 +278,9 @@ _i174.GetIt init(
       gh<_i110.ToggleMute>(),
       gh<_i106.UpdatePriorityThreshold>(),
     ),
+  );
+  gh.factory<_i764.GroupFormCubit>(
+    () => _i764.GroupFormCubit(gh<_i1063.SaveGroup>()),
   );
   gh.factory<_i916.FeedBloc>(
     () => _i916.FeedBloc(

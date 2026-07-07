@@ -32,6 +32,8 @@ import '../features/feed/domain/usecases/refresh_feed_history.dart' as _i959;
 import '../features/feed/domain/usecases/toggle_message_pin.dart' as _i294;
 import '../features/feed/domain/usecases/toggle_message_read.dart' as _i57;
 import '../features/feed/presentation/blocs/feed_bloc.dart' as _i916;
+import '../features/feed/presentation/cubits/group_selector_cubit.dart'
+    as _i221;
 import '../features/feed/presentation/cubits/home_feed_cubit.dart' as _i955;
 import '../features/groups/data/repositories/group_repository_impl.dart'
     as _i868;
@@ -255,6 +257,12 @@ _i174.GetIt init(
     () => _i955.HomeFeedCubit(
       gh<_i291.SubscriptionRepository>(),
       gh<_i917.FeedRepository>(),
+    ),
+  );
+  gh.factory<_i221.GroupSelectorCubit>(
+    () => _i221.GroupSelectorCubit(
+      gh<_i1048.GroupRepository>(),
+      gh<_i649.DeleteGroup>(),
     ),
   );
   gh.factory<_i349.SubscribeToTopic>(

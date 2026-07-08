@@ -54,12 +54,14 @@ db.Subscription _subscriptionRow({
   createdAt: 0,
 );
 
-db.AppSetting _settingsRow({bool quietHoursEnabled = false}) => db.AppSetting(
+db.AppSetting _settingsRow({
+  bool quietHoursEnabled = false,
+  bool hideLockScreenContent = false,
+}) => db.AppSetting(
   id: 1,
-  themeMode: 'system',
-  dynamicColor: 1,
+  themeMode: 'dark',
   quietHoursEnabled: quietHoursEnabled ? 1 : 0,
-  hideLockScreenContent: 0,
+  hideLockScreenContent: hideLockScreenContent ? 1 : 0,
   analyticsOptOut: 0,
   biometricLock: 0,
 );
@@ -96,6 +98,7 @@ void main() {
       title: any(named: 'title'),
       body: any(named: 'body'),
       channel: any(named: 'channel'),
+      hideLockScreenContent: any(named: 'hideLockScreenContent'),
     )).thenAnswer((_) async {});
 
     coordinator = NotificationsCoordinator(
@@ -129,8 +132,36 @@ void main() {
       title: 'Title',
       body: 'Body',
       channel: any(named: 'channel'),
+      hideLockScreenContent: false,
     )).called(1);
   });
+
+  test(
+    'threads hideLockScreenContent: true through from settings to the presenter',
+    () async {
+      when(
+        () => subscriptionDao.findByTopic('srv-1', 'alerts'),
+      ).thenAnswer((_) async => _subscriptionRow());
+      when(
+        () => settingDao.watch(),
+      ).thenAnswer((_) => Stream.value(_settingsRow(hideLockScreenContent: true)));
+
+      coordinator.start();
+      insertedController.add(_row(id: 'msg-1', serverId: 'srv-1', topic: 'alerts'));
+      await Future<void>.delayed(Duration.zero);
+      await coordinator.stop();
+
+      verify(() => presenter.show(
+        serverId: 'srv-1',
+        messageId: 'msg-1',
+        topic: 'alerts',
+        title: 'Title',
+        body: 'Body',
+        channel: any(named: 'channel'),
+        hideLockScreenContent: true,
+      )).called(1);
+    },
+  );
 
   test('does not show a notification when the subscription is muted', () async {
     when(
@@ -149,6 +180,7 @@ void main() {
       title: any(named: 'title'),
       body: any(named: 'body'),
       channel: any(named: 'channel'),
+      hideLockScreenContent: any(named: 'hideLockScreenContent'),
     ));
   });
 
@@ -169,6 +201,7 @@ void main() {
       title: any(named: 'title'),
       body: any(named: 'body'),
       channel: any(named: 'channel'),
+      hideLockScreenContent: any(named: 'hideLockScreenContent'),
     ));
   });
 
@@ -190,6 +223,7 @@ void main() {
       title: any(named: 'title'),
       body: any(named: 'body'),
       channel: any(named: 'channel'),
+      hideLockScreenContent: any(named: 'hideLockScreenContent'),
     ));
   });
 }

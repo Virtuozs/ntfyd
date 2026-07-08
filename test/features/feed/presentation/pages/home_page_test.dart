@@ -13,6 +13,10 @@ import 'package:ntfyd/features/server_config/domain/entities/auth_type.dart';
 import 'package:ntfyd/features/server_config/domain/entities/server_config.dart';
 import 'package:ntfyd/features/server_config/domain/repositories/server_config_repository.dart';
 import 'package:ntfyd/features/server_config/domain/usecases/validate_server_health.dart';
+import 'package:ntfyd/features/settings/domain/entities/app_settings.dart';
+import 'package:ntfyd/features/settings/presentation/cubits/settings_cubit.dart';
+import 'package:ntfyd/features/settings/presentation/cubits/settings_state.dart';
+import 'package:ntfyd/features/settings/presentation/pages/settings_page.dart';
 
 class MockServerConfigRepository extends Mock implements ServerConfigRepository {}
 
@@ -21,6 +25,8 @@ class MockValidateServerHealth extends Mock implements ValidateServerHealth {}
 class MockHomeFeedCubit extends Mock implements HomeFeedCubit {}
 
 class MockGroupSelectorCubit extends Mock implements GroupSelectorCubit {}
+
+class MockSettingsCubit extends Mock implements SettingsCubit {}
 
 void main() {
   final server = ServerConfig(
@@ -36,12 +42,14 @@ void main() {
   late MockValidateServerHealth validateServerHealth;
   late MockHomeFeedCubit homeFeedCubit;
   late MockGroupSelectorCubit groupSelectorCubit;
+  late MockSettingsCubit settingsCubit;
 
   setUp(() {
     serverConfigRepository = MockServerConfigRepository();
     validateServerHealth = MockValidateServerHealth();
     homeFeedCubit = MockHomeFeedCubit();
     groupSelectorCubit = MockGroupSelectorCubit();
+    settingsCubit = MockSettingsCubit();
 
     when(
       () => serverConfigRepository.getAll(),
@@ -63,13 +71,22 @@ void main() {
     ).thenAnswer((_) => const Stream<GroupSelectorState>.empty());
     when(() => groupSelectorCubit.load()).thenReturn(null);
     when(() => groupSelectorCubit.close()).thenAnswer((_) async {});
+    when(() => settingsCubit.state).thenReturn(
+      const SettingsState.loaded(AppSettings()),
+    );
+    when(
+      () => settingsCubit.stream,
+    ).thenAnswer((_) => const Stream<SettingsState>.empty());
+    when(() => settingsCubit.load()).thenReturn(null);
+    when(() => settingsCubit.close()).thenAnswer((_) async {});
 
     getIt
       ..reset()
       ..registerFactory<ServerConfigRepository>(() => serverConfigRepository)
       ..registerFactory<ValidateServerHealth>(() => validateServerHealth)
       ..registerFactory<HomeFeedCubit>(() => homeFeedCubit)
-      ..registerFactory<GroupSelectorCubit>(() => groupSelectorCubit);
+      ..registerFactory<GroupSelectorCubit>(() => groupSelectorCubit)
+      ..registerFactory<SettingsCubit>(() => settingsCubit);
   });
 
   tearDown(() => getIt.reset());
@@ -108,5 +125,15 @@ void main() {
 
     expect(find.byTooltip('Subscribe to topic'), findsOneWidget);
     expect(find.byTooltip('Create Tag'), findsOneWidget);
+  });
+
+  testWidgets('tapping the settings icon pushes SettingsPage', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: HomePage()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SettingsPage), findsOneWidget);
   });
 }

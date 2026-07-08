@@ -43,6 +43,7 @@ void main() {
       title: 'Backup successful',
       body: 'Completed at 03:00',
       channel: NotificationChannelSpec.forPriority(5),
+      hideLockScreenContent: false,
     );
 
     final captured = verify(
@@ -59,5 +60,55 @@ void main() {
     expect(details.android?.channelId, equals('ntfy_priority_5'));
     expect(captured[2], contains('"serverId":"srv-1"'));
     expect(captured[2], contains('"topic":"alerts"'));
+  });
+
+  test('sets visibility to public when hideLockScreenContent is false', () async {
+    await presenter.show(
+      serverId: 'srv-1',
+      messageId: 'msg-1',
+      topic: 'alerts',
+      title: 'Backup successful',
+      body: 'Completed at 03:00',
+      channel: NotificationChannelSpec.forPriority(5),
+      hideLockScreenContent: false,
+    );
+
+    final captured = verify(
+      () => plugin.show(
+        id: any(named: 'id'),
+        title: any(named: 'title'),
+        body: any(named: 'body'),
+        notificationDetails: captureAny(named: 'notificationDetails'),
+        payload: any(named: 'payload'),
+      ),
+    ).captured;
+
+    final details = captured.single as NotificationDetails;
+    expect(details.android?.visibility, equals(NotificationVisibility.public));
+  });
+
+  test('sets visibility to private when hideLockScreenContent is true', () async {
+    await presenter.show(
+      serverId: 'srv-1',
+      messageId: 'msg-1',
+      topic: 'alerts',
+      title: 'Backup successful',
+      body: 'Completed at 03:00',
+      channel: NotificationChannelSpec.forPriority(5),
+      hideLockScreenContent: true,
+    );
+
+    final captured = verify(
+      () => plugin.show(
+        id: any(named: 'id'),
+        title: any(named: 'title'),
+        body: any(named: 'body'),
+        notificationDetails: captureAny(named: 'notificationDetails'),
+        payload: any(named: 'payload'),
+      ),
+    ).captured;
+
+    final details = captured.single as NotificationDetails;
+    expect(details.android?.visibility, equals(NotificationVisibility.private));
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:ntfyd/core/database/app_database.dart';
 import 'package:ntfyd/core/database/daos/group_dao.dart';
 import 'package:ntfyd/core/database/daos/message_dao.dart';
@@ -36,6 +37,9 @@ abstract class CoreModule {
 
   @lazySingleton
   FlutterSecureStorage get secureStorage => const FlutterSecureStorage();
+
+  @lazySingleton
+  LocalAuthentication get localAuthentication => LocalAuthentication();
 
   @LazySingleton(as: SecureCredentialVault)
   FlutterSecureCredentialVault secureCredentialVault(

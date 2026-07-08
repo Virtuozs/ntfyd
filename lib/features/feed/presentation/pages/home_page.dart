@@ -23,6 +23,7 @@ import 'package:ntfyd/features/publish/presentation/cubits/publish_cubit.dart';
 import 'package:ntfyd/features/server_config/domain/entities/server_config.dart';
 import 'package:ntfyd/features/server_config/domain/repositories/server_config_repository.dart';
 import 'package:ntfyd/features/server_config/domain/usecases/validate_server_health.dart';
+import 'package:ntfyd/features/settings/presentation/pages/settings_page.dart';
 import 'package:ntfyd/features/subscription/presentation/blocs/subscription_bloc.dart';
 import 'package:ntfyd/features/subscription/presentation/pages/subscribe_topic_sheet.dart';
 import 'package:ntfyd/shared/theme/design_tokens.dart';
@@ -194,11 +195,25 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'ntfyd',
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'ntfyd',
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.settings_outlined),
+                            tooltip: 'Settings',
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const SettingsPage(),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: Spacing.xs),
                       if (!_loadingServer && _defaultServer != null)

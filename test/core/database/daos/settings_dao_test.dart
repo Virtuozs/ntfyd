@@ -25,8 +25,8 @@ void main() {
 
       // Assert
       expect(result.id, equals(1));
-      expect(result.themeMode, equals('system'));
-      expect(result.dynamicColor, equals(1));
+      expect(result.themeMode, equals('dark'));
+      expect(result.retentionMaxRows, equals(10000));
       expect(result.biometricLock, equals(0));
     });
 
@@ -38,11 +38,11 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       await db.settingDao.updateAppSetting(
-        const AppSettingsCompanion(themeMode: Value('dark')),
+        const AppSettingsCompanion(themeMode: Value('white')),
       );
       await Future<void>.delayed(Duration.zero);
 
-      expect(emissions, containsAllInOrder(['system', 'dark']));
+      expect(emissions, containsAllInOrder(['dark', 'white']));
       await sub.cancel();
     });
   });
@@ -50,19 +50,19 @@ void main() {
   group('update', () {
     test('persists themeMode change', () async {
       await db.settingDao.updateAppSetting(
-        const AppSettingsCompanion(themeMode: Value('light')),
+        const AppSettingsCompanion(themeMode: Value('materialYou')),
       );
 
       // Assert
       final result = await db.settingDao.watch().first;
-      expect(result.themeMode, equals('light'));
+      expect(result.themeMode, equals('materialYou'));
     });
 
     test(
       'persists biometricLock change without affecting other fields',
       () async {
         await db.settingDao.updateAppSetting(
-          const AppSettingsCompanion(themeMode: Value('dark')),
+          const AppSettingsCompanion(themeMode: Value('white')),
         );
 
         await db.settingDao.updateAppSetting(
@@ -71,13 +71,13 @@ void main() {
 
         final result = await db.settingDao.watch().first;
         expect(result.biometricLock, equals(1));
-        expect(result.themeMode, equals('dark')); // unchanged
+        expect(result.themeMode, equals('white')); // unchanged
       },
     );
 
     test('does not create a second row', () async {
       await db.settingDao.updateAppSetting(
-        const AppSettingsCompanion(themeMode: Value('dark')),
+        const AppSettingsCompanion(themeMode: Value('white')),
       );
       await db.settingDao.updateAppSetting(
         const AppSettingsCompanion(quietHoursEnabled: Value(1)),

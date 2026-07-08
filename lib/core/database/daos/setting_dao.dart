@@ -29,9 +29,9 @@ class SettingDao extends DatabaseAccessor<AppDatabase> with _$SettingDaoMixin {
       await into(appSettings).insertOnConflictUpdate(
         const AppSettingsCompanion(
           id: Value(1),
-          themeMode: Value('system'),
-          dynamicColor: Value(1),
+          themeMode: Value('dark'),
           quietHoursEnabled: Value(0),
+          retentionMaxRows: Value(10000),
           hideLockScreenContent: Value(0),
           analyticsOptOut: Value(0),
           biometricLock: Value(0),

@@ -6,6 +6,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:ntfyd/core/app_lock/app_lock_guard.dart';
+import 'package:ntfyd/core/app_lock/app_lock_service.dart';
+import 'package:ntfyd/core/database/daos/message_dao.dart';
 import 'package:ntfyd/core/usecase/result.dart';
 import 'package:ntfyd/di/injection_container.dart';
 import 'package:ntfyd/features/feed/presentation/blocs/feed_bloc.dart';
@@ -13,6 +16,9 @@ import 'package:ntfyd/features/feed/presentation/blocs/feed_event.dart';
 import 'package:ntfyd/features/feed/presentation/pages/topic_detail_page.dart';
 import 'package:ntfyd/features/notifications/notifications.dart';
 import 'package:ntfyd/features/publish/presentation/cubits/publish_cubit.dart';
+import 'package:ntfyd/features/settings/domain/repositories/settings_repository.dart';
+import 'package:ntfyd/features/settings/presentation/cubits/settings_cubit.dart';
+import 'package:ntfyd/features/settings/presentation/cubits/settings_state.dart';
 import 'package:ntfyd/features/subscription/domain/repositories/subscription_repository.dart';
 import 'package:ntfyd/shared/theme/app_theme_controller.dart';
 import 'package:ntfyd/shared/theme/dynamic_color_wrapper.dart';
@@ -23,6 +29,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await configureDependencies();
   await _initNotifications();
+  await _purgeMessagesOnStartup();
   runApp(
     NtfydApp(
       appThemeController: AppThemeController(),
@@ -46,6 +53,20 @@ Future<void> _initNotifications() async {
   if (Platform.isAndroid) {
     await getIt<BackgroundDeliveryService>().start();
   }
+}
+
+/// Enforces the user's message retention policy once per app launch.
+/// `retentionMaxAgeDays == null` means "Forever" — skip entirely, since
+/// `MessageDao.purgeByRetention(0, 0)` means "delete everything".
+Future<void> _purgeMessagesOnStartup() async {
+  final settings = await getIt<SettingsRepository>().watch().first;
+  final maxAgeDays = settings.retentionMaxAgeDays;
+  if (maxAgeDays == null) return;
+
+  await getIt<MessageDao>().purgeByRetention(
+    maxAgeDays,
+    settings.retentionMaxRows ?? 10000,
+  );
 }
 
 void _onNotificationTap(NotificationResponse response) {
@@ -100,9 +121,28 @@ class NtfydApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DynamicColorWrapper(
-      controller: appThemeController,
-      navigatorKey: navigatorKey,
+    return BlocProvider<SettingsCubit>(
+      create: (_) => getIt<SettingsCubit>()..load(),
+      child: BlocListener<SettingsCubit, SettingsState>(
+        listenWhen: (previous, current) => current is SettingsLoaded,
+        listener: (context, state) {
+          appThemeController.value = (state as SettingsLoaded).settings.themeMode;
+        },
+        child: BlocSelector<SettingsCubit, SettingsState, bool>(
+          selector: (state) =>
+              state is SettingsLoaded && state.settings.biometricLock,
+          builder: (context, biometricLock) {
+            return AppLockGuard(
+              biometricLock: biometricLock,
+              appLockService: getIt<AppLockService>(),
+              child: DynamicColorWrapper(
+                controller: appThemeController,
+                navigatorKey: navigatorKey,
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }

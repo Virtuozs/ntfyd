@@ -6,7 +6,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:ntfyd/core/app_lock/app_lock_guard.dart';
 import 'package:ntfyd/core/app_lock/app_lock_service.dart';
 import 'package:ntfyd/core/database/daos/message_dao.dart';
 import 'package:ntfyd/core/usecase/result.dart';
@@ -132,13 +131,11 @@ class NtfydApp extends StatelessWidget {
           selector: (state) =>
               state is SettingsLoaded && state.settings.biometricLock,
           builder: (context, biometricLock) {
-            return AppLockGuard(
+            return DynamicColorWrapper(
+              controller: appThemeController,
+              navigatorKey: navigatorKey,
               biometricLock: biometricLock,
               appLockService: getIt<AppLockService>(),
-              child: DynamicColorWrapper(
-                controller: appThemeController,
-                navigatorKey: navigatorKey,
-              ),
             );
           },
         ),

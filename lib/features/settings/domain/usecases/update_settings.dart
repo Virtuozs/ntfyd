@@ -9,6 +9,13 @@ class UpdateSettingsParams {
   const UpdateSettingsParams({required this.settings});
 
   final AppSettings settings;
+
+  @override
+  bool operator ==(Object other) =>
+      other is UpdateSettingsParams && other.settings == settings;
+
+  @override
+  int get hashCode => settings.hashCode;
 }
 
 /// Validates `quietHoursStart`/`quietHoursEnd` (both null, or both a

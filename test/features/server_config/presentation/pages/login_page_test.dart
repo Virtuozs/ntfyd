@@ -6,6 +6,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:ntfyd/core/error/failures.dart';
 import 'package:ntfyd/core/usecase/result.dart';
 import 'package:ntfyd/di/injection_container.dart';
+import 'package:ntfyd/features/feed/presentation/cubits/group_selector_cubit.dart';
+import 'package:ntfyd/features/feed/presentation/cubits/group_selector_state.dart';
 import 'package:ntfyd/features/feed/presentation/cubits/home_feed_cubit.dart';
 import 'package:ntfyd/features/feed/presentation/cubits/home_feed_state.dart';
 import 'package:ntfyd/features/feed/presentation/pages/home_page.dart';
@@ -28,6 +30,8 @@ class MockValidateServerHealth extends Mock implements ValidateServerHealth {}
 
 class MockHomeFeedCubit extends Mock implements HomeFeedCubit {}
 
+class MockGroupSelectorCubit extends Mock implements GroupSelectorCubit {}
+
 void main() {
   final server = ServerConfig(
     id: 'srv-1',
@@ -42,6 +46,7 @@ void main() {
   late MockServerConfigRepository serverConfigRepository;
   late MockValidateServerHealth validateServerHealth;
   late MockHomeFeedCubit homeFeedCubit;
+  late MockGroupSelectorCubit groupSelectorCubit;
 
   setUp(() {
     cubit = MockServerFormCubit();
@@ -57,6 +62,7 @@ void main() {
     serverConfigRepository = MockServerConfigRepository();
     validateServerHealth = MockValidateServerHealth();
     homeFeedCubit = MockHomeFeedCubit();
+    groupSelectorCubit = MockGroupSelectorCubit();
 
     when(
       () => serverConfigRepository.getAll(),
@@ -70,14 +76,21 @@ void main() {
     when(
       () => homeFeedCubit.stream,
     ).thenAnswer((_) => const Stream<HomeFeedState>.empty());
-    when(() => homeFeedCubit.load(any())).thenReturn(null);
+    when(() => homeFeedCubit.load(groupId: any(named: 'groupId'))).thenReturn(null);
     when(() => homeFeedCubit.close()).thenAnswer((_) async {});
+    when(() => groupSelectorCubit.state).thenReturn(const GroupSelectorState());
+    when(
+      () => groupSelectorCubit.stream,
+    ).thenAnswer((_) => const Stream<GroupSelectorState>.empty());
+    when(() => groupSelectorCubit.load()).thenReturn(null);
+    when(() => groupSelectorCubit.close()).thenAnswer((_) async {});
 
     getIt
       ..reset()
       ..registerFactory<ServerConfigRepository>(() => serverConfigRepository)
       ..registerFactory<ValidateServerHealth>(() => validateServerHealth)
-      ..registerFactory<HomeFeedCubit>(() => homeFeedCubit);
+      ..registerFactory<HomeFeedCubit>(() => homeFeedCubit)
+      ..registerFactory<GroupSelectorCubit>(() => groupSelectorCubit);
   });
 
   tearDown(() => getIt.reset());

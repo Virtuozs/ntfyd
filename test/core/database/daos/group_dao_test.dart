@@ -1,6 +1,7 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:matcher/matcher.dart' show isNull;
 import 'package:ntfyd/core/database/app_database.dart';
 import 'package:ntfyd/core/database/value_objects/message_filter.dart';
 
@@ -205,6 +206,35 @@ void main() {
 
       expect(result.length, equals(1));
       expect(result.first.id, equals('msg-2'));
+    });
+  });
+
+  group('filterPriorities column', () {
+    test('upsert persists and round-trips filterPriorities', () async {
+      await db.groupDao.upsert(
+        GroupsCompanion.insert(
+          id: 'grp-1',
+          name: 'Homelab',
+          filterPriorities: const Value('3,4,5'),
+        ),
+        const [],
+      );
+
+      final groups = await db.groupDao.watchAll().first;
+
+      expect(groups, hasLength(1));
+      expect(groups.single.group.filterPriorities, '3,4,5');
+    });
+
+    test('upsert leaves filterPriorities null when omitted', () async {
+      await db.groupDao.upsert(
+        GroupsCompanion.insert(id: 'grp-1', name: 'Homelab'),
+        const [],
+      );
+
+      final groups = await db.groupDao.watchAll().first;
+
+      expect(groups.single.group.filterPriorities, isNull);
     });
   });
 }

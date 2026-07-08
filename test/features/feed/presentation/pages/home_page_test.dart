@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:ntfyd/core/usecase/result.dart';
 import 'package:ntfyd/di/injection_container.dart';
+import 'package:ntfyd/features/feed/presentation/cubits/group_selector_cubit.dart';
+import 'package:ntfyd/features/feed/presentation/cubits/group_selector_state.dart';
 import 'package:ntfyd/features/feed/presentation/cubits/home_feed_cubit.dart';
 import 'package:ntfyd/features/feed/presentation/cubits/home_feed_state.dart';
 import 'package:ntfyd/features/feed/presentation/pages/home_page.dart';
@@ -18,6 +20,8 @@ class MockValidateServerHealth extends Mock implements ValidateServerHealth {}
 
 class MockHomeFeedCubit extends Mock implements HomeFeedCubit {}
 
+class MockGroupSelectorCubit extends Mock implements GroupSelectorCubit {}
+
 void main() {
   final server = ServerConfig(
     id: 'srv-1',
@@ -31,11 +35,13 @@ void main() {
   late MockServerConfigRepository serverConfigRepository;
   late MockValidateServerHealth validateServerHealth;
   late MockHomeFeedCubit homeFeedCubit;
+  late MockGroupSelectorCubit groupSelectorCubit;
 
   setUp(() {
     serverConfigRepository = MockServerConfigRepository();
     validateServerHealth = MockValidateServerHealth();
     homeFeedCubit = MockHomeFeedCubit();
+    groupSelectorCubit = MockGroupSelectorCubit();
 
     when(
       () => serverConfigRepository.getAll(),
@@ -49,19 +55,26 @@ void main() {
     when(
       () => homeFeedCubit.stream,
     ).thenAnswer((_) => const Stream<HomeFeedState>.empty());
-    when(() => homeFeedCubit.load(any())).thenReturn(null);
+    when(() => homeFeedCubit.load(groupId: any(named: 'groupId'))).thenReturn(null);
     when(() => homeFeedCubit.close()).thenAnswer((_) async {});
+    when(() => groupSelectorCubit.state).thenReturn(const GroupSelectorState());
+    when(
+      () => groupSelectorCubit.stream,
+    ).thenAnswer((_) => const Stream<GroupSelectorState>.empty());
+    when(() => groupSelectorCubit.load()).thenReturn(null);
+    when(() => groupSelectorCubit.close()).thenAnswer((_) async {});
 
     getIt
       ..reset()
       ..registerFactory<ServerConfigRepository>(() => serverConfigRepository)
       ..registerFactory<ValidateServerHealth>(() => validateServerHealth)
-      ..registerFactory<HomeFeedCubit>(() => homeFeedCubit);
+      ..registerFactory<HomeFeedCubit>(() => homeFeedCubit)
+      ..registerFactory<GroupSelectorCubit>(() => groupSelectorCubit);
   });
 
   tearDown(() => getIt.reset());
 
-  testWidgets('renders the ntfyd title, empty state, and a subscribe FAB', (
+  testWidgets('renders the ntfyd title, empty state, All chip, and a FAB', (
     tester,
   ) async {
     await tester.pumpWidget(const MaterialApp(home: HomePage()));
@@ -69,8 +82,10 @@ void main() {
 
     expect(find.text('ntfyd'), findsOneWidget);
     expect(find.text('No subscriptions yet'), findsOneWidget);
+    expect(find.text('All'), findsOneWidget);
     expect(find.byType(FloatingActionButton), findsOneWidget);
-    verify(() => homeFeedCubit.load('srv-1')).called(1);
+    verify(() => homeFeedCubit.load()).called(1);
+    verify(() => groupSelectorCubit.load()).called(1);
   });
 
   testWidgets('shows Connected once the default server health check succeeds', (
@@ -80,5 +95,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Connected'), findsOneWidget);
+  });
+
+  testWidgets('tapping the FAB reveals Subscribe Topic and Create Tag actions', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const MaterialApp(home: HomePage()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(FloatingActionButton).last);
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Subscribe to topic'), findsOneWidget);
+    expect(find.byTooltip('Create Tag'), findsOneWidget);
   });
 }

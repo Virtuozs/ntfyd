@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ntfyd/features/feed/domain/entities/notification_message.dart';
-import 'package:ntfyd/features/feed/presentation/blocs/feed_bloc.dart';
-import 'package:ntfyd/features/feed/presentation/blocs/feed_event.dart';
-import 'package:ntfyd/features/feed/presentation/blocs/feed_state.dart';
 import 'package:ntfyd/features/feed/presentation/widgets/message_detail_body.dart';
+import 'package:ntfyd/features/groups/presentation/blocs/group_feed_bloc.dart';
+import 'package:ntfyd/features/groups/presentation/blocs/group_feed_event.dart';
+import 'package:ntfyd/features/groups/presentation/blocs/group_feed_state.dart';
 
-/// Message Detail (OI1, proposed layout): AppBar (title, pin/read toggle
-/// actions) plus the shared [MessageDetailBody]. Expects a `FeedBloc`
-/// already provided above it in the tree (`TopicDetailPage`'s
-/// `BlocProvider.value`).
-class MessageDetailPage extends StatelessWidget {
-  const MessageDetailPage({super.key, required this.message});
+/// Tap-through detail for a message inside a merged Group feed. Same shape
+/// as `MessageDetailPage` but wired to `GroupFeedBloc` instead of
+/// `FeedBloc` — both compose the shared `MessageDetailBody`.
+class GroupMessageDetailPage extends StatelessWidget {
+  const GroupMessageDetailPage({super.key, required this.message});
 
   final NotificationMessage message;
 
@@ -19,13 +18,9 @@ class MessageDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return BlocBuilder<FeedBloc, FeedState>(
+    return BlocBuilder<GroupFeedBloc, GroupFeedState>(
       builder: (context, state) {
-        // Resolve the live version of this message from the bloc's current
-        // FeedLoaded state (so pin/read toggles reflect immediately on this
-        // page), falling back to the originally-passed snapshot if the
-        // state isn't loaded yet or the message was removed from the list.
-        final resolvedMessage = state is FeedLoaded
+        final resolvedMessage = state is GroupFeedLoaded
             ? state.messages.firstWhere(
                 (m) => m.id == message.id,
                 orElse: () => message,
@@ -42,8 +37,11 @@ class MessageDetailPage extends StatelessWidget {
                   color: resolvedMessage.pinned ? theme.colorScheme.error : null,
                 ),
                 tooltip: resolvedMessage.pinned ? 'Unpin' : 'Pin',
-                onPressed: () => context.read<FeedBloc>().add(
-                  FeedEvent.togglePin(id: resolvedMessage.id),
+                onPressed: () => context.read<GroupFeedBloc>().add(
+                  GroupFeedEvent.togglePin(
+                    serverId: resolvedMessage.serverId,
+                    id: resolvedMessage.id,
+                  ),
                 ),
               ),
               IconButton(
@@ -52,8 +50,11 @@ class MessageDetailPage extends StatelessWidget {
                   color: resolvedMessage.read ? theme.colorScheme.primary : null,
                 ),
                 tooltip: resolvedMessage.read ? 'Mark unread' : 'Mark read',
-                onPressed: () => context.read<FeedBloc>().add(
-                  FeedEvent.toggleRead(id: resolvedMessage.id),
+                onPressed: () => context.read<GroupFeedBloc>().add(
+                  GroupFeedEvent.toggleRead(
+                    serverId: resolvedMessage.serverId,
+                    id: resolvedMessage.id,
+                  ),
                 ),
               ),
             ],

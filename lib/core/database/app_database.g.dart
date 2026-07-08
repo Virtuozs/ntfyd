@@ -2025,8 +2025,26 @@ class $GroupsTable extends Groups with TableInfo<$GroupsTable, Group> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _filterPrioritiesMeta = const VerificationMeta(
+    'filterPriorities',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, name, icon, color, sortOrder];
+  late final GeneratedColumn<String> filterPriorities = GeneratedColumn<String>(
+    'filter_priorities',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    icon,
+    color,
+    sortOrder,
+    filterPriorities,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2070,6 +2088,15 @@ class $GroupsTable extends Groups with TableInfo<$GroupsTable, Group> {
         sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
       );
     }
+    if (data.containsKey('filter_priorities')) {
+      context.handle(
+        _filterPrioritiesMeta,
+        filterPriorities.isAcceptableOrUnknown(
+          data['filter_priorities']!,
+          _filterPrioritiesMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2099,6 +2126,10 @@ class $GroupsTable extends Groups with TableInfo<$GroupsTable, Group> {
         DriftSqlType.int,
         data['${effectivePrefix}sort_order'],
       )!,
+      filterPriorities: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}filter_priorities'],
+      ),
     );
   }
 
@@ -2114,12 +2145,14 @@ class Group extends DataClass implements Insertable<Group> {
   final String? icon;
   final int? color;
   final int sortOrder;
+  final String? filterPriorities;
   const Group({
     required this.id,
     required this.name,
     this.icon,
     this.color,
     required this.sortOrder,
+    this.filterPriorities,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2133,6 +2166,9 @@ class Group extends DataClass implements Insertable<Group> {
       map['color'] = Variable<int>(color);
     }
     map['sort_order'] = Variable<int>(sortOrder);
+    if (!nullToAbsent || filterPriorities != null) {
+      map['filter_priorities'] = Variable<String>(filterPriorities);
+    }
     return map;
   }
 
@@ -2145,6 +2181,9 @@ class Group extends DataClass implements Insertable<Group> {
           ? const Value.absent()
           : Value(color),
       sortOrder: Value(sortOrder),
+      filterPriorities: filterPriorities == null && nullToAbsent
+          ? const Value.absent()
+          : Value(filterPriorities),
     );
   }
 
@@ -2159,6 +2198,7 @@ class Group extends DataClass implements Insertable<Group> {
       icon: serializer.fromJson<String?>(json['icon']),
       color: serializer.fromJson<int?>(json['color']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
+      filterPriorities: serializer.fromJson<String?>(json['filterPriorities']),
     );
   }
   @override
@@ -2170,6 +2210,7 @@ class Group extends DataClass implements Insertable<Group> {
       'icon': serializer.toJson<String?>(icon),
       'color': serializer.toJson<int?>(color),
       'sortOrder': serializer.toJson<int>(sortOrder),
+      'filterPriorities': serializer.toJson<String?>(filterPriorities),
     };
   }
 
@@ -2179,12 +2220,16 @@ class Group extends DataClass implements Insertable<Group> {
     Value<String?> icon = const Value.absent(),
     Value<int?> color = const Value.absent(),
     int? sortOrder,
+    Value<String?> filterPriorities = const Value.absent(),
   }) => Group(
     id: id ?? this.id,
     name: name ?? this.name,
     icon: icon.present ? icon.value : this.icon,
     color: color.present ? color.value : this.color,
     sortOrder: sortOrder ?? this.sortOrder,
+    filterPriorities: filterPriorities.present
+        ? filterPriorities.value
+        : this.filterPriorities,
   );
   Group copyWithCompanion(GroupsCompanion data) {
     return Group(
@@ -2193,6 +2238,9 @@ class Group extends DataClass implements Insertable<Group> {
       icon: data.icon.present ? data.icon.value : this.icon,
       color: data.color.present ? data.color.value : this.color,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      filterPriorities: data.filterPriorities.present
+          ? data.filterPriorities.value
+          : this.filterPriorities,
     );
   }
 
@@ -2203,13 +2251,15 @@ class Group extends DataClass implements Insertable<Group> {
           ..write('name: $name, ')
           ..write('icon: $icon, ')
           ..write('color: $color, ')
-          ..write('sortOrder: $sortOrder')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('filterPriorities: $filterPriorities')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, icon, color, sortOrder);
+  int get hashCode =>
+      Object.hash(id, name, icon, color, sortOrder, filterPriorities);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2218,7 +2268,8 @@ class Group extends DataClass implements Insertable<Group> {
           other.name == this.name &&
           other.icon == this.icon &&
           other.color == this.color &&
-          other.sortOrder == this.sortOrder);
+          other.sortOrder == this.sortOrder &&
+          other.filterPriorities == this.filterPriorities);
 }
 
 class GroupsCompanion extends UpdateCompanion<Group> {
@@ -2227,6 +2278,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
   final Value<String?> icon;
   final Value<int?> color;
   final Value<int> sortOrder;
+  final Value<String?> filterPriorities;
   final Value<int> rowid;
   const GroupsCompanion({
     this.id = const Value.absent(),
@@ -2234,6 +2286,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
     this.icon = const Value.absent(),
     this.color = const Value.absent(),
     this.sortOrder = const Value.absent(),
+    this.filterPriorities = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   GroupsCompanion.insert({
@@ -2242,6 +2295,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
     this.icon = const Value.absent(),
     this.color = const Value.absent(),
     this.sortOrder = const Value.absent(),
+    this.filterPriorities = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name);
@@ -2251,6 +2305,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
     Expression<String>? icon,
     Expression<int>? color,
     Expression<int>? sortOrder,
+    Expression<String>? filterPriorities,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2259,6 +2314,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
       if (icon != null) 'icon': icon,
       if (color != null) 'color': color,
       if (sortOrder != null) 'sort_order': sortOrder,
+      if (filterPriorities != null) 'filter_priorities': filterPriorities,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2269,6 +2325,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
     Value<String?>? icon,
     Value<int?>? color,
     Value<int>? sortOrder,
+    Value<String?>? filterPriorities,
     Value<int>? rowid,
   }) {
     return GroupsCompanion(
@@ -2277,6 +2334,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
       icon: icon ?? this.icon,
       color: color ?? this.color,
       sortOrder: sortOrder ?? this.sortOrder,
+      filterPriorities: filterPriorities ?? this.filterPriorities,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2299,6 +2357,9 @@ class GroupsCompanion extends UpdateCompanion<Group> {
     if (sortOrder.present) {
       map['sort_order'] = Variable<int>(sortOrder.value);
     }
+    if (filterPriorities.present) {
+      map['filter_priorities'] = Variable<String>(filterPriorities.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2313,6 +2374,7 @@ class GroupsCompanion extends UpdateCompanion<Group> {
           ..write('icon: $icon, ')
           ..write('color: $color, ')
           ..write('sortOrder: $sortOrder, ')
+          ..write('filterPriorities: $filterPriorities, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4544,6 +4606,7 @@ typedef $$GroupsTableCreateCompanionBuilder =
       Value<String?> icon,
       Value<int?> color,
       Value<int> sortOrder,
+      Value<String?> filterPriorities,
       Value<int> rowid,
     });
 typedef $$GroupsTableUpdateCompanionBuilder =
@@ -4553,6 +4616,7 @@ typedef $$GroupsTableUpdateCompanionBuilder =
       Value<String?> icon,
       Value<int?> color,
       Value<int> sortOrder,
+      Value<String?> filterPriorities,
       Value<int> rowid,
     });
 
@@ -4610,6 +4674,11 @@ class $$GroupsTableFilterComposer
 
   ColumnFilters<int> get sortOrder => $composableBuilder(
     column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get filterPriorities => $composableBuilder(
+    column: $table.filterPriorities,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4672,6 +4741,11 @@ class $$GroupsTableOrderingComposer
     column: $table.sortOrder,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get filterPriorities => $composableBuilder(
+    column: $table.filterPriorities,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$GroupsTableAnnotationComposer
@@ -4697,6 +4771,11 @@ class $$GroupsTableAnnotationComposer
 
   GeneratedColumn<int> get sortOrder =>
       $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<String> get filterPriorities => $composableBuilder(
+    column: $table.filterPriorities,
+    builder: (column) => column,
+  );
 
   Expression<T> groupMembersRefs<T extends Object>(
     Expression<T> Function($$GroupMembersTableAnnotationComposer a) f,
@@ -4757,6 +4836,7 @@ class $$GroupsTableTableManager
                 Value<String?> icon = const Value.absent(),
                 Value<int?> color = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
+                Value<String?> filterPriorities = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => GroupsCompanion(
                 id: id,
@@ -4764,6 +4844,7 @@ class $$GroupsTableTableManager
                 icon: icon,
                 color: color,
                 sortOrder: sortOrder,
+                filterPriorities: filterPriorities,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4773,6 +4854,7 @@ class $$GroupsTableTableManager
                 Value<String?> icon = const Value.absent(),
                 Value<int?> color = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
+                Value<String?> filterPriorities = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => GroupsCompanion.insert(
                 id: id,
@@ -4780,6 +4862,7 @@ class $$GroupsTableTableManager
                 icon: icon,
                 color: color,
                 sortOrder: sortOrder,
+                filterPriorities: filterPriorities,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

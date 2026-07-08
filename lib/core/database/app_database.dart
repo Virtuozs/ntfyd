@@ -35,6 +35,34 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 1;
 
+  /// Destructive reset (Privacy ▸ Clear all data, FR16): wipes every
+  /// server, subscription, message, group, and group membership, then
+  /// resets the singleton `AppSettings` row back to its defaults (not
+  /// deleted — `SettingDao` assumes the row always exists). Children
+  /// deleted before parents to respect FK constraints.
+  Future<void> clearAllTables() async {
+    await transaction(() async {
+      await delete(notificationMessages).go();
+      await delete(groupMembers).go();
+      await delete(groups).go();
+      await delete(subscriptions).go();
+      await delete(serverConfigs).go();
+      await settingDao.updateAppSetting(
+        const AppSettingsCompanion(
+          themeMode: Value('dark'),
+          quietHoursEnabled: Value(0),
+          quietHoursStart: Value(null),
+          quietHoursEnd: Value(null),
+          retentionMaxAgeDays: Value(null),
+          retentionMaxRows: Value(10000),
+          hideLockScreenContent: Value(0),
+          analyticsOptOut: Value(0),
+          biometricLock: Value(0),
+        ),
+      );
+    });
+  }
+
   /// Opens (or creates) the on-disk SQLite database in the app's documents directory.
   /// Lazy so the platform path lookup happens off the main isolate.
   static QueryExecutor _openConnection() {

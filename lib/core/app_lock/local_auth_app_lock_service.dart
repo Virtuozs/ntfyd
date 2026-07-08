@@ -1,8 +1,10 @@
+import 'package:injectable/injectable.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:ntfyd/core/app_lock/app_lock_service.dart';
 import 'package:ntfyd/core/error/failures.dart';
 import 'package:ntfyd/core/usecase/result.dart';
 
+@LazySingleton(as: AppLockService)
 class LocalAuthAppLockService implements AppLockService {
   LocalAuthAppLockService(this._auth);
 

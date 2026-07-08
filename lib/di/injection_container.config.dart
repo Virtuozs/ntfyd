@@ -14,7 +14,10 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart'
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as _i558;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
+import 'package:local_auth/local_auth.dart' as _i152;
 
+import '../core/app_lock/app_lock_service.dart' as _i646;
+import '../core/app_lock/local_auth_app_lock_service.dart' as _i188;
 import '../core/database/app_database.dart' as _i935;
 import '../core/database/daos/group_dao.dart' as _i978;
 import '../core/database/daos/message_dao.dart' as _i256;
@@ -114,6 +117,9 @@ _i174.GetIt init(
   final publishModule = _$PublishModule();
   gh.lazySingleton<_i935.AppDatabase>(() => coreModule.appDatabase);
   gh.lazySingleton<_i558.FlutterSecureStorage>(() => coreModule.secureStorage);
+  gh.lazySingleton<_i152.LocalAuthentication>(
+    () => coreModule.localAuthentication,
+  );
   gh.lazySingleton<_i839.FeedPollDataSource>(
     () => feedModule.feedPollDataSource(),
   );
@@ -150,6 +156,9 @@ _i174.GetIt init(
     () => notificationsModule.notificationPresenter(
       gh<_i163.FlutterLocalNotificationsPlugin>(),
     ),
+  );
+  gh.lazySingleton<_i646.AppLockService>(
+    () => _i188.LocalAuthAppLockService(gh<_i152.LocalAuthentication>()),
   );
   gh.lazySingleton<_i640.ServerConfigDao>(
     () => coreModule.serverConfigDao(gh<_i935.AppDatabase>()),

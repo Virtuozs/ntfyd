@@ -18,6 +18,7 @@ class NotificationPresenter {
     required String title,
     required String body,
     required NotificationChannelSpec channel,
+    required bool hideLockScreenContent,
   }) {
     final notificationId = '$serverId:$messageId'.hashCode;
     final payload = jsonEncode({'serverId': serverId, 'topic': topic});
@@ -32,6 +33,9 @@ class NotificationPresenter {
           channel.name,
           importance: importanceForPriorityLevel(channel.priorityLevel),
           priority: Priority.high,
+          visibility: hideLockScreenContent
+              ? NotificationVisibility.private
+              : NotificationVisibility.public,
         ),
       ),
       payload: payload,

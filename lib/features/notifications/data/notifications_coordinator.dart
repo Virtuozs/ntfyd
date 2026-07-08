@@ -71,6 +71,7 @@ class NotificationsCoordinator {
       title: row.title ?? row.topic,
       body: row.body ?? '',
       channel: decision.channel,
+      hideLockScreenContent: settings.hideLockScreenContent == 1,
     );
   }
 }

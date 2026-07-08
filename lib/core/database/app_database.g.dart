@@ -2674,19 +2674,7 @@ class $AppSettingsTable extends AppSettings
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultValue: const Constant('system'),
-  );
-  static const VerificationMeta _dynamicColorMeta = const VerificationMeta(
-    'dynamicColor',
-  );
-  @override
-  late final GeneratedColumn<int> dynamicColor = GeneratedColumn<int>(
-    'dynamic_color',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(1),
+    defaultValue: const Constant('dark'),
   );
   static const VerificationMeta _quietHoursEnabledMeta = const VerificationMeta(
     'quietHoursEnabled',
@@ -2782,7 +2770,6 @@ class $AppSettingsTable extends AppSettings
   List<GeneratedColumn> get $columns => [
     id,
     themeMode,
-    dynamicColor,
     quietHoursEnabled,
     quietHoursStart,
     quietHoursEnd,
@@ -2811,15 +2798,6 @@ class $AppSettingsTable extends AppSettings
       context.handle(
         _themeModeMeta,
         themeMode.isAcceptableOrUnknown(data['theme_mode']!, _themeModeMeta),
-      );
-    }
-    if (data.containsKey('dynamic_color')) {
-      context.handle(
-        _dynamicColorMeta,
-        dynamicColor.isAcceptableOrUnknown(
-          data['dynamic_color']!,
-          _dynamicColorMeta,
-        ),
       );
     }
     if (data.containsKey('quiet_hours_enabled')) {
@@ -2911,10 +2889,6 @@ class $AppSettingsTable extends AppSettings
         DriftSqlType.string,
         data['${effectivePrefix}theme_mode'],
       )!,
-      dynamicColor: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}dynamic_color'],
-      )!,
       quietHoursEnabled: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}quiet_hours_enabled'],
@@ -2959,7 +2933,6 @@ class $AppSettingsTable extends AppSettings
 class AppSetting extends DataClass implements Insertable<AppSetting> {
   final int id;
   final String themeMode;
-  final int dynamicColor;
   final int quietHoursEnabled;
   final String? quietHoursStart;
   final String? quietHoursEnd;
@@ -2971,7 +2944,6 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
   const AppSetting({
     required this.id,
     required this.themeMode,
-    required this.dynamicColor,
     required this.quietHoursEnabled,
     this.quietHoursStart,
     this.quietHoursEnd,
@@ -2986,7 +2958,6 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['theme_mode'] = Variable<String>(themeMode);
-    map['dynamic_color'] = Variable<int>(dynamicColor);
     map['quiet_hours_enabled'] = Variable<int>(quietHoursEnabled);
     if (!nullToAbsent || quietHoursStart != null) {
       map['quiet_hours_start'] = Variable<String>(quietHoursStart);
@@ -3010,7 +2981,6 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     return AppSettingsCompanion(
       id: Value(id),
       themeMode: Value(themeMode),
-      dynamicColor: Value(dynamicColor),
       quietHoursEnabled: Value(quietHoursEnabled),
       quietHoursStart: quietHoursStart == null && nullToAbsent
           ? const Value.absent()
@@ -3038,7 +3008,6 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     return AppSetting(
       id: serializer.fromJson<int>(json['id']),
       themeMode: serializer.fromJson<String>(json['themeMode']),
-      dynamicColor: serializer.fromJson<int>(json['dynamicColor']),
       quietHoursEnabled: serializer.fromJson<int>(json['quietHoursEnabled']),
       quietHoursStart: serializer.fromJson<String?>(json['quietHoursStart']),
       quietHoursEnd: serializer.fromJson<String?>(json['quietHoursEnd']),
@@ -3059,7 +3028,6 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'themeMode': serializer.toJson<String>(themeMode),
-      'dynamicColor': serializer.toJson<int>(dynamicColor),
       'quietHoursEnabled': serializer.toJson<int>(quietHoursEnabled),
       'quietHoursStart': serializer.toJson<String?>(quietHoursStart),
       'quietHoursEnd': serializer.toJson<String?>(quietHoursEnd),
@@ -3074,7 +3042,6 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
   AppSetting copyWith({
     int? id,
     String? themeMode,
-    int? dynamicColor,
     int? quietHoursEnabled,
     Value<String?> quietHoursStart = const Value.absent(),
     Value<String?> quietHoursEnd = const Value.absent(),
@@ -3086,7 +3053,6 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
   }) => AppSetting(
     id: id ?? this.id,
     themeMode: themeMode ?? this.themeMode,
-    dynamicColor: dynamicColor ?? this.dynamicColor,
     quietHoursEnabled: quietHoursEnabled ?? this.quietHoursEnabled,
     quietHoursStart: quietHoursStart.present
         ? quietHoursStart.value
@@ -3108,9 +3074,6 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     return AppSetting(
       id: data.id.present ? data.id.value : this.id,
       themeMode: data.themeMode.present ? data.themeMode.value : this.themeMode,
-      dynamicColor: data.dynamicColor.present
-          ? data.dynamicColor.value
-          : this.dynamicColor,
       quietHoursEnabled: data.quietHoursEnabled.present
           ? data.quietHoursEnabled.value
           : this.quietHoursEnabled,
@@ -3143,7 +3106,6 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     return (StringBuffer('AppSetting(')
           ..write('id: $id, ')
           ..write('themeMode: $themeMode, ')
-          ..write('dynamicColor: $dynamicColor, ')
           ..write('quietHoursEnabled: $quietHoursEnabled, ')
           ..write('quietHoursStart: $quietHoursStart, ')
           ..write('quietHoursEnd: $quietHoursEnd, ')
@@ -3160,7 +3122,6 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
   int get hashCode => Object.hash(
     id,
     themeMode,
-    dynamicColor,
     quietHoursEnabled,
     quietHoursStart,
     quietHoursEnd,
@@ -3176,7 +3137,6 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       (other is AppSetting &&
           other.id == this.id &&
           other.themeMode == this.themeMode &&
-          other.dynamicColor == this.dynamicColor &&
           other.quietHoursEnabled == this.quietHoursEnabled &&
           other.quietHoursStart == this.quietHoursStart &&
           other.quietHoursEnd == this.quietHoursEnd &&
@@ -3190,7 +3150,6 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
 class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   final Value<int> id;
   final Value<String> themeMode;
-  final Value<int> dynamicColor;
   final Value<int> quietHoursEnabled;
   final Value<String?> quietHoursStart;
   final Value<String?> quietHoursEnd;
@@ -3202,7 +3161,6 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   const AppSettingsCompanion({
     this.id = const Value.absent(),
     this.themeMode = const Value.absent(),
-    this.dynamicColor = const Value.absent(),
     this.quietHoursEnabled = const Value.absent(),
     this.quietHoursStart = const Value.absent(),
     this.quietHoursEnd = const Value.absent(),
@@ -3215,7 +3173,6 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   AppSettingsCompanion.insert({
     this.id = const Value.absent(),
     this.themeMode = const Value.absent(),
-    this.dynamicColor = const Value.absent(),
     this.quietHoursEnabled = const Value.absent(),
     this.quietHoursStart = const Value.absent(),
     this.quietHoursEnd = const Value.absent(),
@@ -3228,7 +3185,6 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   static Insertable<AppSetting> custom({
     Expression<int>? id,
     Expression<String>? themeMode,
-    Expression<int>? dynamicColor,
     Expression<int>? quietHoursEnabled,
     Expression<String>? quietHoursStart,
     Expression<String>? quietHoursEnd,
@@ -3241,7 +3197,6 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (themeMode != null) 'theme_mode': themeMode,
-      if (dynamicColor != null) 'dynamic_color': dynamicColor,
       if (quietHoursEnabled != null) 'quiet_hours_enabled': quietHoursEnabled,
       if (quietHoursStart != null) 'quiet_hours_start': quietHoursStart,
       if (quietHoursEnd != null) 'quiet_hours_end': quietHoursEnd,
@@ -3258,7 +3213,6 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   AppSettingsCompanion copyWith({
     Value<int>? id,
     Value<String>? themeMode,
-    Value<int>? dynamicColor,
     Value<int>? quietHoursEnabled,
     Value<String?>? quietHoursStart,
     Value<String?>? quietHoursEnd,
@@ -3271,7 +3225,6 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     return AppSettingsCompanion(
       id: id ?? this.id,
       themeMode: themeMode ?? this.themeMode,
-      dynamicColor: dynamicColor ?? this.dynamicColor,
       quietHoursEnabled: quietHoursEnabled ?? this.quietHoursEnabled,
       quietHoursStart: quietHoursStart ?? this.quietHoursStart,
       quietHoursEnd: quietHoursEnd ?? this.quietHoursEnd,
@@ -3292,9 +3245,6 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     }
     if (themeMode.present) {
       map['theme_mode'] = Variable<String>(themeMode.value);
-    }
-    if (dynamicColor.present) {
-      map['dynamic_color'] = Variable<int>(dynamicColor.value);
     }
     if (quietHoursEnabled.present) {
       map['quiet_hours_enabled'] = Variable<int>(quietHoursEnabled.value);
@@ -3330,7 +3280,6 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     return (StringBuffer('AppSettingsCompanion(')
           ..write('id: $id, ')
           ..write('themeMode: $themeMode, ')
-          ..write('dynamicColor: $dynamicColor, ')
           ..write('quietHoursEnabled: $quietHoursEnabled, ')
           ..write('quietHoursStart: $quietHoursStart, ')
           ..write('quietHoursEnd: $quietHoursEnd, ')
@@ -5198,7 +5147,6 @@ typedef $$AppSettingsTableCreateCompanionBuilder =
     AppSettingsCompanion Function({
       Value<int> id,
       Value<String> themeMode,
-      Value<int> dynamicColor,
       Value<int> quietHoursEnabled,
       Value<String?> quietHoursStart,
       Value<String?> quietHoursEnd,
@@ -5212,7 +5160,6 @@ typedef $$AppSettingsTableUpdateCompanionBuilder =
     AppSettingsCompanion Function({
       Value<int> id,
       Value<String> themeMode,
-      Value<int> dynamicColor,
       Value<int> quietHoursEnabled,
       Value<String?> quietHoursStart,
       Value<String?> quietHoursEnd,
@@ -5239,11 +5186,6 @@ class $$AppSettingsTableFilterComposer
 
   ColumnFilters<String> get themeMode => $composableBuilder(
     column: $table.themeMode,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get dynamicColor => $composableBuilder(
-    column: $table.dynamicColor,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5307,11 +5249,6 @@ class $$AppSettingsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get dynamicColor => $composableBuilder(
-    column: $table.dynamicColor,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<int> get quietHoursEnabled => $composableBuilder(
     column: $table.quietHoursEnabled,
     builder: (column) => ColumnOrderings(column),
@@ -5367,11 +5304,6 @@ class $$AppSettingsTableAnnotationComposer
 
   GeneratedColumn<String> get themeMode =>
       $composableBuilder(column: $table.themeMode, builder: (column) => column);
-
-  GeneratedColumn<int> get dynamicColor => $composableBuilder(
-    column: $table.dynamicColor,
-    builder: (column) => column,
-  );
 
   GeneratedColumn<int> get quietHoursEnabled => $composableBuilder(
     column: $table.quietHoursEnabled,
@@ -5447,7 +5379,6 @@ class $$AppSettingsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> themeMode = const Value.absent(),
-                Value<int> dynamicColor = const Value.absent(),
                 Value<int> quietHoursEnabled = const Value.absent(),
                 Value<String?> quietHoursStart = const Value.absent(),
                 Value<String?> quietHoursEnd = const Value.absent(),
@@ -5459,7 +5390,6 @@ class $$AppSettingsTableTableManager
               }) => AppSettingsCompanion(
                 id: id,
                 themeMode: themeMode,
-                dynamicColor: dynamicColor,
                 quietHoursEnabled: quietHoursEnabled,
                 quietHoursStart: quietHoursStart,
                 quietHoursEnd: quietHoursEnd,
@@ -5473,7 +5403,6 @@ class $$AppSettingsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> themeMode = const Value.absent(),
-                Value<int> dynamicColor = const Value.absent(),
                 Value<int> quietHoursEnabled = const Value.absent(),
                 Value<String?> quietHoursStart = const Value.absent(),
                 Value<String?> quietHoursEnd = const Value.absent(),
@@ -5485,7 +5414,6 @@ class $$AppSettingsTableTableManager
               }) => AppSettingsCompanion.insert(
                 id: id,
                 themeMode: themeMode,
-                dynamicColor: dynamicColor,
                 quietHoursEnabled: quietHoursEnabled,
                 quietHoursStart: quietHoursStart,
                 quietHoursEnd: quietHoursEnd,

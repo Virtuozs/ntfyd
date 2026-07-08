@@ -362,8 +362,7 @@ void main() {
   group('app_settings', () {
     AppSettingsCompanion defaultSettings() => const AppSettingsCompanion(
       id: Value(1),
-      themeMode: Value('system'),
-      dynamicColor: Value(1),
+      themeMode: Value('dark'),
       quietHoursEnabled: Value(0),
       hideLockScreenContent: Value(0),
       analyticsOptOut: Value(0),
@@ -377,8 +376,7 @@ void main() {
       // Assert
       expect(all.length, equals(1));
       expect(all.first.id, equals(1));
-      expect(all.first.themeMode, equals('system'));
-      expect(all.first.dynamicColor, equals(1));
+      expect(all.first.themeMode, equals('dark'));
       expect(all.first.biometricLock, equals(0));
     });
 
@@ -392,14 +390,14 @@ void main() {
         await db
             .into(db.appSettings)
             .insertOnConflictUpdate(
-              defaultSettings().copyWith(themeMode: const Value('dark')),
+              defaultSettings().copyWith(themeMode: const Value('white')),
             );
 
         final all = await db.select(db.appSettings).get();
 
         // Assert — still only one row
         expect(all.length, equals(1));
-        expect(all.first.themeMode, equals('dark'));
+        expect(all.first.themeMode, equals('white'));
       },
     );
 
@@ -409,8 +407,7 @@ void main() {
       final row = await db.select(db.appSettings).getSingle();
 
       // Assert
-      expect(row.themeMode, equals('system'));
-      expect(row.dynamicColor, equals(1));
+      expect(row.themeMode, equals('dark'));
       expect(row.quietHoursEnabled, equals(0));
       expect(row.hideLockScreenContent, equals(0));
       expect(row.analyticsOptOut, equals(0));

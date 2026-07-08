@@ -56,8 +56,7 @@ db.Subscription _subscriptionRow({
 
 db.AppSetting _settingsRow({bool quietHoursEnabled = false}) => db.AppSetting(
   id: 1,
-  themeMode: 'system',
-  dynamicColor: 1,
+  themeMode: 'dark',
   quietHoursEnabled: quietHoursEnabled ? 1 : 0,
   hideLockScreenContent: 0,
   analyticsOptOut: 0,

@@ -77,6 +77,9 @@ import '../features/server_config/domain/usecases/validate_server_health.dart'
     as _i285;
 import '../features/server_config/presentation/cubits/server_form_cubit.dart'
     as _i631;
+import '../features/settings/domain/repositories/settings_repository.dart'
+    as _i89;
+import '../features/settings/domain/usecases/update_settings.dart' as _i303;
 import '../features/subscription/data/repositories/subscription_repository_impl.dart'
     as _i221;
 import '../features/subscription/domain/repositories/subscription_repository.dart'
@@ -142,6 +145,9 @@ _i174.GetIt init(
     () => notificationsModule.notificationPresenter(
       gh<_i163.FlutterLocalNotificationsPlugin>(),
     ),
+  );
+  gh.factory<_i303.UpdateSettings>(
+    () => _i303.UpdateSettings(gh<_i89.SettingsRepository>()),
   );
   gh.lazySingleton<_i640.ServerConfigDao>(
     () => coreModule.serverConfigDao(gh<_i935.AppDatabase>()),

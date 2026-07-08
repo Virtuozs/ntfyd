@@ -14,8 +14,8 @@ import 'package:ntfyd/features/feed/presentation/pages/topic_detail_page.dart';
 import 'package:ntfyd/features/notifications/notifications.dart';
 import 'package:ntfyd/features/publish/presentation/cubits/publish_cubit.dart';
 import 'package:ntfyd/features/subscription/domain/repositories/subscription_repository.dart';
+import 'package:ntfyd/shared/theme/app_theme_controller.dart';
 import 'package:ntfyd/shared/theme/dynamic_color_wrapper.dart';
-import 'package:ntfyd/shared/theme/material_you_controller.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -25,7 +25,7 @@ Future<void> main() async {
   await _initNotifications();
   runApp(
     NtfydApp(
-      materialYouController: MaterialYouController(),
+      appThemeController: AppThemeController(),
       navigatorKey: navigatorKey,
     ),
   );
@@ -91,17 +91,17 @@ Future<void> _openTopicDetail(String serverId, String topic) async {
 class NtfydApp extends StatelessWidget {
   const NtfydApp({
     super.key,
-    required this.materialYouController,
+    required this.appThemeController,
     required this.navigatorKey,
   });
 
-  final MaterialYouController materialYouController;
+  final AppThemeController appThemeController;
   final GlobalKey<NavigatorState> navigatorKey;
 
   @override
   Widget build(BuildContext context) {
     return DynamicColorWrapper(
-      controller: materialYouController,
+      controller: appThemeController,
       navigatorKey: navigatorKey,
     );
   }

@@ -5,9 +5,10 @@ import 'package:mocktail/mocktail.dart';
 import 'package:ntfyd/di/injection_container.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_cubit.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_state.dart';
+import 'package:ntfyd/features/settings/domain/entities/app_settings.dart';
+import 'package:ntfyd/shared/theme/app_theme_controller.dart';
 import 'package:ntfyd/shared/theme/design_tokens.dart';
 import 'package:ntfyd/shared/theme/dynamic_color_wrapper.dart';
-import 'package:ntfyd/shared/theme/material_you_controller.dart';
 
 class MockServerFormCubit extends Mock implements ServerFormCubit {}
 
@@ -34,10 +35,10 @@ void main() {
   });
 
   group('DynamicColorWrapper', () {
-    testWidgets('should_use_defaultDark_when_materialYou_disabled', (
+    testWidgets('should_use_defaultDark_theme_for_AppThemeMode_dark', (
       tester,
     ) async {
-      final controller = MaterialYouController(); // defaults to false
+      final controller = AppThemeController(); // defaults to dark
 
       await tester.pumpWidget(
         DynamicColorWrapper(controller: controller, navigatorKey: navigatorKey),
@@ -48,21 +49,14 @@ void main() {
 
       expect(app.theme!.colorScheme.surface, DefaultPalette.background);
       expect(app.theme!.colorScheme.primary, DefaultPalette.primary);
-      // theme and darkTheme should be identical (dark-only by design)
-      expect(
-        app.darkTheme!.colorScheme.surface,
-        app.theme!.colorScheme.surface,
-      );
-      expect(
-        app.darkTheme!.colorScheme.primary,
-        app.theme!.colorScheme.primary,
-      );
+      expect(app.darkTheme!.colorScheme.surface, app.theme!.colorScheme.surface);
+      expect(app.themeMode, ThemeMode.dark);
     });
 
-    testWidgets('should_use_dynamic_or_seed_theme_when_materialYou_enabled', (
+    testWidgets('should_use_light_theme_for_AppThemeMode_white', (
       tester,
     ) async {
-      final controller = MaterialYouController(initial: true);
+      final controller = AppThemeController(initial: AppThemeMode.white);
 
       await tester.pumpWidget(
         DynamicColorWrapper(controller: controller, navigatorKey: navigatorKey),
@@ -71,16 +65,32 @@ void main() {
 
       final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
 
-      // Should NOT be the fixed default palette.
+      expect(app.theme!.colorScheme.brightness, Brightness.light);
+      expect(app.darkTheme!.colorScheme.brightness, Brightness.light);
+      expect(app.themeMode, ThemeMode.light);
+      expect(find.byType(DynamicColorBuilder), findsNothing);
+    });
+
+    testWidgets('should_use_dynamic_or_seed_theme_for_AppThemeMode_materialYou', (
+      tester,
+    ) async {
+      final controller = AppThemeController(initial: AppThemeMode.materialYou);
+
+      await tester.pumpWidget(
+        DynamicColorWrapper(controller: controller, navigatorKey: navigatorKey),
+      );
+      await tester.pumpAndSettle();
+
+      final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+
       expect(app.theme!.colorScheme.surface, isNot(DefaultPalette.background));
       expect(app.theme!.colorScheme.primary, isNot(DefaultPalette.primary));
-
-      // DynamicColorBuilder should be present in the tree.
+      expect(app.themeMode, ThemeMode.system);
       expect(find.byType(DynamicColorBuilder), findsOneWidget);
     });
 
-    testWidgets('should_rebuild_on_controller_toggle', (tester) async {
-      final controller = MaterialYouController(); // false
+    testWidgets('should_rebuild_on_controller_change', (tester) async {
+      final controller = AppThemeController(); // dark
 
       await tester.pumpWidget(
         DynamicColorWrapper(controller: controller, navigatorKey: navigatorKey),
@@ -90,40 +100,11 @@ void main() {
       var app = tester.widget<MaterialApp>(find.byType(MaterialApp));
       expect(app.theme!.colorScheme.primary, DefaultPalette.primary);
 
-      controller.value = true;
+      controller.value = AppThemeMode.materialYou;
       await tester.pumpAndSettle();
 
       app = tester.widget<MaterialApp>(find.byType(MaterialApp));
       expect(app.theme!.colorScheme.primary, isNot(DefaultPalette.primary));
-    });
-
-    testWidgets('should_keep_themeMode_system_in_both_states', (tester) async {
-      final controller = MaterialYouController();
-
-      await tester.pumpWidget(
-        DynamicColorWrapper(controller: controller, navigatorKey: navigatorKey),
-      );
-      await tester.pumpAndSettle();
-      var app = tester.widget<MaterialApp>(find.byType(MaterialApp));
-      expect(app.themeMode, ThemeMode.system);
-
-      controller.value = true;
-      await tester.pumpAndSettle();
-      app = tester.widget<MaterialApp>(find.byType(MaterialApp));
-      expect(app.themeMode, ThemeMode.system);
-    });
-
-    testWidgets('should_not_build_DynamicColorBuilder_when_disabled', (
-      tester,
-    ) async {
-      final controller = MaterialYouController(); // false
-
-      await tester.pumpWidget(
-        DynamicColorWrapper(controller: controller, navigatorKey: navigatorKey),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.byType(DynamicColorBuilder), findsNothing);
     });
   });
 }

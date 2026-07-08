@@ -77,6 +77,8 @@ import '../features/server_config/domain/usecases/validate_server_health.dart'
     as _i285;
 import '../features/server_config/presentation/cubits/server_form_cubit.dart'
     as _i631;
+import '../features/settings/data/repositories/settings_repository_impl.dart'
+    as _i1064;
 import '../features/settings/domain/repositories/settings_repository.dart'
     as _i89;
 import '../features/settings/domain/usecases/clear_all_data.dart' as _i138;
@@ -148,15 +150,6 @@ _i174.GetIt init(
       gh<_i163.FlutterLocalNotificationsPlugin>(),
     ),
   );
-  gh.factory<_i138.ClearAllData>(
-    () => _i138.ClearAllData(gh<_i89.SettingsRepository>()),
-  );
-  gh.factory<_i436.ClearCache>(
-    () => _i436.ClearCache(gh<_i89.SettingsRepository>()),
-  );
-  gh.factory<_i303.UpdateSettings>(
-    () => _i303.UpdateSettings(gh<_i89.SettingsRepository>()),
-  );
   gh.lazySingleton<_i640.ServerConfigDao>(
     () => coreModule.serverConfigDao(gh<_i935.AppDatabase>()),
   );
@@ -203,11 +196,28 @@ _i174.GetIt init(
       gh<_i966.NotificationPolicy>(),
     ),
   );
+  gh.lazySingleton<_i89.SettingsRepository>(
+    () => _i1064.SettingsRepositoryImpl(
+      gh<_i922.SettingDao>(),
+      gh<_i256.MessageDao>(),
+      gh<_i935.AppDatabase>(),
+      gh<_i465.SecureCredentialVault>(),
+    ),
+  );
   gh.lazySingleton<_i291.SubscriptionRepository>(
     () => _i221.SubscriptionRepositoryImpl(
       gh<_i245.SubscriptionDao>(),
       gh<_i256.MessageDao>(),
     ),
+  );
+  gh.factory<_i138.ClearAllData>(
+    () => _i138.ClearAllData(gh<_i89.SettingsRepository>()),
+  );
+  gh.factory<_i436.ClearCache>(
+    () => _i436.ClearCache(gh<_i89.SettingsRepository>()),
+  );
+  gh.factory<_i303.UpdateSettings>(
+    () => _i303.UpdateSettings(gh<_i89.SettingsRepository>()),
   );
   gh.factory<_i36.AddServer>(
     () => _i36.AddServer(

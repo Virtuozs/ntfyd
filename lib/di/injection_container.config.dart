@@ -79,6 +79,8 @@ import '../features/server_config/presentation/cubits/server_form_cubit.dart'
     as _i631;
 import '../features/settings/domain/repositories/settings_repository.dart'
     as _i89;
+import '../features/settings/domain/usecases/clear_all_data.dart' as _i138;
+import '../features/settings/domain/usecases/clear_cache.dart' as _i436;
 import '../features/settings/domain/usecases/update_settings.dart' as _i303;
 import '../features/subscription/data/repositories/subscription_repository_impl.dart'
     as _i221;
@@ -145,6 +147,12 @@ _i174.GetIt init(
     () => notificationsModule.notificationPresenter(
       gh<_i163.FlutterLocalNotificationsPlugin>(),
     ),
+  );
+  gh.factory<_i138.ClearAllData>(
+    () => _i138.ClearAllData(gh<_i89.SettingsRepository>()),
+  );
+  gh.factory<_i436.ClearCache>(
+    () => _i436.ClearCache(gh<_i89.SettingsRepository>()),
   );
   gh.factory<_i303.UpdateSettings>(
     () => _i303.UpdateSettings(gh<_i89.SettingsRepository>()),

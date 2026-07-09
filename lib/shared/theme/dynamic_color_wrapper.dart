@@ -1,12 +1,9 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ntfyd/core/app_lock/app_lock_guard.dart';
 import 'package:ntfyd/core/app_lock/app_lock_service.dart';
-import 'package:ntfyd/di/injection_container.dart';
-import 'package:ntfyd/features/server_config/presentation/cubits/server_form_cubit.dart';
-import 'package:ntfyd/features/server_config/presentation/pages/login_page.dart';
 import 'package:ntfyd/features/settings/domain/entities/app_settings.dart';
+import 'package:ntfyd/shared/startup/startup_gate.dart';
 import 'package:ntfyd/shared/theme/app_theme.dart';
 import 'package:ntfyd/shared/theme/app_theme_controller.dart';
 
@@ -26,12 +23,14 @@ class DynamicColorWrapper extends StatelessWidget {
     required this.controller,
     required this.navigatorKey,
     required this.biometricLock,
+    required this.hideLockScreenContent,
     required this.appLockService,
   });
 
   final AppThemeController controller;
   final GlobalKey<NavigatorState> navigatorKey;
   final bool biometricLock;
+  final bool hideLockScreenContent;
   final AppLockService appLockService;
 
   @override
@@ -52,6 +51,7 @@ class DynamicColorWrapper extends StatelessWidget {
               home: _buildHome(),
               builder: (context, child) => AppLockGuard(
                 biometricLock: biometricLock,
+                hideLockScreenContent: hideLockScreenContent,
                 appLockService: appLockService,
                 child: child!,
               ),
@@ -68,6 +68,7 @@ class DynamicColorWrapper extends StatelessWidget {
               home: _buildHome(),
               builder: (context, child) => AppLockGuard(
                 biometricLock: biometricLock,
+                hideLockScreenContent: hideLockScreenContent,
                 appLockService: appLockService,
                 child: child!,
               ),
@@ -85,6 +86,7 @@ class DynamicColorWrapper extends StatelessWidget {
                   home: _buildHome(),
                   builder: (context, child) => AppLockGuard(
                     biometricLock: biometricLock,
+                    hideLockScreenContent: hideLockScreenContent,
                     appLockService: appLockService,
                     child: child!,
                   ),
@@ -97,9 +99,6 @@ class DynamicColorWrapper extends StatelessWidget {
   }
 
   Widget _buildHome() {
-    return BlocProvider<ServerFormCubit>(
-      create: (_) => getIt<ServerFormCubit>(),
-      child: const LoginPage(),
-    );
+    return const StartupGate();
   }
 }

@@ -7,6 +7,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:ntfyd/core/app_lock/app_lock_service.dart';
 import 'package:ntfyd/core/usecase/result.dart';
 import 'package:ntfyd/di/injection_container.dart';
+import 'package:ntfyd/features/server_config/domain/repositories/server_config_repository.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_cubit.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_state.dart';
 import 'package:ntfyd/features/settings/domain/entities/app_settings.dart';
@@ -18,10 +19,13 @@ class MockServerFormCubit extends Mock implements ServerFormCubit {}
 
 class MockAppLockService extends Mock implements AppLockService {}
 
+class MockServerConfigRepository extends Mock implements ServerConfigRepository {}
+
 void main() {
   late MockServerFormCubit mockServerFormCubit;
   late GlobalKey<NavigatorState> navigatorKey;
   late MockAppLockService mockAppLockService;
+  late MockServerConfigRepository mockServerConfigRepository;
 
   setUp(() {
     navigatorKey = GlobalKey<NavigatorState>();
@@ -34,7 +38,14 @@ void main() {
     ).thenAnswer((_) => const Stream.empty());
     when(() => mockServerFormCubit.close()).thenAnswer((_) async {});
 
-    getIt.registerFactory<ServerFormCubit>(() => mockServerFormCubit);
+    mockServerConfigRepository = MockServerConfigRepository();
+    when(
+      () => mockServerConfigRepository.getAll(),
+    ).thenAnswer((_) async => const Result.success([]));
+
+    getIt
+      ..registerFactory<ServerFormCubit>(() => mockServerFormCubit)
+      ..registerFactory<ServerConfigRepository>(() => mockServerConfigRepository);
 
     mockAppLockService = MockAppLockService();
     when(() => mockAppLockService.isAvailable()).thenAnswer((_) async => true);
@@ -55,6 +66,7 @@ void main() {
           controller: controller,
           navigatorKey: navigatorKey,
           biometricLock: false,
+          hideLockScreenContent: false,
           appLockService: mockAppLockService,
         ),
       );
@@ -78,6 +90,7 @@ void main() {
           controller: controller,
           navigatorKey: navigatorKey,
           biometricLock: false,
+          hideLockScreenContent: false,
           appLockService: mockAppLockService,
         ),
       );
@@ -101,6 +114,7 @@ void main() {
           controller: controller,
           navigatorKey: navigatorKey,
           biometricLock: false,
+          hideLockScreenContent: false,
           appLockService: mockAppLockService,
         ),
       );
@@ -122,6 +136,7 @@ void main() {
           controller: controller,
           navigatorKey: navigatorKey,
           biometricLock: false,
+          hideLockScreenContent: false,
           appLockService: mockAppLockService,
         ),
       );
@@ -155,6 +170,7 @@ void main() {
             controller: controller,
             navigatorKey: navigatorKey,
             biometricLock: true,
+            hideLockScreenContent: true,
             appLockService: mockAppLockService,
           ),
         );

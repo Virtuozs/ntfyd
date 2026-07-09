@@ -13,12 +13,15 @@ class MockAppLockService extends Mock implements AppLockService {}
 Widget _buildGuard({
   required bool biometricLock,
   required AppLockService service,
+  bool hideLockScreenContent = true,
+  Widget child = const Text('protected content'),
 }) {
   return MaterialApp(
     home: AppLockGuard(
       biometricLock: biometricLock,
+      hideLockScreenContent: hideLockScreenContent,
       appLockService: service,
-      child: const Text('protected content'),
+      child: child,
     ),
   );
 }
@@ -29,74 +32,49 @@ void _triggerResume() {
   );
 }
 
-void _triggerPause() {
-  WidgetsBinding.instance.handleAppLifecycleStateChanged(
-    AppLifecycleState.paused,
-  );
-}
-
 void main() {
   late MockAppLockService service;
 
   setUp(() {
     service = MockAppLockService();
 
-    // Fallback stubs
     when(
       () => service.authenticate(any()),
     ).thenAnswer((_) async => const Result.success(true));
-
-    when(() => service.isAvailable()).thenAnswer((_) async => true);
   });
 
   group('biometricLock disabled', () {
-    testWidgets('shows child without overlay when biometricLock is false', (
+    testWidgets('shows child without overlay and never authenticates', (
       tester,
     ) async {
-      // Arrange & Act
       await tester.pumpWidget(
         _buildGuard(biometricLock: false, service: service),
       );
       await tester.pump();
 
-      // Assert
       expect(find.text('protected content'), findsOneWidget);
       expect(find.byKey(const Key('lock_overlay')), findsNothing);
-    });
-
-    testWidgets('does not call authenticate when biometricLock is false', (
-      tester,
-    ) async {
-      // Arrange & Act
-      await tester.pumpWidget(
-        _buildGuard(biometricLock: false, service: service),
-      );
-      _triggerResume();
-      await tester.pump();
-
-      // Assert
       verifyNever(() => service.authenticate(any()));
     });
 
     testWidgets('does not show overlay on resume when biometricLock is false', (
       tester,
     ) async {
-      // Arrange
       await tester.pumpWidget(
         _buildGuard(biometricLock: false, service: service),
       );
 
-      // Act
       _triggerResume();
       await tester.pump();
 
-      // Assert
       expect(find.byKey(const Key('lock_overlay')), findsNothing);
     });
   });
 
   group('biometricLock enabled', () {
-    testWidgets('shows lock overlay on app resume', (tester) async {
+    testWidgets('locks immediately on cold start, before any resume event', (
+      tester,
+    ) async {
       final completer = Completer<Result<bool>>();
       when(
         () => service.authenticate(any()),
@@ -105,11 +83,36 @@ void main() {
       await tester.pumpWidget(
         _buildGuard(biometricLock: true, service: service),
       );
-
-      _triggerResume();
       await tester.pump();
 
       expect(find.byKey(const Key('lock_overlay')), findsOneWidget);
+      verify(() => service.authenticate('Unlock ntfyd to continue')).called(1);
+
+      completer.complete(const Result.success(true));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('locks when biometricLock flips from false to true', (
+      tester,
+    ) async {
+      final completer = Completer<Result<bool>>();
+      when(
+        () => service.authenticate(any()),
+      ).thenAnswer((_) => completer.future);
+
+      await tester.pumpWidget(
+        _buildGuard(biometricLock: false, service: service),
+      );
+      await tester.pump();
+      expect(find.byKey(const Key('lock_overlay')), findsNothing);
+
+      await tester.pumpWidget(
+        _buildGuard(biometricLock: true, service: service),
+      );
+      await tester.pump();
+
+      expect(find.byKey(const Key('lock_overlay')), findsOneWidget);
+
       completer.complete(const Result.success(true));
       await tester.pumpAndSettle();
     });
@@ -117,105 +120,36 @@ void main() {
     testWidgets('removes overlay after successful authentication', (
       tester,
     ) async {
-      // Arrange
-      when(
-        () => service.authenticate(any()),
-      ).thenAnswer((_) async => const Result.success(true));
-
       await tester.pumpWidget(
         _buildGuard(biometricLock: true, service: service),
       );
-
-      // Act
-      _triggerResume();
       await tester.pumpAndSettle();
 
-      // Assert
       expect(find.byKey(const Key('lock_overlay')), findsNothing);
       expect(find.text('protected content'), findsOneWidget);
     });
 
-    testWidgets('keeps overlay after failed authentication', (tester) async {
-      // Arrange
-      when(() => service.authenticate(any())).thenAnswer(
-        (_) async => const Result.err(Failure.biometric(reason: 'cancelled')),
-      );
-
-      await tester.pumpWidget(
-        _buildGuard(biometricLock: true, service: service),
-      );
-
-      // Act
-      _triggerResume();
-      await tester.pumpAndSettle();
-
-      // Assert
-      expect(find.byKey(const Key('lock_overlay')), findsOneWidget);
-    });
-
-    testWidgets('calls authenticate with correct reason', (tester) async {
-      // Arrange
-      await tester.pumpWidget(
-        _buildGuard(biometricLock: true, service: service),
-      );
-
-      // Act
-      _triggerResume();
-      await tester.pumpAndSettle();
-
-      // Assert
-      verify(() => service.authenticate('Unlock ntfyd to continue')).called(1);
-    });
-
     testWidgets(
-      'shows "Use device PIN" option after $maxAttempts failed attempts',
+      'keeps overlay and shows the failure message after failed authentication',
       (tester) async {
-        // Arrange
         when(() => service.authenticate(any())).thenAnswer(
-          (_) async => const Result.err(Failure.biometric(reason: 'failed')),
+          (_) async =>
+              const Result.err(Failure.biometric(reason: 'cancelled')),
         );
 
         await tester.pumpWidget(
           _buildGuard(biometricLock: true, service: service),
         );
+        await tester.pumpAndSettle();
 
-        // Act — each paused→resumed cycle triggers a new auth attempt
-        for (var i = 0; i < maxAttempts; i++) {
-          _triggerPause();
-          _triggerResume();
-          await tester.pumpAndSettle();
-        }
-
-        // Assert
-        expect(find.text('Use device PIN'), findsOneWidget);
+        expect(find.byKey(const Key('lock_overlay')), findsOneWidget);
+        expect(find.text('Authentication failed. Try again.'), findsOneWidget);
       },
     );
 
-    testWidgets('does not show "Use device PIN" before max attempts', (
+    testWidgets('does not trigger concurrent auth calls on rapid resume', (
       tester,
     ) async {
-      // Arrange
-      when(() => service.authenticate(any())).thenAnswer(
-        (_) async => const Result.err(Failure.biometric(reason: 'failed')),
-      );
-
-      await tester.pumpWidget(
-        _buildGuard(biometricLock: true, service: service),
-      );
-
-      // Act — one less than max
-      for (var i = 0; i < maxAttempts - 1; i++) {
-        _triggerPause();
-        _triggerResume();
-        await tester.pumpAndSettle();
-      }
-
-      // Assert
-      expect(find.text('Use device PIN'), findsNothing);
-      expect(find.byKey(const Key('lock_overlay')), findsOneWidget);
-    });
-
-    testWidgets('does not trigger concurrent auth calls', (tester) async {
       final completer = Completer<Result<bool>>();
       when(
         () => service.authenticate(any()),
@@ -225,18 +159,71 @@ void main() {
         _buildGuard(biometricLock: true, service: service),
       );
 
-      // trigger resume twice rapidly
-      _triggerResume();
       _triggerResume();
       await tester.pump();
 
-      // authenticate called only once despite two resumes
       verify(() => service.authenticate(any())).called(1);
 
       completer.complete(const Result.success(true));
       await tester.pumpAndSettle();
     });
+
+    testWidgets('blurs the background when hideLockScreenContent is true', (
+      tester,
+    ) async {
+      final completer = Completer<Result<bool>>();
+      when(
+        () => service.authenticate(any()),
+      ).thenAnswer((_) => completer.future);
+
+      await tester.pumpWidget(
+        _buildGuard(
+          biometricLock: true,
+          service: service,
+          hideLockScreenContent: true,
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byType(BackdropFilter), findsOneWidget);
+
+      completer.complete(const Result.success(true));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets(
+      'does not blur but still blocks interaction when hideLockScreenContent is false',
+      (tester) async {
+        final completer = Completer<Result<bool>>();
+        when(
+          () => service.authenticate(any()),
+        ).thenAnswer((_) => completer.future);
+
+        var tapped = false;
+
+        await tester.pumpWidget(
+          _buildGuard(
+            biometricLock: true,
+            service: service,
+            hideLockScreenContent: false,
+            child: GestureDetector(
+              onTap: () => tapped = true,
+              child: const Text('protected content'),
+            ),
+          ),
+        );
+        await tester.pump();
+
+        expect(find.byType(BackdropFilter), findsNothing);
+        expect(find.byKey(const Key('lock_overlay')), findsOneWidget);
+
+        await tester.tap(find.text('protected content'), warnIfMissed: false);
+        await tester.pump();
+        expect(tapped, isFalse);
+
+        completer.complete(const Result.success(true));
+        await tester.pumpAndSettle();
+      },
+    );
   });
 }
-
-const maxAttempts = 3;

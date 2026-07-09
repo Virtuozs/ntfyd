@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ntfyd/features/publish/domain/entities/publish_draft.dart';
@@ -87,6 +89,36 @@ void main() {
       Navigator.of(capturedContext).pop();
       await tester.pumpAndSettle();
       expect(await resultFuture, isNull);
+    },
+  );
+
+  testWidgets(
+    'does not overflow at the default test window size used in production '
+    '(isScrollControlled: true, no oversized window)',
+    (tester) async {
+      late BuildContext capturedContext;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) {
+              capturedContext = context;
+              return const Scaffold(body: SizedBox());
+            },
+          ),
+        ),
+      );
+
+      unawaited(
+        showModalBottomSheet<PublishDraft>(
+          context: capturedContext,
+          isScrollControlled: true,
+          builder: (_) => const AdvancedPublishSheet(topic: 'alerts'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
     },
   );
 }

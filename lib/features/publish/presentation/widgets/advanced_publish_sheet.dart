@@ -89,74 +89,76 @@ class _AdvancedPublishSheetState extends State<AdvancedPublishSheet> {
         top: 16,
         bottom: MediaQuery.of(context).viewInsets.bottom + 16,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Advanced publish',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _bodyController,
-            decoration: const InputDecoration(labelText: 'Message'),
-            maxLines: 3,
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _titleController,
-            decoration: const InputDecoration(labelText: 'Title (optional)'),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<int>(
-            initialValue: _priority,
-            decoration: const InputDecoration(labelText: 'Priority'),
-            items: const [
-              DropdownMenuItem(value: 1, child: Text('1 - Min')),
-              DropdownMenuItem(value: 2, child: Text('2 - Low')),
-              DropdownMenuItem(value: 3, child: Text('3 - Default')),
-              DropdownMenuItem(value: 4, child: Text('4 - High')),
-              DropdownMenuItem(value: 5, child: Text('5 - Max')),
-            ],
-            onChanged: (value) {
-              if (value != null) setState(() => _priority = value);
-            },
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _tagsController,
-            decoration: const InputDecoration(
-              labelText: 'Tags (comma-separated, optional)',
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Advanced publish',
+              style: Theme.of(context).textTheme.titleLarge,
             ),
-          ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: _pickAttachment,
-            icon: const Icon(Icons.attach_file),
-            label: Text(
-              _attachmentPath == null
-                  ? 'Attach file (optional)'
-                  : _attachmentPath!.split(Platform.pathSeparator).last,
+            const SizedBox(height: 16),
+            TextField(
+              controller: _bodyController,
+              decoration: const InputDecoration(labelText: 'Message'),
+              maxLines: 3,
             ),
-          ),
-          const SizedBox(height: 12),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Markdown'),
-            value: _markdown,
-            onChanged: (value) => setState(() => _markdown = value),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _delayController,
-            decoration: const InputDecoration(
-              labelText: 'Schedule (e.g. 30m, optional)',
+            const SizedBox(height: 12),
+            TextField(
+              controller: _titleController,
+              decoration: const InputDecoration(labelText: 'Title (optional)'),
             ),
-          ),
-          const SizedBox(height: 16),
-          FilledButton(onPressed: _publish, child: const Text('Publish')),
-        ],
+            const SizedBox(height: 12),
+            DropdownButtonFormField<int>(
+              initialValue: _priority,
+              decoration: const InputDecoration(labelText: 'Priority'),
+              items: const [
+                DropdownMenuItem(value: 1, child: Text('1 - Min')),
+                DropdownMenuItem(value: 2, child: Text('2 - Low')),
+                DropdownMenuItem(value: 3, child: Text('3 - Default')),
+                DropdownMenuItem(value: 4, child: Text('4 - High')),
+                DropdownMenuItem(value: 5, child: Text('5 - Max')),
+              ],
+              onChanged: (value) {
+                if (value != null) setState(() => _priority = value);
+              },
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _tagsController,
+              decoration: const InputDecoration(
+                labelText: 'Tags (comma-separated, optional)',
+              ),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: _pickAttachment,
+              icon: const Icon(Icons.attach_file),
+              label: Text(
+                _attachmentPath == null
+                    ? 'Attach file (optional)'
+                    : _attachmentPath!.split(Platform.pathSeparator).last,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Markdown'),
+              value: _markdown,
+              onChanged: (value) => setState(() => _markdown = value),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _delayController,
+              decoration: const InputDecoration(
+                labelText: 'Schedule (e.g. 30m, optional)',
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton(onPressed: _publish, child: const Text('Publish')),
+          ],
+        ),
       ),
     );
   }

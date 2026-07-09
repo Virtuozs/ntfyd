@@ -27,6 +27,7 @@ class _AppLockGuardState extends State<AppLockGuard>
   bool _locked = false;
   int _failedAttempts = 0;
   bool _authenticating = false;
+  bool _wasBackgrounded = false;
 
   @override
   void initState() {
@@ -53,7 +54,14 @@ class _AppLockGuardState extends State<AppLockGuard>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && widget.biometricLock) {
+    if (state == AppLifecycleState.paused) {
+      _wasBackgrounded = true;
+      return;
+    }
+    if (state == AppLifecycleState.resumed &&
+        widget.biometricLock &&
+        _wasBackgrounded) {
+      _wasBackgrounded = false;
       _lock();
     }
   }

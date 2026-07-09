@@ -168,6 +168,55 @@ void main() {
       await tester.pumpAndSettle();
     });
 
+    testWidgets(
+      'does not re-lock on a resume that is not preceded by an actual '
+      'backgrounding (e.g. the biometric prompt itself closing)',
+      (tester) async {
+        await tester.pumpWidget(
+          _buildGuard(biometricLock: true, service: service),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const Key('lock_overlay')), findsNothing);
+        verify(() => service.authenticate(any())).called(1);
+
+        _triggerResume();
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const Key('lock_overlay')), findsNothing);
+        verifyNever(() => service.authenticate(any()));
+      },
+    );
+
+    testWidgets('re-locks after the app is actually backgrounded and resumed', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _buildGuard(biometricLock: true, service: service),
+      );
+      await tester.pumpAndSettle();
+      verify(() => service.authenticate(any())).called(1);
+
+      final completer = Completer<Result<bool>>();
+      when(
+        () => service.authenticate(any()),
+      ).thenAnswer((_) => completer.future);
+
+      WidgetsBinding.instance.handleAppLifecycleStateChanged(
+        AppLifecycleState.paused,
+      );
+      await tester.pump();
+      _triggerResume();
+      await tester.pump();
+
+      expect(find.byKey(const Key('lock_overlay')), findsOneWidget);
+      verify(() => service.authenticate(any())).called(1);
+
+      completer.complete(const Result.success(true));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('lock_overlay')), findsNothing);
+    });
+
     testWidgets('blurs the background when hideLockScreenContent is true', (
       tester,
     ) async {

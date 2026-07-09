@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:ntfyd/core/app_lock/app_lock_service.dart';
 import 'package:ntfyd/core/usecase/result.dart';
@@ -6,11 +8,13 @@ class AppLockGuard extends StatefulWidget {
   const AppLockGuard({
     super.key,
     required this.biometricLock,
+    required this.hideLockScreenContent,
     required this.appLockService,
     required this.child,
   });
 
   final bool biometricLock;
+  final bool hideLockScreenContent;
   final AppLockService appLockService;
   final Widget child;
 
@@ -20,8 +24,6 @@ class AppLockGuard extends StatefulWidget {
 
 class _AppLockGuardState extends State<AppLockGuard>
     with WidgetsBindingObserver {
-  static const _maxAttempts = 3;
-
   bool _locked = false;
   int _failedAttempts = 0;
   bool _authenticating = false;
@@ -30,6 +32,17 @@ class _AppLockGuardState extends State<AppLockGuard>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (widget.biometricLock) {
+      _lock();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant AppLockGuard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.biometricLock && widget.biometricLock) {
+      _lock();
+    }
   }
 
   @override
@@ -84,48 +97,60 @@ class _AppLockGuardState extends State<AppLockGuard>
       children: [
         widget.child,
         if (_locked)
-          _LockOverlay(
-            key: const Key('lock_overlay'),
-            showPinFallback: _failedAttempts >= _maxAttempts,
-            onRetry: _authenticate,
+          Positioned.fill(
+            child: AbsorbPointer(
+              absorbing: true,
+              child: widget.hideLockScreenContent
+                  ? BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.25),
+                      ),
+                    )
+                  : const SizedBox.expand(),
+            ),
+          ),
+        if (_locked)
+          Positioned.fill(
+            child: Center(
+              child: Card(
+                key: const Key('lock_overlay'),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.lock_outline, size: 48),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'App Locked',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _failedAttempts == 0
+                            ? 'Authenticate to continue'
+                            : 'Authentication failed. Try again.',
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      FilledButton.icon(
+                        onPressed: _authenticating ? null : _authenticate,
+                        icon: const Icon(Icons.fingerprint),
+                        label: Text(
+                          _authenticating ? 'Authenticating...' : 'Unlock',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
       ],
-    );
-  }
-}
-
-class _LockOverlay extends StatelessWidget {
-  const _LockOverlay({
-    super.key,
-    required this.showPinFallback,
-    required this.onRetry,
-  });
-
-  final bool showPinFallback;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return ColoredBox(
-      color: Theme.of(context).colorScheme.surface,
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.lock_outline, size: 64),
-            const SizedBox(height: 24),
-            const Text('App locked'),
-            const SizedBox(height: 16),
-            if (showPinFallback)
-              TextButton(
-                onPressed: onRetry,
-                child: const Text('Use device PIN'),
-              )
-            else
-              FilledButton(onPressed: onRetry, child: const Text('Unlock')),
-          ],
-        ),
-      ),
     );
   }
 }

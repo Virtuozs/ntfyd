@@ -8,6 +8,7 @@ import 'package:ntfyd/features/publish/domain/entities/publish_draft.dart';
 import 'package:ntfyd/features/publish/presentation/cubits/publish_cubit.dart';
 import 'package:ntfyd/features/publish/presentation/cubits/publish_state.dart';
 import 'package:ntfyd/features/publish/presentation/widgets/composer_bar.dart';
+import 'package:ntfyd/shared/theme/app_theme.dart';
 
 class MockPublishCubit extends MockCubit<PublishState>
     implements PublishCubit {}
@@ -101,4 +102,25 @@ void main() {
 
     expect(find.text('Message sent'), findsOneWidget);
   });
+
+  testWidgets(
+    'lays out cleanly under the app theme (Send sits next to an Expanded '
+    'TextField in a Row, so it must not inherit the theme-wide full-width '
+    'FilledButton minimumSize)',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.defaultDark(),
+          home: Scaffold(
+            body: BlocProvider<PublishCubit>.value(
+              value: cubit,
+              child: const ComposerBar(serverId: 'srv-1', topic: 'alerts'),
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

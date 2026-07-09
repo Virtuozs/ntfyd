@@ -97,6 +97,9 @@ class _ComposerBarState extends State<ComposerBar> {
                 builder: (context, state) {
                   final isSubmitting = state is PublishSubmitting;
                   return FilledButton(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(64, 48),
+                    ),
                     onPressed: isSubmitting ? null : _send,
                     child: isSubmitting
                         ? const SizedBox(

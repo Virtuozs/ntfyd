@@ -127,14 +127,17 @@ class NtfydApp extends StatelessWidget {
         listener: (context, state) {
           appThemeController.value = (state as SettingsLoaded).settings.themeMode;
         },
-        child: BlocSelector<SettingsCubit, SettingsState, bool>(
-          selector: (state) =>
-              state is SettingsLoaded && state.settings.biometricLock,
-          builder: (context, biometricLock) {
+        child: BlocSelector<SettingsCubit, SettingsState, (bool, bool)>(
+          selector: (state) => state is SettingsLoaded
+              ? (state.settings.biometricLock, state.settings.hideLockScreenContent)
+              : (false, false),
+          builder: (context, lockSettings) {
+            final (biometricLock, hideLockScreenContent) = lockSettings;
             return DynamicColorWrapper(
               controller: appThemeController,
               navigatorKey: navigatorKey,
               biometricLock: biometricLock,
+              hideLockScreenContent: hideLockScreenContent,
               appLockService: getIt<AppLockService>(),
             );
           },

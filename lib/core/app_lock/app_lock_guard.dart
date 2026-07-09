@@ -11,12 +11,21 @@ class AppLockGuard extends StatefulWidget {
     required this.hideLockScreenContent,
     required this.appLockService,
     required this.child,
+    this.lockTimeout = const Duration(minutes: 10),
+    this.now = DateTime.now,
   });
 
   final bool biometricLock;
   final bool hideLockScreenContent;
   final AppLockService appLockService;
   final Widget child;
+
+  /// How long a successful authentication stays valid. A `resumed` event
+  /// within this window (e.g. the biometric prompt's own dialog closing)
+  /// does not require re-authentication.
+  final Duration lockTimeout;
+
+  final DateTime Function() now;
 
   @override
   State<AppLockGuard> createState() => _AppLockGuardState();
@@ -27,7 +36,7 @@ class _AppLockGuardState extends State<AppLockGuard>
   bool _locked = false;
   int _failedAttempts = 0;
   bool _authenticating = false;
-  bool _wasBackgrounded = false;
+  DateTime? _lastAuthenticatedAt;
 
   @override
   void initState() {
@@ -54,16 +63,14 @@ class _AppLockGuardState extends State<AppLockGuard>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      _wasBackgrounded = true;
+    if (state != AppLifecycleState.resumed || !widget.biometricLock) return;
+
+    final lastAuthenticatedAt = _lastAuthenticatedAt;
+    if (lastAuthenticatedAt != null &&
+        widget.now().difference(lastAuthenticatedAt) < widget.lockTimeout) {
       return;
     }
-    if (state == AppLifecycleState.resumed &&
-        widget.biometricLock &&
-        _wasBackgrounded) {
-      _wasBackgrounded = false;
-      _lock();
-    }
+    _lock();
   }
 
   void _lock() {
@@ -86,6 +93,7 @@ class _AppLockGuardState extends State<AppLockGuard>
 
     result.when(
       success: (_) {
+        _lastAuthenticatedAt = widget.now();
         setState(() {
           _locked = false;
           _failedAttempts = 0;

@@ -15,12 +15,16 @@ Widget _buildGuard({
   required AppLockService service,
   bool hideLockScreenContent = true,
   Widget child = const Text('protected content'),
+  Duration lockTimeout = const Duration(minutes: 10),
+  DateTime Function() now = DateTime.now,
 }) {
   return MaterialApp(
     home: AppLockGuard(
       biometricLock: biometricLock,
       hideLockScreenContent: hideLockScreenContent,
       appLockService: service,
+      lockTimeout: lockTimeout,
+      now: now,
       child: child,
     ),
   );
@@ -169,17 +173,20 @@ void main() {
     });
 
     testWidgets(
-      'does not re-lock on a resume that is not preceded by an actual '
-      'backgrounding (e.g. the biometric prompt itself closing)',
+      'does not re-lock on a resume within the grace window after a '
+      'successful authentication (e.g. the biometric prompt itself closing)',
       (tester) async {
+        var now = DateTime(2026, 1, 1, 12);
+
         await tester.pumpWidget(
-          _buildGuard(biometricLock: true, service: service),
+          _buildGuard(biometricLock: true, service: service, now: () => now),
         );
         await tester.pumpAndSettle();
 
         expect(find.byKey(const Key('lock_overlay')), findsNothing);
         verify(() => service.authenticate(any())).called(1);
 
+        now = now.add(const Duration(minutes: 5));
         _triggerResume();
         await tester.pumpAndSettle();
 
@@ -188,34 +195,40 @@ void main() {
       },
     );
 
-    testWidgets('re-locks after the app is actually backgrounded and resumed', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _buildGuard(biometricLock: true, service: service),
-      );
-      await tester.pumpAndSettle();
-      verify(() => service.authenticate(any())).called(1);
+    testWidgets(
+      're-locks on resume once the grace window has elapsed since the '
+      'last successful authentication',
+      (tester) async {
+        var now = DateTime(2026, 1, 1, 12);
 
-      final completer = Completer<Result<bool>>();
-      when(
-        () => service.authenticate(any()),
-      ).thenAnswer((_) => completer.future);
+        await tester.pumpWidget(
+          _buildGuard(
+            biometricLock: true,
+            service: service,
+            now: () => now,
+            lockTimeout: const Duration(minutes: 10),
+          ),
+        );
+        await tester.pumpAndSettle();
+        verify(() => service.authenticate(any())).called(1);
 
-      WidgetsBinding.instance.handleAppLifecycleStateChanged(
-        AppLifecycleState.paused,
-      );
-      await tester.pump();
-      _triggerResume();
-      await tester.pump();
+        final completer = Completer<Result<bool>>();
+        when(
+          () => service.authenticate(any()),
+        ).thenAnswer((_) => completer.future);
 
-      expect(find.byKey(const Key('lock_overlay')), findsOneWidget);
-      verify(() => service.authenticate(any())).called(1);
+        now = now.add(const Duration(minutes: 11));
+        _triggerResume();
+        await tester.pump();
 
-      completer.complete(const Result.success(true));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('lock_overlay')), findsNothing);
-    });
+        expect(find.byKey(const Key('lock_overlay')), findsOneWidget);
+        verify(() => service.authenticate(any())).called(1);
+
+        completer.complete(const Result.success(true));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('lock_overlay')), findsNothing);
+      },
+    );
 
     testWidgets('blurs the background when hideLockScreenContent is true', (
       tester,

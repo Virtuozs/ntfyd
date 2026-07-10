@@ -37,7 +37,7 @@ class TopicDetailPage extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(subscription.topic)),
+      appBar: AppBar(title: Text(subscription.displayName)),
       bottomNavigationBar: ComposerBar(
         serverId: subscription.serverId,
         topic: subscription.topic,

@@ -84,6 +84,8 @@ import '../features/server_config/domain/usecases/set_default_server.dart'
     as _i933;
 import '../features/server_config/domain/usecases/validate_server_health.dart'
     as _i285;
+import '../features/server_config/presentation/cubits/server_add_edit_cubit.dart'
+    as _i248;
 import '../features/server_config/presentation/cubits/server_form_cubit.dart'
     as _i631;
 import '../features/server_config/presentation/cubits/server_manager_cubit.dart'
@@ -336,6 +338,12 @@ _i174.GetIt init(
       gh<_i465.SecureCredentialVault>(),
       gh<_i750.AccountDataSource>(),
       gh<_i291.SubscriptionRepository>(),
+    ),
+  );
+  gh.factory<_i248.ServerAddEditCubit>(
+    () => _i248.ServerAddEditCubit(
+      gh<_i36.AddServer>(),
+      gh<_i787.EditCredentials>(),
     ),
   );
   gh.factory<_i974.SubscriptionBloc>(

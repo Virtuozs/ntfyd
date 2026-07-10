@@ -10,7 +10,7 @@ import 'package:ntfyd/features/server_config/presentation/cubits/server_add_edit
 @injectable
 class ServerAddEditCubit extends Cubit<ServerAddEditState> {
   ServerAddEditCubit(this._addServer, this._editCredentials)
-      : super(const ServerAddEditState.idle());
+    : super(const ServerAddEditState.idle());
 
   final AddServer _addServer;
   final EditCredentials _editCredentials;
@@ -24,8 +24,10 @@ class ServerAddEditCubit extends Cubit<ServerAddEditState> {
     emit(const ServerAddEditState.validating());
 
     final normalizedUrl = ServerConfig.normalizeBaseUrlInput(url);
-    final (authType, credential) =
-        credentialFromFields(user: user, password: password);
+    final (authType, credential) = credentialFromFields(
+      user: user,
+      password: password,
+    );
 
     final result = await _addServer.call(
       AddServerParams(
@@ -50,7 +52,10 @@ class ServerAddEditCubit extends Cubit<ServerAddEditState> {
     if (state is ServerAddEditValidating) return;
     emit(const ServerAddEditState.validating());
 
-    final (_, credential) = credentialFromFields(user: user, password: password);
+    final (_, credential) = credentialFromFields(
+      user: user,
+      password: password,
+    );
 
     final result = await _editCredentials.call(
       EditCredentialsParams(serverId: serverId, credential: credential),

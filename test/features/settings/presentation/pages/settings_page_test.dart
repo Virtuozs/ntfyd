@@ -19,9 +19,9 @@ void main() {
 
   setUp(() {
     cubit = MockSettingsCubit();
-    when(() => cubit.state).thenReturn(
-      const SettingsState.loaded(AppSettings()),
-    );
+    when(
+      () => cubit.state,
+    ).thenReturn(const SettingsState.loaded(AppSettings()));
     when(() => cubit.stream).thenAnswer((_) => const Stream.empty());
     when(() => cubit.close()).thenAnswer((_) async {});
     when(() => cubit.load()).thenReturn(null);
@@ -29,10 +29,12 @@ void main() {
     getIt.registerFactory<SettingsCubit>(() => cubit);
 
     final serverManagerCubit = MockServerManagerCubit();
-    when(() => serverManagerCubit.state)
-        .thenReturn(const ServerManagerState.loading());
-    when(() => serverManagerCubit.stream)
-        .thenAnswer((_) => const Stream.empty());
+    when(
+      () => serverManagerCubit.state,
+    ).thenReturn(const ServerManagerState.loading());
+    when(
+      () => serverManagerCubit.stream,
+    ).thenAnswer((_) => const Stream.empty());
     when(() => serverManagerCubit.close()).thenAnswer((_) async {});
     when(() => serverManagerCubit.load()).thenAnswer((_) async {});
     getIt.registerFactory<ServerManagerCubit>(() => serverManagerCubit);
@@ -43,9 +45,7 @@ void main() {
   });
 
   Future<void> pumpPage(WidgetTester tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(home: SettingsPage()),
-    );
+    await tester.pumpWidget(const MaterialApp(home: SettingsPage()));
     await tester.pumpAndSettle();
   }
 

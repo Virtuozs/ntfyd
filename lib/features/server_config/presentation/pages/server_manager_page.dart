@@ -1,4 +1,3 @@
-// lib/features/server_config/presentation/pages/server_manager_page.dart
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -44,29 +43,30 @@ class _ServerManagerView extends StatelessWidget {
       body: BlocBuilder<ServerManagerCubit, ServerManagerState>(
         builder: (context, state) {
           return switch (state) {
-            ServerManagerLoading() =>
-              const Center(child: CircularProgressIndicator()),
+            ServerManagerLoading() => const Center(
+              child: CircularProgressIndicator(),
+            ),
             ServerManagerError(:final failure) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(friendlyFailureMessage(failure)),
-                    const SizedBox(height: 16),
-                    OutlinedButton(
-                      onPressed: () =>
-                          context.read<ServerManagerCubit>().load(),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              ),
-            ServerManagerLoaded(:final servers) => servers.isEmpty
-                ? const Center(child: Text('No servers configured'))
-                : ListView.builder(
-                    itemCount: servers.length,
-                    itemBuilder: (context, index) =>
-                        _ServerTile(server: servers[index]),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(friendlyFailureMessage(failure)),
+                  const SizedBox(height: 16),
+                  OutlinedButton(
+                    onPressed: () => context.read<ServerManagerCubit>().load(),
+                    child: const Text('Retry'),
                   ),
+                ],
+              ),
+            ),
+            ServerManagerLoaded(:final servers) =>
+              servers.isEmpty
+                  ? const Center(child: Text('No servers configured'))
+                  : ListView.builder(
+                      itemCount: servers.length,
+                      itemBuilder: (context, index) =>
+                          _ServerTile(server: servers[index]),
+                    ),
           };
         },
       ),
@@ -95,10 +95,10 @@ class _ServerTile extends StatelessWidget {
   final ServerConfig server;
 
   String get _credentialLabel => switch (server.authType) {
-        AuthType.none => 'No auth',
-        AuthType.basic => 'Basic auth',
-        AuthType.bearer => 'Bearer token',
-      };
+    AuthType.none => 'No auth',
+    AuthType.basic => 'Basic auth',
+    AuthType.bearer => 'Bearer token',
+  };
 
   @override
   Widget build(BuildContext context) {

@@ -86,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
                           enabled: !isValidating,
                           decoration: const InputDecoration(
                             hintText: 'Server URL (default:https://ntfy.sh)',
-                            border: InputBorder.none
+                            border: InputBorder.none,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -95,7 +95,7 @@ class _LoginPageState extends State<LoginPage> {
                           enabled: !isValidating,
                           decoration: const InputDecoration(
                             hintText: 'Username',
-                            border: InputBorder.none
+                            border: InputBorder.none,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -105,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
                           obscureText: true,
                           decoration: const InputDecoration(
                             hintText: 'Password',
-                            border: InputBorder.none
+                            border: InputBorder.none,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -118,22 +118,20 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             onPressed: isValidating
                                 ? null
-                                : () => context
-                                .read<ServerFormCubit>()
-                                .connect(
-                              url: _urlController.text,
-                              user: _userController.text,
-                              password: _passwordController.text,
-                            ),
+                                : () => context.read<ServerFormCubit>().connect(
+                                    url: _urlController.text,
+                                    user: _userController.text,
+                                    password: _passwordController.text,
+                                  ),
                             child: isValidating
                                 ? SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: theme.colorScheme.onPrimary,
-                              ),
-                            )
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: theme.colorScheme.onPrimary,
+                                    ),
+                                  )
                                 : const Text('Connect'),
                           ),
                         ),

@@ -10,32 +10,42 @@ import 'package:ntfyd/features/server_config/presentation/failure_message.dart';
 ///
 /// The caller is expected to supply a [ServerAddEditCubit] via
 /// [BlocProvider] (e.g. from GetIt) further up the tree.
-class AddServerPage extends StatelessWidget {
+class AddServerPage extends StatefulWidget {
   const AddServerPage({super.key, this.existing});
 
   final ServerConfig? existing;
 
   @override
-  Widget build(BuildContext context) {
-    return _AddServerView(existing: existing);
-  }
+  State<AddServerPage> createState() => _AddServerPageState();
 }
 
-class _AddServerView extends StatefulWidget {
-  const _AddServerView({this.existing});
-
-  final ServerConfig? existing;
-
-  @override
-  State<_AddServerView> createState() => _AddServerViewState();
-}
-
-class _AddServerViewState extends State<_AddServerView> {
+class _AddServerPageState extends State<AddServerPage> {
   final _urlController = TextEditingController();
   final _userController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool get _isEdit => widget.existing != null;
+
+  // In edit mode, the username/password fields always open blank (you
+  // re-enter secrets, you don't view them). If the user taps Save without
+  // typing into either field, credentialFromFields('', '') would produce
+  // ServerCredential.noAuth(), silently downgrading a basic/bearer server
+  // to no-auth even though its authType is untouched. Add mode has no such
+  // footgun -- a blank add is a legitimate anonymous-server add -- so only
+  // edit mode requires one of the two fields to be non-empty.
+  bool get _canSubmit =>
+      !_isEdit ||
+      _userController.text.trim().isNotEmpty ||
+      _passwordController.text.trim().isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    _userController.addListener(_onCredentialFieldChanged);
+    _passwordController.addListener(_onCredentialFieldChanged);
+  }
+
+  void _onCredentialFieldChanged() => setState(() {});
 
   @override
   void dispose() {
@@ -70,10 +80,7 @@ class _AddServerViewState extends State<_AddServerView> {
           ),
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 24,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -108,7 +115,9 @@ class _AddServerViewState extends State<_AddServerView> {
                   ),
                   const SizedBox(height: 24),
                   FilledButton(
-                    onPressed: isValidating ? null : () => _submit(context),
+                    onPressed: isValidating || !_canSubmit
+                        ? null
+                        : () => _submit(context),
                     child: isValidating
                         ? const SizedBox(
                             width: 24,

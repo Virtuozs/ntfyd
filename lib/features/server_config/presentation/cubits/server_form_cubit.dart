@@ -31,8 +31,10 @@ class ServerFormCubit extends Cubit<ServerFormState> {
     emit(const ServerFormState.validating());
 
     final normalizedUrl = ServerConfig.normalizeBaseUrlInput(url);
-    final (authType, credential) =
-        credentialFromFields(user: user, password: password);
+    final (authType, credential) = credentialFromFields(
+      user: user,
+      password: password,
+    );
 
     final result = await _addServer.call(
       AddServerParams(

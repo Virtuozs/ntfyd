@@ -192,7 +192,8 @@ void main() {
         );
         return cubit;
       },
-      act: (c) => c.editCredentials(serverId: 'srv-1', user: 'alice', password: 'x'),
+      act: (c) =>
+          c.editCredentials(serverId: 'srv-1', user: 'alice', password: 'x'),
       expect: () => [
         const ServerAddEditState.validating(),
         const ServerAddEditState.error(

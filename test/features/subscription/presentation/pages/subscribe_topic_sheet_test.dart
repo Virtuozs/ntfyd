@@ -60,10 +60,12 @@ void main() {
     );
 
     final serverManagerCubit = MockServerManagerCubit();
-    when(() => serverManagerCubit.state)
-        .thenReturn(const ServerManagerState.loading());
-    when(() => serverManagerCubit.stream)
-        .thenAnswer((_) => const Stream.empty());
+    when(
+      () => serverManagerCubit.state,
+    ).thenReturn(const ServerManagerState.loading());
+    when(
+      () => serverManagerCubit.stream,
+    ).thenAnswer((_) => const Stream.empty());
     when(() => serverManagerCubit.close()).thenAnswer((_) async {});
     when(() => serverManagerCubit.load()).thenAnswer((_) async {});
     getIt.registerFactory<ServerManagerCubit>(() => serverManagerCubit);
@@ -117,82 +119,79 @@ void main() {
     ).called(1);
   });
 
-  testWidgets(
-    'shows confirmation and pops the sheet once the subscribed topic '
-    'appears in a loaded state, but not on the initial loaded emission',
-    (tester) async {
-      final controller = StreamController<SubscriptionState>();
-      addTearDown(controller.close);
-      whenListen(
-        bloc,
-        controller.stream,
-        initialState: const SubscriptionState.loading(),
-      );
+  testWidgets('shows confirmation and pops the sheet once the subscribed topic '
+      'appears in a loaded state, but not on the initial loaded emission', (
+    tester,
+  ) async {
+    final controller = StreamController<SubscriptionState>();
+    addTearDown(controller.close);
+    whenListen(
+      bloc,
+      controller.stream,
+      initialState: const SubscriptionState.loading(),
+    );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Builder(
-            builder: (context) => Scaffold(
-              body: Center(
-                child: ElevatedButton(
-                  onPressed: () => showModalBottomSheet<void>(
-                    context: context,
-                    builder: (_) => BlocProvider<SubscriptionBloc>.value(
-                      value: bloc,
-                      child: SubscribeTopicSheet(servers: servers),
-                    ),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: ElevatedButton(
+                onPressed: () => showModalBottomSheet<void>(
+                  context: context,
+                  builder: (_) => BlocProvider<SubscriptionBloc>.value(
+                    value: bloc,
+                    child: SubscribeTopicSheet(servers: servers),
                   ),
-                  child: const Text('Open'),
                 ),
+                child: const Text('Open'),
               ),
             ),
           ),
         ),
-      );
+      ),
+    );
 
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
 
-      expect(find.byType(SubscribeTopicSheet), findsOneWidget);
+    expect(find.byType(SubscribeTopicSheet), findsOneWidget);
 
-      // Simulate the real load's initial emission from watchByServer.
-      // This must NOT be mistaken for a successful submission.
-      controller.add(const SubscriptionState.loaded(subscriptions: []));
-      await tester.pump();
+    // Simulate the real load's initial emission from watchByServer.
+    // This must NOT be mistaken for a successful submission.
+    controller.add(const SubscriptionState.loaded(subscriptions: []));
+    await tester.pump();
 
-      expect(find.text('Subscribed to alerts'), findsNothing);
-      expect(find.byType(SubscribeTopicSheet), findsOneWidget);
+    expect(find.text('Subscribed to alerts'), findsNothing);
+    expect(find.byType(SubscribeTopicSheet), findsOneWidget);
 
-      await tester.enterText(find.byType(TextField).at(0), 'alerts');
-      await tester.tap(find.widgetWithText(FilledButton, 'Subscribe'));
-      await tester.pump();
+    await tester.enterText(find.byType(TextField).at(0), 'alerts');
+    await tester.tap(find.widgetWithText(FilledButton, 'Subscribe'));
+    await tester.pump();
 
-      // Simulate the DB write becoming visible on the watchByServer stream.
-      controller.add(
-        SubscriptionState.loaded(
-          subscriptions: [
-            Subscription(
-              id: 'sub-1',
-              serverId: 'srv-1',
-              topic: 'alerts',
-              displayName: 'alerts',
-              createdAt: DateTime.utc(2026, 1, 1),
-            ),
-          ],
-        ),
-      );
-      await tester.pump();
+    // Simulate the DB write becoming visible on the watchByServer stream.
+    controller.add(
+      SubscriptionState.loaded(
+        subscriptions: [
+          Subscription(
+            id: 'sub-1',
+            serverId: 'srv-1',
+            topic: 'alerts',
+            displayName: 'alerts',
+            createdAt: DateTime.utc(2026, 1, 1),
+          ),
+        ],
+      ),
+    );
+    await tester.pump();
 
-      expect(find.text('Subscribed to alerts'), findsOneWidget);
+    expect(find.text('Subscribed to alerts'), findsOneWidget);
 
-      await tester.pumpAndSettle();
-      expect(find.byType(SubscribeTopicSheet), findsNothing);
-    },
-  );
+    await tester.pumpAndSettle();
+    expect(find.byType(SubscribeTopicSheet), findsNothing);
+  });
 
-  testWidgets('authError state shows Edit Credentials button', (
-    tester,
-  ) async {
+  testWidgets('authError state shows Edit Credentials button', (tester) async {
     whenListen(
       bloc,
       const Stream<SubscriptionState>.empty(),

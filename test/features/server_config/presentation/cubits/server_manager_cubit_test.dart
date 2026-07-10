@@ -1,4 +1,3 @@
-// test/features/server_config/presentation/cubits/server_manager_cubit_test.dart
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -103,9 +102,9 @@ void main() {
     blocTest<ServerManagerCubit, ServerManagerState>(
       'emits error when RemoveServer fails, does not reload',
       build: () {
-        when(() => removeServer.call('srv-1')).thenAnswer(
-          (_) async => const Result.err(Failure.notFound()),
-        );
+        when(
+          () => removeServer.call('srv-1'),
+        ).thenAnswer((_) async => const Result.err(Failure.notFound()));
         return cubit;
       },
       act: (c) => c.remove('srv-1'),
@@ -143,9 +142,9 @@ void main() {
     blocTest<ServerManagerCubit, ServerManagerState>(
       'emits error when SetDefaultServer fails, does not reload',
       build: () {
-        when(() => setDefaultServer.call('srv-1')).thenAnswer(
-          (_) async => const Result.err(Failure.notFound()),
-        );
+        when(
+          () => setDefaultServer.call('srv-1'),
+        ).thenAnswer((_) async => const Result.err(Failure.notFound()));
         return cubit;
       },
       act: (c) => c.setDefault('srv-1'),

@@ -66,17 +66,16 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Add'), findsOneWidget);
   });
 
-  testWidgets(
-    'edit mode shows read-only URL text, 2 fields, and Save button',
-    (tester) async {
-      await pumpPage(tester, existing: existing);
+  testWidgets('edit mode shows read-only URL text, 2 fields, and Save button', (
+    tester,
+  ) async {
+    await pumpPage(tester, existing: existing);
 
-      expect(find.text('Edit Credentials'), findsOneWidget);
-      expect(find.text('https://ntfy.sh'), findsOneWidget);
-      expect(find.byType(TextFormField), findsNWidgets(2));
-      expect(find.widgetWithText(FilledButton, 'Save'), findsOneWidget);
-    },
-  );
+    expect(find.text('Edit Credentials'), findsOneWidget);
+    expect(find.text('https://ntfy.sh'), findsOneWidget);
+    expect(find.byType(TextFormField), findsNWidgets(2));
+    expect(find.widgetWithText(FilledButton, 'Save'), findsOneWidget);
+  });
 
   testWidgets('tapping Add calls cubit.addServer with field values', (
     tester,
@@ -119,6 +118,29 @@ void main() {
       ).called(1);
     },
   );
+
+  testWidgets('edit mode with both fields blank disables the Save button', (
+    tester,
+  ) async {
+    await pumpPage(tester, existing: existing);
+
+    final button = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Save'),
+    );
+    expect(button.onPressed, isNull);
+  });
+
+  testWidgets('edit mode enables Save once a field has text', (tester) async {
+    await pumpPage(tester, existing: existing);
+
+    await tester.enterText(find.byType(TextFormField).at(0), 'alice');
+    await tester.pump();
+
+    final button = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Save'),
+    );
+    expect(button.onPressed, isNotNull);
+  });
 
   testWidgets('pops on success state', (tester) async {
     whenListen(

@@ -1,4 +1,3 @@
-// test/features/server_config/presentation/credential_from_fields_test.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ntfyd/core/secure_storage/server_credential.dart';
 import 'package:ntfyd/features/server_config/domain/entities/auth_type.dart';
@@ -7,8 +6,10 @@ import 'package:ntfyd/features/server_config/presentation/credential_from_fields
 void main() {
   group('credentialFromFields', () {
     test('blank user and password -> AuthType.none / NoAuth', () {
-      final (authType, credential) =
-          credentialFromFields(user: '', password: '');
+      final (authType, credential) = credentialFromFields(
+        user: '',
+        password: '',
+      );
       expect(authType, AuthType.none);
       expect(credential, const ServerCredential.noAuth());
     });
@@ -20,8 +21,10 @@ void main() {
     });
 
     test('non-blank user/password -> AuthType.basic / BasicAuth', () {
-      final (authType, credential) =
-          credentialFromFields(user: 'alice', password: 'secret');
+      final (authType, credential) = credentialFromFields(
+        user: 'alice',
+        password: 'secret',
+      );
       expect(authType, AuthType.basic);
       expect(
         credential,
@@ -30,15 +33,19 @@ void main() {
     });
 
     test('whitespace-only user/password trims to blank -> none', () {
-      final (authType, credential) =
-          credentialFromFields(user: '  ', password: '  ');
+      final (authType, credential) = credentialFromFields(
+        user: '  ',
+        password: '  ',
+      );
       expect(authType, AuthType.none);
       expect(credential, const ServerCredential.noAuth());
     });
 
     test('user set but password blank -> basic auth with empty password', () {
-      final (authType, credential) =
-          credentialFromFields(user: 'alice', password: '');
+      final (authType, credential) = credentialFromFields(
+        user: 'alice',
+        password: '',
+      );
       expect(authType, AuthType.basic);
       expect(
         credential,

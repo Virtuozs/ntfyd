@@ -46,9 +46,7 @@ void main() {
       const a = ServerManagerState.error(
         failure: Failure.cache(message: 'down'),
       );
-      const b = ServerManagerState.error(
-        failure: Failure.notFound(),
-      );
+      const b = ServerManagerState.error(failure: Failure.notFound());
 
       expect(a, isNot(b));
     });

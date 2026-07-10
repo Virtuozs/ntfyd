@@ -86,6 +86,8 @@ import '../features/server_config/domain/usecases/validate_server_health.dart'
     as _i285;
 import '../features/server_config/presentation/cubits/server_form_cubit.dart'
     as _i631;
+import '../features/server_config/presentation/cubits/server_manager_cubit.dart'
+    as _i13;
 import '../features/settings/data/repositories/settings_repository_impl.dart'
     as _i1064;
 import '../features/settings/domain/repositories/settings_repository.dart'
@@ -313,6 +315,13 @@ _i174.GetIt init(
       gh<_i303.UpdateSettings>(),
       gh<_i436.ClearCache>(),
       gh<_i138.ClearAllData>(),
+    ),
+  );
+  gh.factory<_i13.ServerManagerCubit>(
+    () => _i13.ServerManagerCubit(
+      gh<_i113.ListServers>(),
+      gh<_i524.RemoveServer>(),
+      gh<_i933.SetDefaultServer>(),
     ),
   );
   gh.factory<_i221.GroupSelectorCubit>(

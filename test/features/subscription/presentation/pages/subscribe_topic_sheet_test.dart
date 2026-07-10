@@ -6,8 +6,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:ntfyd/core/error/failures.dart';
+import 'package:ntfyd/di/injection_container.dart';
 import 'package:ntfyd/features/server_config/domain/entities/auth_type.dart';
 import 'package:ntfyd/features/server_config/domain/entities/server_config.dart';
+import 'package:ntfyd/features/server_config/presentation/cubits/server_manager_cubit.dart';
+import 'package:ntfyd/features/server_config/presentation/cubits/server_manager_state.dart';
 import 'package:ntfyd/features/server_config/presentation/pages/server_manager_page.dart';
 import 'package:ntfyd/features/subscription/domain/entities/subscription.dart';
 import 'package:ntfyd/features/subscription/presentation/blocs/subscription_bloc.dart';
@@ -18,6 +21,8 @@ import 'package:ntfyd/features/subscription/presentation/pages/subscribe_topic_s
 class MockSubscriptionBloc
     extends MockBloc<SubscriptionEvent, SubscriptionState>
     implements SubscriptionBloc {}
+
+class MockServerManagerCubit extends Mock implements ServerManagerCubit {}
 
 void main() {
   late MockSubscriptionBloc bloc;
@@ -53,6 +58,19 @@ void main() {
       const Stream<SubscriptionState>.empty(),
       initialState: const SubscriptionState.loaded(subscriptions: []),
     );
+
+    final serverManagerCubit = MockServerManagerCubit();
+    when(() => serverManagerCubit.state)
+        .thenReturn(const ServerManagerState.loading());
+    when(() => serverManagerCubit.stream)
+        .thenAnswer((_) => const Stream.empty());
+    when(() => serverManagerCubit.close()).thenAnswer((_) async {});
+    when(() => serverManagerCubit.load()).thenAnswer((_) async {});
+    getIt.registerFactory<ServerManagerCubit>(() => serverManagerCubit);
+  });
+
+  tearDown(() async {
+    await getIt.reset();
   });
 
   Future<void> pumpSheet(WidgetTester tester) async {
@@ -192,7 +210,12 @@ void main() {
     );
 
     await tester.tap(find.widgetWithText(OutlinedButton, 'Edit Credentials'));
-    await tester.pumpAndSettle();
+    // Not pumpAndSettle: the pushed ServerManagerPage's mocked cubit stays
+    // in a loading state, whose indeterminate CircularProgressIndicator
+    // schedules frames forever and would make pumpAndSettle time out.
+    // A couple of bounded pumps is enough to finish the route transition.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byType(ServerManagerPage), findsOneWidget);
   });

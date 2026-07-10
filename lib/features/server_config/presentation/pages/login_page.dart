@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ntfyd/core/error/failures.dart';
 import 'package:ntfyd/features/feed/presentation/pages/home_page.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_cubit.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_state.dart';
+import 'package:ntfyd/features/server_config/presentation/failure_message.dart';
 
 /// First-run login facade (D14: health-only validation on Connect).
 class LoginPage extends StatefulWidget {
@@ -26,22 +26,6 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  String _failureMessage(Failure failure) {
-    return failure.when(
-      network: (message, statusCode) =>
-      "Couldn't reach the server. Check the URL and your connection.",
-      auth: (statusCode) => 'Invalid credentials for this server.',
-      notFound: () => 'Server not found at this URL.',
-      rateLimit: (retryAfter) => 'Too many requests. Please try again later.',
-      server: (statusCode, message) =>
-      'Server error ($statusCode). Please try again.',
-      cache: (message) => 'A local error occurred. Please try again.',
-      validation: (field, message) => message,
-      biometric: (reason) => reason,
-      unknown: (message) => 'Something went wrong. Please try again.',
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -55,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
             );
           case ServerFormError(failure: final failure):
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(_failureMessage(failure))),
+              SnackBar(content: Text(friendlyFailureMessage(failure))),
             );
           case ServerFormIdle():
           case ServerFormValidating():
@@ -102,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
                           enabled: !isValidating,
                           decoration: const InputDecoration(
                             hintText: 'Server URL (default:https://ntfy.sh)',
-                            border: InputBorder.none
+                            border: InputBorder.none,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -111,7 +95,7 @@ class _LoginPageState extends State<LoginPage> {
                           enabled: !isValidating,
                           decoration: const InputDecoration(
                             hintText: 'Username',
-                            border: InputBorder.none
+                            border: InputBorder.none,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -121,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
                           obscureText: true,
                           decoration: const InputDecoration(
                             hintText: 'Password',
-                            border: InputBorder.none
+                            border: InputBorder.none,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -134,22 +118,20 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             onPressed: isValidating
                                 ? null
-                                : () => context
-                                .read<ServerFormCubit>()
-                                .connect(
-                              url: _urlController.text,
-                              user: _userController.text,
-                              password: _passwordController.text,
-                            ),
+                                : () => context.read<ServerFormCubit>().connect(
+                                    url: _urlController.text,
+                                    user: _userController.text,
+                                    password: _passwordController.text,
+                                  ),
                             child: isValidating
                                 ? SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: theme.colorScheme.onPrimary,
-                              ),
-                            )
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: theme.colorScheme.onPrimary,
+                                    ),
+                                  )
                                 : const Text('Connect'),
                           ),
                         ),

@@ -76,10 +76,20 @@ import '../features/server_config/di/server_config_module.dart' as _i22;
 import '../features/server_config/domain/repositories/server_config_repository.dart'
     as _i668;
 import '../features/server_config/domain/usecases/add_server.dart' as _i36;
+import '../features/server_config/domain/usecases/edit_credentials.dart'
+    as _i787;
+import '../features/server_config/domain/usecases/list_servers.dart' as _i113;
+import '../features/server_config/domain/usecases/remove_server.dart' as _i524;
+import '../features/server_config/domain/usecases/set_default_server.dart'
+    as _i933;
 import '../features/server_config/domain/usecases/validate_server_health.dart'
     as _i285;
+import '../features/server_config/presentation/cubits/server_add_edit_cubit.dart'
+    as _i248;
 import '../features/server_config/presentation/cubits/server_form_cubit.dart'
     as _i631;
+import '../features/server_config/presentation/cubits/server_manager_cubit.dart'
+    as _i13;
 import '../features/settings/data/repositories/settings_repository_impl.dart'
     as _i1064;
 import '../features/settings/domain/repositories/settings_repository.dart'
@@ -206,6 +216,18 @@ _i174.GetIt init(
       gh<_i966.NotificationPolicy>(),
     ),
   );
+  gh.factory<_i787.EditCredentials>(
+    () => _i787.EditCredentials(gh<_i668.ServerConfigRepository>()),
+  );
+  gh.factory<_i113.ListServers>(
+    () => _i113.ListServers(gh<_i668.ServerConfigRepository>()),
+  );
+  gh.factory<_i524.RemoveServer>(
+    () => _i524.RemoveServer(gh<_i668.ServerConfigRepository>()),
+  );
+  gh.factory<_i933.SetDefaultServer>(
+    () => _i933.SetDefaultServer(gh<_i668.ServerConfigRepository>()),
+  );
   gh.lazySingleton<_i89.SettingsRepository>(
     () => _i1064.SettingsRepositoryImpl(
       gh<_i922.SettingDao>(),
@@ -297,6 +319,13 @@ _i174.GetIt init(
       gh<_i138.ClearAllData>(),
     ),
   );
+  gh.factory<_i13.ServerManagerCubit>(
+    () => _i13.ServerManagerCubit(
+      gh<_i113.ListServers>(),
+      gh<_i524.RemoveServer>(),
+      gh<_i933.SetDefaultServer>(),
+    ),
+  );
   gh.factory<_i221.GroupSelectorCubit>(
     () => _i221.GroupSelectorCubit(
       gh<_i1048.GroupRepository>(),
@@ -309,6 +338,12 @@ _i174.GetIt init(
       gh<_i465.SecureCredentialVault>(),
       gh<_i750.AccountDataSource>(),
       gh<_i291.SubscriptionRepository>(),
+    ),
+  );
+  gh.factory<_i248.ServerAddEditCubit>(
+    () => _i248.ServerAddEditCubit(
+      gh<_i36.AddServer>(),
+      gh<_i787.EditCredentials>(),
     ),
   );
   gh.factory<_i974.SubscriptionBloc>(

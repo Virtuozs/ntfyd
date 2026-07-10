@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:ntfyd/core/secure_storage/server_credential.dart';
 import 'package:ntfyd/core/usecase/result.dart';
 import 'package:ntfyd/core/usecase/use_case.dart';
@@ -16,6 +17,7 @@ class EditCredentialsParams {
 
 /// Overwrites the stored credential for the server identified by
 /// [EditCredentialsParams.serverId].
+@injectable
 class EditCredentials implements UseCase<EditCredentialsParams, void> {
   EditCredentials(this._repository);
 

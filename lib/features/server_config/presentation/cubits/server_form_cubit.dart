@@ -5,6 +5,7 @@ import 'package:ntfyd/core/usecase/result.dart';
 import 'package:ntfyd/features/server_config/domain/entities/auth_type.dart';
 import 'package:ntfyd/features/server_config/domain/entities/server_config.dart';
 import 'package:ntfyd/features/server_config/domain/usecases/add_server.dart';
+import 'package:ntfyd/features/server_config/presentation/credential_from_fields.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_state.dart';
 
 /// Drives the first-run login facade (D14: health-only validation on
@@ -30,7 +31,8 @@ class ServerFormCubit extends Cubit<ServerFormState> {
     emit(const ServerFormState.validating());
 
     final normalizedUrl = ServerConfig.normalizeBaseUrlInput(url);
-    final (authType, credential) = _buildCredential(user, password);
+    final (authType, credential) =
+        credentialFromFields(user: user, password: password);
 
     final result = await _addServer.call(
       AddServerParams(
@@ -46,27 +48,5 @@ class ServerFormCubit extends Cubit<ServerFormState> {
       case Err<void>(failure: final failure):
         emit(ServerFormState.error(failure: failure));
     }
-  }
-
-  /// Blank username AND password → anonymous (NoAuth/none).
-  /// Otherwise → Basic auth, using empty string for any unset field.
-  (AuthType, ServerCredential) _buildCredential(
-      String? user,
-      String? password,
-      ) {
-    final trimmedUser = user?.trim() ?? '';
-    final trimmedPassword = password?.trim() ?? '';
-
-    if (trimmedUser.isEmpty && trimmedPassword.isEmpty) {
-      return (AuthType.none, const ServerCredential.noAuth());
-    }
-
-    return (
-    AuthType.basic,
-    ServerCredential.basicAuth(
-      username: trimmedUser,
-      password: trimmedPassword,
-    ),
-    );
   }
 }

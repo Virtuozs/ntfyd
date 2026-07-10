@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:ntfyd/core/usecase/result.dart';
 import 'package:ntfyd/core/usecase/use_case.dart';
 import 'package:ntfyd/features/server_config/domain/repositories/server_config_repository.dart';
@@ -6,6 +7,7 @@ import 'package:ntfyd/features/server_config/domain/repositories/server_config_r
 ///
 /// If the removed server was the default, reassigns `isDefault` to the
 /// first remaining server (if any).
+@injectable
 class RemoveServer implements UseCase<String, void> {
   RemoveServer(this._repository);
 

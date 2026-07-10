@@ -76,6 +76,12 @@ import '../features/server_config/di/server_config_module.dart' as _i22;
 import '../features/server_config/domain/repositories/server_config_repository.dart'
     as _i668;
 import '../features/server_config/domain/usecases/add_server.dart' as _i36;
+import '../features/server_config/domain/usecases/edit_credentials.dart'
+    as _i787;
+import '../features/server_config/domain/usecases/list_servers.dart' as _i113;
+import '../features/server_config/domain/usecases/remove_server.dart' as _i524;
+import '../features/server_config/domain/usecases/set_default_server.dart'
+    as _i933;
 import '../features/server_config/domain/usecases/validate_server_health.dart'
     as _i285;
 import '../features/server_config/presentation/cubits/server_form_cubit.dart'
@@ -205,6 +211,18 @@ _i174.GetIt init(
       gh<_i76.CurrentlyViewedTopic>(),
       gh<_i966.NotificationPolicy>(),
     ),
+  );
+  gh.factory<_i787.EditCredentials>(
+    () => _i787.EditCredentials(gh<_i668.ServerConfigRepository>()),
+  );
+  gh.factory<_i113.ListServers>(
+    () => _i113.ListServers(gh<_i668.ServerConfigRepository>()),
+  );
+  gh.factory<_i524.RemoveServer>(
+    () => _i524.RemoveServer(gh<_i668.ServerConfigRepository>()),
+  );
+  gh.factory<_i933.SetDefaultServer>(
+    () => _i933.SetDefaultServer(gh<_i668.ServerConfigRepository>()),
   );
   gh.lazySingleton<_i89.SettingsRepository>(
     () => _i1064.SettingsRepositoryImpl(

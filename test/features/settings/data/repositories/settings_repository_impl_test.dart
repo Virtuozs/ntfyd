@@ -44,6 +44,7 @@ void main() {
         id: 1,
         themeMode: 'white',
         quietHoursEnabled: 0,
+        priorityThreshold: 1,
         hideLockScreenContent: 0,
         analyticsOptOut: 0,
         biometricLock: 0,

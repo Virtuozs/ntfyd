@@ -59,6 +59,9 @@ class SettingsCubit extends Cubit<SettingsState> {
     ),
   );
 
+  Future<void> setPriorityThreshold(int value) =>
+      _update((s) => s.copyWith(priorityThreshold: value));
+
   Future<void> setRetentionMaxAgeDays(int? days) =>
       _update((s) => s.copyWith(retentionMaxAgeDays: days));
 

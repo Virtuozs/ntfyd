@@ -7,6 +7,22 @@ import 'package:ntfyd/features/settings/presentation/cubits/settings_state.dart'
 class NotificationsSettingsPage extends StatelessWidget {
   const NotificationsSettingsPage({super.key});
 
+  static const _defaultQuietHoursStart = '22:00';
+  static const _defaultQuietHoursEnd = '07:00';
+
+  Future<void> _toggleQuietHours(
+    SettingsCubit cubit,
+    bool enabled,
+    String? start,
+    String? end,
+  ) {
+    return cubit.setQuietHours(
+      enabled: enabled,
+      start: start ?? _defaultQuietHoursStart,
+      end: end ?? _defaultQuietHoursEnd,
+    );
+  }
+
   Future<void> _pickTime(
     BuildContext context,
     SettingsCubit cubit,
@@ -23,8 +39,8 @@ class NotificationsSettingsPage extends StatelessWidget {
         '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
     await cubit.setQuietHours(
       enabled: enabled,
-      start: isStart ? formatted : start,
-      end: isStart ? end : formatted,
+      start: isStart ? formatted : (start ?? _defaultQuietHoursStart),
+      end: isStart ? (end ?? _defaultQuietHoursEnd) : formatted,
     );
   }
 
@@ -55,15 +71,17 @@ class NotificationsSettingsPage extends StatelessWidget {
               SwitchListTile(
                 title: const Text('Quiet hours'),
                 value: settings.quietHoursEnabled,
-                onChanged: (value) => cubit.setQuietHours(
-                  enabled: value,
-                  start: settings.quietHoursStart,
-                  end: settings.quietHoursEnd,
+                onChanged: (value) => _toggleQuietHours(
+                  cubit,
+                  value,
+                  settings.quietHoursStart,
+                  settings.quietHoursEnd,
                 ),
               ),
               ListTile(
                 title: const Text('Start'),
                 trailing: Text(settings.quietHoursStart ?? '--:--'),
+                enabled: settings.quietHoursEnabled,
                 onTap: () => _pickTime(
                   context,
                   cubit,
@@ -76,6 +94,7 @@ class NotificationsSettingsPage extends StatelessWidget {
               ListTile(
                 title: const Text('End'),
                 trailing: Text(settings.quietHoursEnd ?? '--:--'),
+                enabled: settings.quietHoursEnabled,
                 onTap: () => _pickTime(
                   context,
                   cubit,
@@ -86,12 +105,25 @@ class NotificationsSettingsPage extends StatelessWidget {
                 ),
               ),
               const Divider(),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Text('Priority channels'),
+              ListTile(
+                title: const Text('Priority channels'),
+                subtitle: const Text(
+                  'Messages below the selected priority are not shown as notifications.',
+                ),
+                trailing: DropdownButton<int>(
+                  value: settings.priorityThreshold,
+                  items: [
+                    for (final channel in NotificationChannelSpec.all)
+                      DropdownMenuItem(
+                        value: channel.priorityLevel,
+                        child: Text(channel.name),
+                      ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) cubit.setPriorityThreshold(value);
+                  },
+                ),
               ),
-              for (final channel in NotificationChannelSpec.all)
-                ListTile(title: Text(channel.name)),
               const Padding(
                 padding: EdgeInsets.all(16),
                 child: Text(

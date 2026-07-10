@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 mixin _$AppSettings {
 
  AppThemeMode get themeMode; bool get quietHoursEnabled; String? get quietHoursStart;// "HH:mm" (24h)
- String? get quietHoursEnd; int? get retentionMaxAgeDays;// null = unlimited ("Forever")
+ String? get quietHoursEnd; int get priorityThreshold;// 1 (Min) .. 5 (Urgent); floor for notification suppression
+ int? get retentionMaxAgeDays;// null = unlimited ("Forever")
  int? get retentionMaxRows;// internal safety cap, not user-facing
  bool get hideLockScreenContent; bool get analyticsOptOut; bool get biometricLock;
 /// Create a copy of AppSettings
@@ -28,16 +29,16 @@ $AppSettingsCopyWith<AppSettings> get copyWith => _$AppSettingsCopyWithImpl<AppS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppSettings&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.quietHoursEnabled, quietHoursEnabled) || other.quietHoursEnabled == quietHoursEnabled)&&(identical(other.quietHoursStart, quietHoursStart) || other.quietHoursStart == quietHoursStart)&&(identical(other.quietHoursEnd, quietHoursEnd) || other.quietHoursEnd == quietHoursEnd)&&(identical(other.retentionMaxAgeDays, retentionMaxAgeDays) || other.retentionMaxAgeDays == retentionMaxAgeDays)&&(identical(other.retentionMaxRows, retentionMaxRows) || other.retentionMaxRows == retentionMaxRows)&&(identical(other.hideLockScreenContent, hideLockScreenContent) || other.hideLockScreenContent == hideLockScreenContent)&&(identical(other.analyticsOptOut, analyticsOptOut) || other.analyticsOptOut == analyticsOptOut)&&(identical(other.biometricLock, biometricLock) || other.biometricLock == biometricLock));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppSettings&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.quietHoursEnabled, quietHoursEnabled) || other.quietHoursEnabled == quietHoursEnabled)&&(identical(other.quietHoursStart, quietHoursStart) || other.quietHoursStart == quietHoursStart)&&(identical(other.quietHoursEnd, quietHoursEnd) || other.quietHoursEnd == quietHoursEnd)&&(identical(other.priorityThreshold, priorityThreshold) || other.priorityThreshold == priorityThreshold)&&(identical(other.retentionMaxAgeDays, retentionMaxAgeDays) || other.retentionMaxAgeDays == retentionMaxAgeDays)&&(identical(other.retentionMaxRows, retentionMaxRows) || other.retentionMaxRows == retentionMaxRows)&&(identical(other.hideLockScreenContent, hideLockScreenContent) || other.hideLockScreenContent == hideLockScreenContent)&&(identical(other.analyticsOptOut, analyticsOptOut) || other.analyticsOptOut == analyticsOptOut)&&(identical(other.biometricLock, biometricLock) || other.biometricLock == biometricLock));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,themeMode,quietHoursEnabled,quietHoursStart,quietHoursEnd,retentionMaxAgeDays,retentionMaxRows,hideLockScreenContent,analyticsOptOut,biometricLock);
+int get hashCode => Object.hash(runtimeType,themeMode,quietHoursEnabled,quietHoursStart,quietHoursEnd,priorityThreshold,retentionMaxAgeDays,retentionMaxRows,hideLockScreenContent,analyticsOptOut,biometricLock);
 
 @override
 String toString() {
-  return 'AppSettings(themeMode: $themeMode, quietHoursEnabled: $quietHoursEnabled, quietHoursStart: $quietHoursStart, quietHoursEnd: $quietHoursEnd, retentionMaxAgeDays: $retentionMaxAgeDays, retentionMaxRows: $retentionMaxRows, hideLockScreenContent: $hideLockScreenContent, analyticsOptOut: $analyticsOptOut, biometricLock: $biometricLock)';
+  return 'AppSettings(themeMode: $themeMode, quietHoursEnabled: $quietHoursEnabled, quietHoursStart: $quietHoursStart, quietHoursEnd: $quietHoursEnd, priorityThreshold: $priorityThreshold, retentionMaxAgeDays: $retentionMaxAgeDays, retentionMaxRows: $retentionMaxRows, hideLockScreenContent: $hideLockScreenContent, analyticsOptOut: $analyticsOptOut, biometricLock: $biometricLock)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $AppSettingsCopyWith<$Res>  {
   factory $AppSettingsCopyWith(AppSettings value, $Res Function(AppSettings) _then) = _$AppSettingsCopyWithImpl;
 @useResult
 $Res call({
- AppThemeMode themeMode, bool quietHoursEnabled, String? quietHoursStart, String? quietHoursEnd, int? retentionMaxAgeDays, int? retentionMaxRows, bool hideLockScreenContent, bool analyticsOptOut, bool biometricLock
+ AppThemeMode themeMode, bool quietHoursEnabled, String? quietHoursStart, String? quietHoursEnd, int priorityThreshold, int? retentionMaxAgeDays, int? retentionMaxRows, bool hideLockScreenContent, bool analyticsOptOut, bool biometricLock
 });
 
 
@@ -65,13 +66,14 @@ class _$AppSettingsCopyWithImpl<$Res>
 
 /// Create a copy of AppSettings
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? themeMode = null,Object? quietHoursEnabled = null,Object? quietHoursStart = freezed,Object? quietHoursEnd = freezed,Object? retentionMaxAgeDays = freezed,Object? retentionMaxRows = freezed,Object? hideLockScreenContent = null,Object? analyticsOptOut = null,Object? biometricLock = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? themeMode = null,Object? quietHoursEnabled = null,Object? quietHoursStart = freezed,Object? quietHoursEnd = freezed,Object? priorityThreshold = null,Object? retentionMaxAgeDays = freezed,Object? retentionMaxRows = freezed,Object? hideLockScreenContent = null,Object? analyticsOptOut = null,Object? biometricLock = null,}) {
   return _then(_self.copyWith(
 themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
 as AppThemeMode,quietHoursEnabled: null == quietHoursEnabled ? _self.quietHoursEnabled : quietHoursEnabled // ignore: cast_nullable_to_non_nullable
 as bool,quietHoursStart: freezed == quietHoursStart ? _self.quietHoursStart : quietHoursStart // ignore: cast_nullable_to_non_nullable
 as String?,quietHoursEnd: freezed == quietHoursEnd ? _self.quietHoursEnd : quietHoursEnd // ignore: cast_nullable_to_non_nullable
-as String?,retentionMaxAgeDays: freezed == retentionMaxAgeDays ? _self.retentionMaxAgeDays : retentionMaxAgeDays // ignore: cast_nullable_to_non_nullable
+as String?,priorityThreshold: null == priorityThreshold ? _self.priorityThreshold : priorityThreshold // ignore: cast_nullable_to_non_nullable
+as int,retentionMaxAgeDays: freezed == retentionMaxAgeDays ? _self.retentionMaxAgeDays : retentionMaxAgeDays // ignore: cast_nullable_to_non_nullable
 as int?,retentionMaxRows: freezed == retentionMaxRows ? _self.retentionMaxRows : retentionMaxRows // ignore: cast_nullable_to_non_nullable
 as int?,hideLockScreenContent: null == hideLockScreenContent ? _self.hideLockScreenContent : hideLockScreenContent // ignore: cast_nullable_to_non_nullable
 as bool,analyticsOptOut: null == analyticsOptOut ? _self.analyticsOptOut : analyticsOptOut // ignore: cast_nullable_to_non_nullable
@@ -161,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AppThemeMode themeMode,  bool quietHoursEnabled,  String? quietHoursStart,  String? quietHoursEnd,  int? retentionMaxAgeDays,  int? retentionMaxRows,  bool hideLockScreenContent,  bool analyticsOptOut,  bool biometricLock)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AppThemeMode themeMode,  bool quietHoursEnabled,  String? quietHoursStart,  String? quietHoursEnd,  int priorityThreshold,  int? retentionMaxAgeDays,  int? retentionMaxRows,  bool hideLockScreenContent,  bool analyticsOptOut,  bool biometricLock)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AppSettings() when $default != null:
-return $default(_that.themeMode,_that.quietHoursEnabled,_that.quietHoursStart,_that.quietHoursEnd,_that.retentionMaxAgeDays,_that.retentionMaxRows,_that.hideLockScreenContent,_that.analyticsOptOut,_that.biometricLock);case _:
+return $default(_that.themeMode,_that.quietHoursEnabled,_that.quietHoursStart,_that.quietHoursEnd,_that.priorityThreshold,_that.retentionMaxAgeDays,_that.retentionMaxRows,_that.hideLockScreenContent,_that.analyticsOptOut,_that.biometricLock);case _:
   return orElse();
 
 }
@@ -182,10 +184,10 @@ return $default(_that.themeMode,_that.quietHoursEnabled,_that.quietHoursStart,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AppThemeMode themeMode,  bool quietHoursEnabled,  String? quietHoursStart,  String? quietHoursEnd,  int? retentionMaxAgeDays,  int? retentionMaxRows,  bool hideLockScreenContent,  bool analyticsOptOut,  bool biometricLock)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AppThemeMode themeMode,  bool quietHoursEnabled,  String? quietHoursStart,  String? quietHoursEnd,  int priorityThreshold,  int? retentionMaxAgeDays,  int? retentionMaxRows,  bool hideLockScreenContent,  bool analyticsOptOut,  bool biometricLock)  $default,) {final _that = this;
 switch (_that) {
 case _AppSettings():
-return $default(_that.themeMode,_that.quietHoursEnabled,_that.quietHoursStart,_that.quietHoursEnd,_that.retentionMaxAgeDays,_that.retentionMaxRows,_that.hideLockScreenContent,_that.analyticsOptOut,_that.biometricLock);case _:
+return $default(_that.themeMode,_that.quietHoursEnabled,_that.quietHoursStart,_that.quietHoursEnd,_that.priorityThreshold,_that.retentionMaxAgeDays,_that.retentionMaxRows,_that.hideLockScreenContent,_that.analyticsOptOut,_that.biometricLock);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +204,10 @@ return $default(_that.themeMode,_that.quietHoursEnabled,_that.quietHoursStart,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AppThemeMode themeMode,  bool quietHoursEnabled,  String? quietHoursStart,  String? quietHoursEnd,  int? retentionMaxAgeDays,  int? retentionMaxRows,  bool hideLockScreenContent,  bool analyticsOptOut,  bool biometricLock)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AppThemeMode themeMode,  bool quietHoursEnabled,  String? quietHoursStart,  String? quietHoursEnd,  int priorityThreshold,  int? retentionMaxAgeDays,  int? retentionMaxRows,  bool hideLockScreenContent,  bool analyticsOptOut,  bool biometricLock)?  $default,) {final _that = this;
 switch (_that) {
 case _AppSettings() when $default != null:
-return $default(_that.themeMode,_that.quietHoursEnabled,_that.quietHoursStart,_that.quietHoursEnd,_that.retentionMaxAgeDays,_that.retentionMaxRows,_that.hideLockScreenContent,_that.analyticsOptOut,_that.biometricLock);case _:
+return $default(_that.themeMode,_that.quietHoursEnabled,_that.quietHoursStart,_that.quietHoursEnd,_that.priorityThreshold,_that.retentionMaxAgeDays,_that.retentionMaxRows,_that.hideLockScreenContent,_that.analyticsOptOut,_that.biometricLock);case _:
   return null;
 
 }
@@ -217,7 +219,7 @@ return $default(_that.themeMode,_that.quietHoursEnabled,_that.quietHoursStart,_t
 
 
 class _AppSettings implements AppSettings {
-  const _AppSettings({this.themeMode = AppThemeMode.dark, this.quietHoursEnabled = false, this.quietHoursStart, this.quietHoursEnd, this.retentionMaxAgeDays, this.retentionMaxRows, this.hideLockScreenContent = false, this.analyticsOptOut = false, this.biometricLock = false});
+  const _AppSettings({this.themeMode = AppThemeMode.dark, this.quietHoursEnabled = false, this.quietHoursStart, this.quietHoursEnd, this.priorityThreshold = 1, this.retentionMaxAgeDays, this.retentionMaxRows, this.hideLockScreenContent = false, this.analyticsOptOut = false, this.biometricLock = false});
   
 
 @override@JsonKey() final  AppThemeMode themeMode;
@@ -225,6 +227,8 @@ class _AppSettings implements AppSettings {
 @override final  String? quietHoursStart;
 // "HH:mm" (24h)
 @override final  String? quietHoursEnd;
+@override@JsonKey() final  int priorityThreshold;
+// 1 (Min) .. 5 (Urgent); floor for notification suppression
 @override final  int? retentionMaxAgeDays;
 // null = unlimited ("Forever")
 @override final  int? retentionMaxRows;
@@ -243,16 +247,16 @@ _$AppSettingsCopyWith<_AppSettings> get copyWith => __$AppSettingsCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppSettings&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.quietHoursEnabled, quietHoursEnabled) || other.quietHoursEnabled == quietHoursEnabled)&&(identical(other.quietHoursStart, quietHoursStart) || other.quietHoursStart == quietHoursStart)&&(identical(other.quietHoursEnd, quietHoursEnd) || other.quietHoursEnd == quietHoursEnd)&&(identical(other.retentionMaxAgeDays, retentionMaxAgeDays) || other.retentionMaxAgeDays == retentionMaxAgeDays)&&(identical(other.retentionMaxRows, retentionMaxRows) || other.retentionMaxRows == retentionMaxRows)&&(identical(other.hideLockScreenContent, hideLockScreenContent) || other.hideLockScreenContent == hideLockScreenContent)&&(identical(other.analyticsOptOut, analyticsOptOut) || other.analyticsOptOut == analyticsOptOut)&&(identical(other.biometricLock, biometricLock) || other.biometricLock == biometricLock));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppSettings&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.quietHoursEnabled, quietHoursEnabled) || other.quietHoursEnabled == quietHoursEnabled)&&(identical(other.quietHoursStart, quietHoursStart) || other.quietHoursStart == quietHoursStart)&&(identical(other.quietHoursEnd, quietHoursEnd) || other.quietHoursEnd == quietHoursEnd)&&(identical(other.priorityThreshold, priorityThreshold) || other.priorityThreshold == priorityThreshold)&&(identical(other.retentionMaxAgeDays, retentionMaxAgeDays) || other.retentionMaxAgeDays == retentionMaxAgeDays)&&(identical(other.retentionMaxRows, retentionMaxRows) || other.retentionMaxRows == retentionMaxRows)&&(identical(other.hideLockScreenContent, hideLockScreenContent) || other.hideLockScreenContent == hideLockScreenContent)&&(identical(other.analyticsOptOut, analyticsOptOut) || other.analyticsOptOut == analyticsOptOut)&&(identical(other.biometricLock, biometricLock) || other.biometricLock == biometricLock));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,themeMode,quietHoursEnabled,quietHoursStart,quietHoursEnd,retentionMaxAgeDays,retentionMaxRows,hideLockScreenContent,analyticsOptOut,biometricLock);
+int get hashCode => Object.hash(runtimeType,themeMode,quietHoursEnabled,quietHoursStart,quietHoursEnd,priorityThreshold,retentionMaxAgeDays,retentionMaxRows,hideLockScreenContent,analyticsOptOut,biometricLock);
 
 @override
 String toString() {
-  return 'AppSettings(themeMode: $themeMode, quietHoursEnabled: $quietHoursEnabled, quietHoursStart: $quietHoursStart, quietHoursEnd: $quietHoursEnd, retentionMaxAgeDays: $retentionMaxAgeDays, retentionMaxRows: $retentionMaxRows, hideLockScreenContent: $hideLockScreenContent, analyticsOptOut: $analyticsOptOut, biometricLock: $biometricLock)';
+  return 'AppSettings(themeMode: $themeMode, quietHoursEnabled: $quietHoursEnabled, quietHoursStart: $quietHoursStart, quietHoursEnd: $quietHoursEnd, priorityThreshold: $priorityThreshold, retentionMaxAgeDays: $retentionMaxAgeDays, retentionMaxRows: $retentionMaxRows, hideLockScreenContent: $hideLockScreenContent, analyticsOptOut: $analyticsOptOut, biometricLock: $biometricLock)';
 }
 
 
@@ -263,7 +267,7 @@ abstract mixin class _$AppSettingsCopyWith<$Res> implements $AppSettingsCopyWith
   factory _$AppSettingsCopyWith(_AppSettings value, $Res Function(_AppSettings) _then) = __$AppSettingsCopyWithImpl;
 @override @useResult
 $Res call({
- AppThemeMode themeMode, bool quietHoursEnabled, String? quietHoursStart, String? quietHoursEnd, int? retentionMaxAgeDays, int? retentionMaxRows, bool hideLockScreenContent, bool analyticsOptOut, bool biometricLock
+ AppThemeMode themeMode, bool quietHoursEnabled, String? quietHoursStart, String? quietHoursEnd, int priorityThreshold, int? retentionMaxAgeDays, int? retentionMaxRows, bool hideLockScreenContent, bool analyticsOptOut, bool biometricLock
 });
 
 
@@ -280,13 +284,14 @@ class __$AppSettingsCopyWithImpl<$Res>
 
 /// Create a copy of AppSettings
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? themeMode = null,Object? quietHoursEnabled = null,Object? quietHoursStart = freezed,Object? quietHoursEnd = freezed,Object? retentionMaxAgeDays = freezed,Object? retentionMaxRows = freezed,Object? hideLockScreenContent = null,Object? analyticsOptOut = null,Object? biometricLock = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? themeMode = null,Object? quietHoursEnabled = null,Object? quietHoursStart = freezed,Object? quietHoursEnd = freezed,Object? priorityThreshold = null,Object? retentionMaxAgeDays = freezed,Object? retentionMaxRows = freezed,Object? hideLockScreenContent = null,Object? analyticsOptOut = null,Object? biometricLock = null,}) {
   return _then(_AppSettings(
 themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
 as AppThemeMode,quietHoursEnabled: null == quietHoursEnabled ? _self.quietHoursEnabled : quietHoursEnabled // ignore: cast_nullable_to_non_nullable
 as bool,quietHoursStart: freezed == quietHoursStart ? _self.quietHoursStart : quietHoursStart // ignore: cast_nullable_to_non_nullable
 as String?,quietHoursEnd: freezed == quietHoursEnd ? _self.quietHoursEnd : quietHoursEnd // ignore: cast_nullable_to_non_nullable
-as String?,retentionMaxAgeDays: freezed == retentionMaxAgeDays ? _self.retentionMaxAgeDays : retentionMaxAgeDays // ignore: cast_nullable_to_non_nullable
+as String?,priorityThreshold: null == priorityThreshold ? _self.priorityThreshold : priorityThreshold // ignore: cast_nullable_to_non_nullable
+as int,retentionMaxAgeDays: freezed == retentionMaxAgeDays ? _self.retentionMaxAgeDays : retentionMaxAgeDays // ignore: cast_nullable_to_non_nullable
 as int?,retentionMaxRows: freezed == retentionMaxRows ? _self.retentionMaxRows : retentionMaxRows // ignore: cast_nullable_to_non_nullable
 as int?,hideLockScreenContent: null == hideLockScreenContent ? _self.hideLockScreenContent : hideLockScreenContent // ignore: cast_nullable_to_non_nullable
 as bool,analyticsOptOut: null == analyticsOptOut ? _self.analyticsOptOut : analyticsOptOut // ignore: cast_nullable_to_non_nullable

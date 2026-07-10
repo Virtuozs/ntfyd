@@ -2710,6 +2710,18 @@ class $AppSettingsTable extends AppSettings
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _priorityThresholdMeta = const VerificationMeta(
+    'priorityThreshold',
+  );
+  @override
+  late final GeneratedColumn<int> priorityThreshold = GeneratedColumn<int>(
+    'priority_threshold',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
   static const VerificationMeta _retentionMaxAgeDaysMeta =
       const VerificationMeta('retentionMaxAgeDays');
   @override
@@ -2773,6 +2785,7 @@ class $AppSettingsTable extends AppSettings
     quietHoursEnabled,
     quietHoursStart,
     quietHoursEnd,
+    priorityThreshold,
     retentionMaxAgeDays,
     retentionMaxRows,
     hideLockScreenContent,
@@ -2824,6 +2837,15 @@ class $AppSettingsTable extends AppSettings
         quietHoursEnd.isAcceptableOrUnknown(
           data['quiet_hours_end']!,
           _quietHoursEndMeta,
+        ),
+      );
+    }
+    if (data.containsKey('priority_threshold')) {
+      context.handle(
+        _priorityThresholdMeta,
+        priorityThreshold.isAcceptableOrUnknown(
+          data['priority_threshold']!,
+          _priorityThresholdMeta,
         ),
       );
     }
@@ -2901,6 +2923,10 @@ class $AppSettingsTable extends AppSettings
         DriftSqlType.string,
         data['${effectivePrefix}quiet_hours_end'],
       ),
+      priorityThreshold: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}priority_threshold'],
+      )!,
       retentionMaxAgeDays: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}retention_max_age_days'],
@@ -2936,6 +2962,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
   final int quietHoursEnabled;
   final String? quietHoursStart;
   final String? quietHoursEnd;
+  final int priorityThreshold;
   final int? retentionMaxAgeDays;
   final int? retentionMaxRows;
   final int hideLockScreenContent;
@@ -2947,6 +2974,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     required this.quietHoursEnabled,
     this.quietHoursStart,
     this.quietHoursEnd,
+    required this.priorityThreshold,
     this.retentionMaxAgeDays,
     this.retentionMaxRows,
     required this.hideLockScreenContent,
@@ -2965,6 +2993,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     if (!nullToAbsent || quietHoursEnd != null) {
       map['quiet_hours_end'] = Variable<String>(quietHoursEnd);
     }
+    map['priority_threshold'] = Variable<int>(priorityThreshold);
     if (!nullToAbsent || retentionMaxAgeDays != null) {
       map['retention_max_age_days'] = Variable<int>(retentionMaxAgeDays);
     }
@@ -2988,6 +3017,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       quietHoursEnd: quietHoursEnd == null && nullToAbsent
           ? const Value.absent()
           : Value(quietHoursEnd),
+      priorityThreshold: Value(priorityThreshold),
       retentionMaxAgeDays: retentionMaxAgeDays == null && nullToAbsent
           ? const Value.absent()
           : Value(retentionMaxAgeDays),
@@ -3011,6 +3041,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       quietHoursEnabled: serializer.fromJson<int>(json['quietHoursEnabled']),
       quietHoursStart: serializer.fromJson<String?>(json['quietHoursStart']),
       quietHoursEnd: serializer.fromJson<String?>(json['quietHoursEnd']),
+      priorityThreshold: serializer.fromJson<int>(json['priorityThreshold']),
       retentionMaxAgeDays: serializer.fromJson<int?>(
         json['retentionMaxAgeDays'],
       ),
@@ -3031,6 +3062,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       'quietHoursEnabled': serializer.toJson<int>(quietHoursEnabled),
       'quietHoursStart': serializer.toJson<String?>(quietHoursStart),
       'quietHoursEnd': serializer.toJson<String?>(quietHoursEnd),
+      'priorityThreshold': serializer.toJson<int>(priorityThreshold),
       'retentionMaxAgeDays': serializer.toJson<int?>(retentionMaxAgeDays),
       'retentionMaxRows': serializer.toJson<int?>(retentionMaxRows),
       'hideLockScreenContent': serializer.toJson<int>(hideLockScreenContent),
@@ -3045,6 +3077,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     int? quietHoursEnabled,
     Value<String?> quietHoursStart = const Value.absent(),
     Value<String?> quietHoursEnd = const Value.absent(),
+    int? priorityThreshold,
     Value<int?> retentionMaxAgeDays = const Value.absent(),
     Value<int?> retentionMaxRows = const Value.absent(),
     int? hideLockScreenContent,
@@ -3060,6 +3093,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     quietHoursEnd: quietHoursEnd.present
         ? quietHoursEnd.value
         : this.quietHoursEnd,
+    priorityThreshold: priorityThreshold ?? this.priorityThreshold,
     retentionMaxAgeDays: retentionMaxAgeDays.present
         ? retentionMaxAgeDays.value
         : this.retentionMaxAgeDays,
@@ -3083,6 +3117,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       quietHoursEnd: data.quietHoursEnd.present
           ? data.quietHoursEnd.value
           : this.quietHoursEnd,
+      priorityThreshold: data.priorityThreshold.present
+          ? data.priorityThreshold.value
+          : this.priorityThreshold,
       retentionMaxAgeDays: data.retentionMaxAgeDays.present
           ? data.retentionMaxAgeDays.value
           : this.retentionMaxAgeDays,
@@ -3109,6 +3146,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
           ..write('quietHoursEnabled: $quietHoursEnabled, ')
           ..write('quietHoursStart: $quietHoursStart, ')
           ..write('quietHoursEnd: $quietHoursEnd, ')
+          ..write('priorityThreshold: $priorityThreshold, ')
           ..write('retentionMaxAgeDays: $retentionMaxAgeDays, ')
           ..write('retentionMaxRows: $retentionMaxRows, ')
           ..write('hideLockScreenContent: $hideLockScreenContent, ')
@@ -3125,6 +3163,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     quietHoursEnabled,
     quietHoursStart,
     quietHoursEnd,
+    priorityThreshold,
     retentionMaxAgeDays,
     retentionMaxRows,
     hideLockScreenContent,
@@ -3140,6 +3179,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
           other.quietHoursEnabled == this.quietHoursEnabled &&
           other.quietHoursStart == this.quietHoursStart &&
           other.quietHoursEnd == this.quietHoursEnd &&
+          other.priorityThreshold == this.priorityThreshold &&
           other.retentionMaxAgeDays == this.retentionMaxAgeDays &&
           other.retentionMaxRows == this.retentionMaxRows &&
           other.hideLockScreenContent == this.hideLockScreenContent &&
@@ -3153,6 +3193,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   final Value<int> quietHoursEnabled;
   final Value<String?> quietHoursStart;
   final Value<String?> quietHoursEnd;
+  final Value<int> priorityThreshold;
   final Value<int?> retentionMaxAgeDays;
   final Value<int?> retentionMaxRows;
   final Value<int> hideLockScreenContent;
@@ -3164,6 +3205,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     this.quietHoursEnabled = const Value.absent(),
     this.quietHoursStart = const Value.absent(),
     this.quietHoursEnd = const Value.absent(),
+    this.priorityThreshold = const Value.absent(),
     this.retentionMaxAgeDays = const Value.absent(),
     this.retentionMaxRows = const Value.absent(),
     this.hideLockScreenContent = const Value.absent(),
@@ -3176,6 +3218,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     this.quietHoursEnabled = const Value.absent(),
     this.quietHoursStart = const Value.absent(),
     this.quietHoursEnd = const Value.absent(),
+    this.priorityThreshold = const Value.absent(),
     this.retentionMaxAgeDays = const Value.absent(),
     this.retentionMaxRows = const Value.absent(),
     this.hideLockScreenContent = const Value.absent(),
@@ -3188,6 +3231,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     Expression<int>? quietHoursEnabled,
     Expression<String>? quietHoursStart,
     Expression<String>? quietHoursEnd,
+    Expression<int>? priorityThreshold,
     Expression<int>? retentionMaxAgeDays,
     Expression<int>? retentionMaxRows,
     Expression<int>? hideLockScreenContent,
@@ -3200,6 +3244,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
       if (quietHoursEnabled != null) 'quiet_hours_enabled': quietHoursEnabled,
       if (quietHoursStart != null) 'quiet_hours_start': quietHoursStart,
       if (quietHoursEnd != null) 'quiet_hours_end': quietHoursEnd,
+      if (priorityThreshold != null) 'priority_threshold': priorityThreshold,
       if (retentionMaxAgeDays != null)
         'retention_max_age_days': retentionMaxAgeDays,
       if (retentionMaxRows != null) 'retention_max_rows': retentionMaxRows,
@@ -3216,6 +3261,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     Value<int>? quietHoursEnabled,
     Value<String?>? quietHoursStart,
     Value<String?>? quietHoursEnd,
+    Value<int>? priorityThreshold,
     Value<int?>? retentionMaxAgeDays,
     Value<int?>? retentionMaxRows,
     Value<int>? hideLockScreenContent,
@@ -3228,6 +3274,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
       quietHoursEnabled: quietHoursEnabled ?? this.quietHoursEnabled,
       quietHoursStart: quietHoursStart ?? this.quietHoursStart,
       quietHoursEnd: quietHoursEnd ?? this.quietHoursEnd,
+      priorityThreshold: priorityThreshold ?? this.priorityThreshold,
       retentionMaxAgeDays: retentionMaxAgeDays ?? this.retentionMaxAgeDays,
       retentionMaxRows: retentionMaxRows ?? this.retentionMaxRows,
       hideLockScreenContent:
@@ -3254,6 +3301,9 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     }
     if (quietHoursEnd.present) {
       map['quiet_hours_end'] = Variable<String>(quietHoursEnd.value);
+    }
+    if (priorityThreshold.present) {
+      map['priority_threshold'] = Variable<int>(priorityThreshold.value);
     }
     if (retentionMaxAgeDays.present) {
       map['retention_max_age_days'] = Variable<int>(retentionMaxAgeDays.value);
@@ -3283,6 +3333,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
           ..write('quietHoursEnabled: $quietHoursEnabled, ')
           ..write('quietHoursStart: $quietHoursStart, ')
           ..write('quietHoursEnd: $quietHoursEnd, ')
+          ..write('priorityThreshold: $priorityThreshold, ')
           ..write('retentionMaxAgeDays: $retentionMaxAgeDays, ')
           ..write('retentionMaxRows: $retentionMaxRows, ')
           ..write('hideLockScreenContent: $hideLockScreenContent, ')
@@ -5150,6 +5201,7 @@ typedef $$AppSettingsTableCreateCompanionBuilder =
       Value<int> quietHoursEnabled,
       Value<String?> quietHoursStart,
       Value<String?> quietHoursEnd,
+      Value<int> priorityThreshold,
       Value<int?> retentionMaxAgeDays,
       Value<int?> retentionMaxRows,
       Value<int> hideLockScreenContent,
@@ -5163,6 +5215,7 @@ typedef $$AppSettingsTableUpdateCompanionBuilder =
       Value<int> quietHoursEnabled,
       Value<String?> quietHoursStart,
       Value<String?> quietHoursEnd,
+      Value<int> priorityThreshold,
       Value<int?> retentionMaxAgeDays,
       Value<int?> retentionMaxRows,
       Value<int> hideLockScreenContent,
@@ -5201,6 +5254,11 @@ class $$AppSettingsTableFilterComposer
 
   ColumnFilters<String> get quietHoursEnd => $composableBuilder(
     column: $table.quietHoursEnd,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get priorityThreshold => $composableBuilder(
+    column: $table.priorityThreshold,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5264,6 +5322,11 @@ class $$AppSettingsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get priorityThreshold => $composableBuilder(
+    column: $table.priorityThreshold,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get retentionMaxAgeDays => $composableBuilder(
     column: $table.retentionMaxAgeDays,
     builder: (column) => ColumnOrderings(column),
@@ -5317,6 +5380,11 @@ class $$AppSettingsTableAnnotationComposer
 
   GeneratedColumn<String> get quietHoursEnd => $composableBuilder(
     column: $table.quietHoursEnd,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get priorityThreshold => $composableBuilder(
+    column: $table.priorityThreshold,
     builder: (column) => column,
   );
 
@@ -5382,6 +5450,7 @@ class $$AppSettingsTableTableManager
                 Value<int> quietHoursEnabled = const Value.absent(),
                 Value<String?> quietHoursStart = const Value.absent(),
                 Value<String?> quietHoursEnd = const Value.absent(),
+                Value<int> priorityThreshold = const Value.absent(),
                 Value<int?> retentionMaxAgeDays = const Value.absent(),
                 Value<int?> retentionMaxRows = const Value.absent(),
                 Value<int> hideLockScreenContent = const Value.absent(),
@@ -5393,6 +5462,7 @@ class $$AppSettingsTableTableManager
                 quietHoursEnabled: quietHoursEnabled,
                 quietHoursStart: quietHoursStart,
                 quietHoursEnd: quietHoursEnd,
+                priorityThreshold: priorityThreshold,
                 retentionMaxAgeDays: retentionMaxAgeDays,
                 retentionMaxRows: retentionMaxRows,
                 hideLockScreenContent: hideLockScreenContent,
@@ -5406,6 +5476,7 @@ class $$AppSettingsTableTableManager
                 Value<int> quietHoursEnabled = const Value.absent(),
                 Value<String?> quietHoursStart = const Value.absent(),
                 Value<String?> quietHoursEnd = const Value.absent(),
+                Value<int> priorityThreshold = const Value.absent(),
                 Value<int?> retentionMaxAgeDays = const Value.absent(),
                 Value<int?> retentionMaxRows = const Value.absent(),
                 Value<int> hideLockScreenContent = const Value.absent(),
@@ -5417,6 +5488,7 @@ class $$AppSettingsTableTableManager
                 quietHoursEnabled: quietHoursEnabled,
                 quietHoursStart: quietHoursStart,
                 quietHoursEnd: quietHoursEnd,
+                priorityThreshold: priorityThreshold,
                 retentionMaxAgeDays: retentionMaxAgeDays,
                 retentionMaxRows: retentionMaxRows,
                 hideLockScreenContent: hideLockScreenContent,

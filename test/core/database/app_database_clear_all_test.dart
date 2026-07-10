@@ -75,7 +75,11 @@ void main() {
 
     test('resets the appSettings row to defaults rather than deleting it', () async {
       await db.settingDao.updateAppSetting(
-        const AppSettingsCompanion(themeMode: Value('white'), biometricLock: Value(1)),
+        const AppSettingsCompanion(
+          themeMode: Value('white'),
+          biometricLock: Value(1),
+          priorityThreshold: Value(4),
+        ),
       );
 
       await db.clearAllTables();
@@ -84,6 +88,7 @@ void main() {
       expect(settings.id, equals(1));
       expect(settings.themeMode, equals('dark'));
       expect(settings.biometricLock, equals(0));
+      expect(settings.priorityThreshold, equals(1));
       expect(settings.retentionMaxRows, equals(10000));
     });
   });

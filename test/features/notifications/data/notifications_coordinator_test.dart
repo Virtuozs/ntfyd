@@ -57,10 +57,12 @@ db.Subscription _subscriptionRow({
 db.AppSetting _settingsRow({
   bool quietHoursEnabled = false,
   bool hideLockScreenContent = false,
+  int priorityThreshold = 1,
 }) => db.AppSetting(
   id: 1,
   themeMode: 'dark',
   quietHoursEnabled: quietHoursEnabled ? 1 : 0,
+  priorityThreshold: priorityThreshold,
   hideLockScreenContent: hideLockScreenContent ? 1 : 0,
   analyticsOptOut: 0,
   biometricLock: 0,
@@ -159,6 +161,65 @@ void main() {
         body: 'Body',
         channel: any(named: 'channel'),
         hideLockScreenContent: true,
+      )).called(1);
+    },
+  );
+
+  test(
+    'suppresses when the global priority threshold is above the message priority, '
+    'even though the subscription threshold would allow it',
+    () async {
+      when(
+        () => subscriptionDao.findByTopic('srv-1', 'alerts'),
+      ).thenAnswer((_) async => _subscriptionRow(priorityThreshold: 1));
+      when(
+        () => settingDao.watch(),
+      ).thenAnswer((_) => Stream.value(_settingsRow(priorityThreshold: 3)));
+
+      coordinator.start();
+      insertedController.add(
+        _row(id: 'msg-1', serverId: 'srv-1', topic: 'alerts', priority: 2),
+      );
+      await Future<void>.delayed(Duration.zero);
+      await coordinator.stop();
+
+      verifyNever(() => presenter.show(
+        serverId: any(named: 'serverId'),
+        messageId: any(named: 'messageId'),
+        topic: any(named: 'topic'),
+        title: any(named: 'title'),
+        body: any(named: 'body'),
+        channel: any(named: 'channel'),
+        hideLockScreenContent: any(named: 'hideLockScreenContent'),
+      ));
+    },
+  );
+
+  test(
+    'shows when the message priority meets the global threshold',
+    () async {
+      when(
+        () => subscriptionDao.findByTopic('srv-1', 'alerts'),
+      ).thenAnswer((_) async => _subscriptionRow(priorityThreshold: 1));
+      when(
+        () => settingDao.watch(),
+      ).thenAnswer((_) => Stream.value(_settingsRow(priorityThreshold: 3)));
+
+      coordinator.start();
+      insertedController.add(
+        _row(id: 'msg-1', serverId: 'srv-1', topic: 'alerts', priority: 4),
+      );
+      await Future<void>.delayed(Duration.zero);
+      await coordinator.stop();
+
+      verify(() => presenter.show(
+        serverId: 'srv-1',
+        messageId: 'msg-1',
+        topic: 'alerts',
+        title: 'Title',
+        body: 'Body',
+        channel: any(named: 'channel'),
+        hideLockScreenContent: false,
       )).called(1);
     },
   );

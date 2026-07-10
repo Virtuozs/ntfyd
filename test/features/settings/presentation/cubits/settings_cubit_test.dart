@@ -98,6 +98,25 @@ void main() {
   );
 
   blocTest<SettingsCubit, SettingsState>(
+    'setPriorityThreshold calls UpdateSettings with the copied settings',
+    build: buildCubit,
+    seed: () => const SettingsState.loaded(loaded),
+    act: (cubit) async {
+      when(() => updateSettings.call(any())).thenAnswer(
+        (_) async => const Result.success(loaded),
+      );
+      await cubit.setPriorityThreshold(4);
+    },
+    verify: (_) {
+      verify(
+        () => updateSettings.call(
+          UpdateSettingsParams(settings: loaded.copyWith(priorityThreshold: 4)),
+        ),
+      ).called(1);
+    },
+  );
+
+  blocTest<SettingsCubit, SettingsState>(
     'clearCache delegates to the ClearCache use case',
     build: buildCubit,
     act: (cubit) async {

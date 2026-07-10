@@ -18,6 +18,7 @@ abstract class AppSettings with _$AppSettings {
     @Default(false) bool quietHoursEnabled,
     String? quietHoursStart, // "HH:mm" (24h)
     String? quietHoursEnd,
+    @Default(1) int priorityThreshold, // 1 (Min) .. 5 (Urgent); floor for notification suppression
     int? retentionMaxAgeDays, // null = unlimited ("Forever")
     int? retentionMaxRows, // internal safety cap, not user-facing
     @Default(false) bool hideLockScreenContent,

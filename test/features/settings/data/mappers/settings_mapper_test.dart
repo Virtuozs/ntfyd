@@ -13,6 +13,7 @@ void main() {
         quietHoursEnabled: 1,
         quietHoursStart: '22:00',
         quietHoursEnd: '07:00',
+        priorityThreshold: 2,
         retentionMaxAgeDays: 30,
         retentionMaxRows: 10000,
         hideLockScreenContent: 1,
@@ -26,6 +27,7 @@ void main() {
       expect(settings.quietHoursEnabled, isTrue);
       expect(settings.quietHoursStart, '22:00');
       expect(settings.quietHoursEnd, '07:00');
+      expect(settings.priorityThreshold, 2);
       expect(settings.retentionMaxAgeDays, 30);
       expect(settings.retentionMaxRows, 10000);
       expect(settings.hideLockScreenContent, isTrue);
@@ -38,6 +40,7 @@ void main() {
         id: 1,
         themeMode: 'materialYou',
         quietHoursEnabled: 0,
+        priorityThreshold: 1,
         hideLockScreenContent: 0,
         analyticsOptOut: 0,
         biometricLock: 0,
@@ -55,6 +58,7 @@ void main() {
         id: 1,
         themeMode: 'system', // stale value from before this design
         quietHoursEnabled: 0,
+        priorityThreshold: 1,
         hideLockScreenContent: 0,
         analyticsOptOut: 0,
         biometricLock: 0,
@@ -112,6 +116,14 @@ void main() {
       expect(companion.quietHoursEnd, const Value(null));
       expect(companion.retentionMaxAgeDays, const Value(null));
       expect(companion.retentionMaxRows, const Value(null));
+    });
+
+    test('encodes priorityThreshold', () {
+      const settings = AppSettings(priorityThreshold: 5);
+
+      final companion = SettingsMapper.toCompanion(settings);
+
+      expect(companion.priorityThreshold, const Value(5));
     });
   });
 }

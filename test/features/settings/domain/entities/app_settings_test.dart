@@ -26,6 +26,21 @@ void main() {
       expect(updated.biometricLock, isFalse);
     });
 
+    test('default constructor defaults priorityThreshold to 1 (Min)', () {
+      const settings = AppSettings();
+
+      expect(settings.priorityThreshold, 1);
+    });
+
+    test('copyWith overrides priorityThreshold independently', () {
+      const settings = AppSettings();
+
+      final updated = settings.copyWith(priorityThreshold: 3);
+
+      expect(updated.priorityThreshold, 3);
+      expect(updated.themeMode, AppThemeMode.dark);
+    });
+
     test('two instances with the same fields are equal', () {
       expect(
         const AppSettings(themeMode: AppThemeMode.white, biometricLock: true),

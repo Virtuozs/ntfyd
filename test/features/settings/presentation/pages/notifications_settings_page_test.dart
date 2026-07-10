@@ -21,6 +21,7 @@ void main() {
       start: any(named: 'start'),
       end: any(named: 'end'),
     )).thenAnswer((_) async {});
+    when(() => cubit.setPriorityThreshold(any())).thenAnswer((_) async {});
   });
 
   Future<void> pumpPage(WidgetTester tester, AppSettings settings) async {
@@ -36,14 +37,22 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('shows all 5 priority channels', (tester) async {
-    await pumpPage(tester, const AppSettings());
+  testWidgets('priority dropdown shows the current threshold', (tester) async {
+    await pumpPage(tester, const AppSettings(priorityThreshold: 3));
 
-    expect(find.text('Min priority'), findsOneWidget);
-    expect(find.text('Low priority'), findsOneWidget);
     expect(find.text('Default priority'), findsOneWidget);
-    expect(find.text('High priority'), findsOneWidget);
-    expect(find.text('Urgent priority'), findsOneWidget);
+  });
+
+  testWidgets('selecting a priority option calls setPriorityThreshold', (tester) async {
+    when(() => cubit.setPriorityThreshold(any())).thenAnswer((_) async {});
+    await pumpPage(tester, const AppSettings(priorityThreshold: 3));
+
+    await tester.tap(find.byType(DropdownButton<int>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Urgent priority').last);
+    await tester.pumpAndSettle();
+
+    verify(() => cubit.setPriorityThreshold(5)).called(1);
   });
 
   testWidgets('toggling quiet hours off calls setQuietHours(enabled: false)', (
@@ -64,5 +73,29 @@ void main() {
     verify(
       () => cubit.setQuietHours(enabled: false, start: '22:00', end: '07:00'),
     ).called(1);
+  });
+
+  testWidgets(
+    'turning quiet hours on from null start/end fills in 22:00/07:00',
+    (tester) async {
+      await pumpPage(tester, const AppSettings());
+
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pumpAndSettle();
+
+      verify(
+        () => cubit.setQuietHours(enabled: true, start: '22:00', end: '07:00'),
+      ).called(1);
+    },
+  );
+
+  testWidgets('Start/End rows are disabled while quiet hours is off', (tester) async {
+    await pumpPage(tester, const AppSettings());
+
+    final startTile = tester.widget<ListTile>(find.widgetWithText(ListTile, 'Start'));
+    final endTile = tester.widget<ListTile>(find.widgetWithText(ListTile, 'End'));
+
+    expect(startTile.enabled, isFalse);
+    expect(endTile.enabled, isFalse);
   });
 }

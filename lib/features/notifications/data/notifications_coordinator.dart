@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:ntfyd/core/database/app_database.dart' as db;
 import 'package:ntfyd/core/database/daos/message_dao.dart';
@@ -54,7 +55,7 @@ class NotificationsCoordinator {
       serverId: row.serverId,
       topic: row.topic,
       subscriptionMuted: subscription.muted == 1,
-      priorityThreshold: subscription.priorityThreshold,
+      priorityThreshold: max(settings.priorityThreshold, subscription.priorityThreshold),
       quietHoursEnabled: settings.quietHoursEnabled == 1,
       quietHoursStart: settings.quietHoursStart,
       quietHoursEnd: settings.quietHoursEnd,

@@ -7,6 +7,8 @@ class AppSettings extends Table {
   IntColumn get quietHoursEnabled => integer().withDefault(const Constant(0))();
   TextColumn get quietHoursStart => text().nullable()();
   TextColumn get quietHoursEnd => text().nullable()();
+  IntColumn get priorityThreshold =>
+      integer().withDefault(const Constant(1))();
   IntColumn get retentionMaxAgeDays => integer().nullable()();
   IntColumn get retentionMaxRows => integer().nullable()();
   IntColumn get hideLockScreenContent =>

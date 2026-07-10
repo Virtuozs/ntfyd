@@ -53,6 +53,7 @@ class AppDatabase extends _$AppDatabase {
           quietHoursEnabled: Value(0),
           quietHoursStart: Value(null),
           quietHoursEnd: Value(null),
+          priorityThreshold: Value(1),
           retentionMaxAgeDays: Value(null),
           retentionMaxRows: Value(10000),
           hideLockScreenContent: Value(0),

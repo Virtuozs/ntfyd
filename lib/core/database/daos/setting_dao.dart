@@ -31,6 +31,7 @@ class SettingDao extends DatabaseAccessor<AppDatabase> with _$SettingDaoMixin {
           id: Value(1),
           themeMode: Value('dark'),
           quietHoursEnabled: Value(0),
+          priorityThreshold: Value(1),
           retentionMaxRows: Value(10000),
           hideLockScreenContent: Value(0),
           analyticsOptOut: Value(0),

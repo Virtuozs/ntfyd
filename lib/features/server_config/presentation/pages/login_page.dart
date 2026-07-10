@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ntfyd/features/feed/presentation/pages/home_page.dart';
-import 'package:ntfyd/features/server_config/presentation/failure_message.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_cubit.dart';
 import 'package:ntfyd/features/server_config/presentation/cubits/server_form_state.dart';
+import 'package:ntfyd/features/server_config/presentation/failure_message.dart';
 
 /// First-run login facade (D14: health-only validation on Connect).
 class LoginPage extends StatefulWidget {

@@ -1,4 +1,6 @@
 // lib/features/server_config/presentation/pages/server_manager_page.dart
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ntfyd/di/injection_container.dart';
@@ -81,7 +83,7 @@ class _ServerManagerView extends StatelessWidget {
         ),
       ),
     );
-    cubit.load();
+    unawaited(cubit.load());
   }
 }
 
@@ -141,7 +143,7 @@ class _ServerTile extends StatelessWidget {
     final cubit = context.read<ServerManagerCubit>();
     switch (action) {
       case _ServerAction.setDefault:
-        cubit.setDefault(server.id);
+        unawaited(cubit.setDefault(server.id));
       case _ServerAction.editCredentials:
         await Navigator.of(context).push(
           MaterialPageRoute<void>(
@@ -151,7 +153,7 @@ class _ServerTile extends StatelessWidget {
             ),
           ),
         );
-        cubit.load();
+        unawaited(cubit.load());
       case _ServerAction.remove:
         final confirmed = await showDialog<bool>(
           context: context,
@@ -171,7 +173,7 @@ class _ServerTile extends StatelessWidget {
           ),
         );
         if (confirmed ?? false) {
-          cubit.remove(server.id);
+          unawaited(cubit.remove(server.id));
         }
     }
   }

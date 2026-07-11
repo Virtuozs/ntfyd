@@ -19,6 +19,7 @@ import 'package:ntfyd/features/groups/presentation/blocs/group_feed_event.dart';
 import 'package:ntfyd/features/groups/presentation/pages/group_feed_page.dart';
 import 'package:ntfyd/features/groups/presentation/pages/group_form_page.dart';
 import 'package:ntfyd/features/groups/presentation/widgets/group_selector_sheet.dart';
+import 'package:ntfyd/features/groups/presentation/widgets/topic_tags_sheet.dart';
 import 'package:ntfyd/features/publish/presentation/cubits/publish_cubit.dart';
 import 'package:ntfyd/features/server_config/domain/entities/server_config.dart';
 import 'package:ntfyd/features/server_config/domain/repositories/server_config_repository.dart';
@@ -89,7 +90,8 @@ class _HomePageState extends State<HomePage> {
     );
     if (mounted) {
       setState(
-        () => _isHealthy = healthResult.isSuccess && healthResult.valueOrThrow.healthy,
+        () => _isHealthy =
+            healthResult.isSuccess && healthResult.valueOrThrow.healthy,
       );
     }
   }
@@ -115,9 +117,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _openCreateGroup() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const GroupFormPage()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const GroupFormPage()));
   }
 
   void _openGroupSelector() {
@@ -133,12 +135,26 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _openManageTags(HomeTopicSummary summary) {
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (_) => BlocProvider<GroupSelectorCubit>.value(
+          value: _groupSelectorCubit,
+          child: TopicTagsSheet(subscription: summary.subscription),
+        ),
+      ),
+    );
+  }
+
   void _openGroupFeed(String? groupId, String title) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider<GroupFeedBloc>(
-          create: (_) => getIt<GroupFeedBloc>()
-            ..add(GroupFeedEvent.load(groupId: groupId)),
+          create: (_) =>
+              getIt<GroupFeedBloc>()
+                ..add(GroupFeedEvent.load(groupId: groupId)),
           child: GroupFeedPage(groupId: groupId, title: title),
         ),
       ),
@@ -179,7 +195,8 @@ class _HomePageState extends State<HomePage> {
       child: BlocListener<GroupSelectorCubit, GroupSelectorState>(
         listenWhen: (previous, current) =>
             previous.selectedGroupId != current.selectedGroupId,
-        listener: (context, state) => _homeFeedCubit.load(groupId: state.selectedGroupId),
+        listener: (context, state) =>
+            _homeFeedCubit.load(groupId: state.selectedGroupId),
         child: Scaffold(
           body: SafeArea(
             child: Column(
@@ -265,22 +282,28 @@ class _HomePageState extends State<HomePage> {
                                       vertical: Spacing.sm,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: theme.colorScheme.surfaceContainerHighest,
+                                      color: theme
+                                          .colorScheme
+                                          .surfaceContainerHighest,
                                       borderRadius: BorderRadius.circular(
                                         AppDimensions.cardBorderRadius,
                                       ),
                                     ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Row(
                                           children: [
-                                            if (selectedGroup?.color != null) ...[
+                                            if (selectedGroup?.color !=
+                                                null) ...[
                                               Container(
                                                 width: 10,
                                                 height: 10,
                                                 decoration: BoxDecoration(
-                                                  color: Color(selectedGroup!.color!),
+                                                  color: Color(
+                                                    selectedGroup!.color!,
+                                                  ),
                                                   shape: BoxShape.circle,
                                                 ),
                                               ),
@@ -291,7 +314,9 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                         Icon(
                                           Icons.arrow_drop_down,
-                                          color: theme.colorScheme.onSurfaceVariant,
+                                          color: theme
+                                              .colorScheme
+                                              .onSurfaceVariant,
                                         ),
                                       ],
                                     ),
@@ -324,25 +349,30 @@ class _HomePageState extends State<HomePage> {
                         HomeFeedError(:final failure) => Center(
                           child: Text('Something went wrong: $failure'),
                         ),
-                        HomeFeedLoaded(:final items) => items.isEmpty
-                            ? Center(
-                                child: Text(
-                                  'No subscriptions yet',
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
+                        HomeFeedLoaded(:final items) =>
+                          items.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    'No subscriptions yet',
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(
+                                          color: theme
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                        ),
                                   ),
+                                )
+                              : ListView.builder(
+                                  itemCount: items.length,
+                                  itemBuilder: (context, index) {
+                                    final summary = items[index];
+                                    return SubscriptionCard(
+                                      summary: summary,
+                                      onTap: () => _openTopicDetail(summary),
+                                      onManageTags: _openManageTags,
+                                    );
+                                  },
                                 ),
-                              )
-                            : ListView.builder(
-                                itemCount: items.length,
-                                itemBuilder: (context, index) {
-                                  final summary = items[index];
-                                  return SubscriptionCard(
-                                    summary: summary,
-                                    onTap: () => _openTopicDetail(summary),
-                                  );
-                                },
-                              ),
                       };
                     },
                   ),

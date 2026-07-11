@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:ntfyd/features/feed/presentation/cubits/group_selector_state.dart';
+import 'package:ntfyd/features/groups/domain/entities/group.dart';
+import 'package:ntfyd/features/groups/domain/entities/group_membership.dart';
 import 'package:ntfyd/features/groups/domain/repositories/group_repository.dart';
 import 'package:ntfyd/features/groups/domain/usecases/delete_group.dart';
+import 'package:ntfyd/features/groups/domain/usecases/save_group.dart';
 
 /// Drives Home's group selector (Base-Plan D15): the list of groups plus
 /// which one (or "All", `null`) is currently selected. Read-model only —
@@ -12,11 +15,12 @@ import 'package:ntfyd/features/groups/domain/usecases/delete_group.dart';
 /// selects and deletes.
 @injectable
 class GroupSelectorCubit extends Cubit<GroupSelectorState> {
-  GroupSelectorCubit(this._groupRepository, this._deleteGroup)
+  GroupSelectorCubit(this._groupRepository, this._deleteGroup, this._saveGroup)
     : super(const GroupSelectorState());
 
   final GroupRepository _groupRepository;
   final DeleteGroup _deleteGroup;
+  final SaveGroup _saveGroup;
 
   StreamSubscription<GroupSelectorState>? _subscription;
 
@@ -35,6 +39,23 @@ class GroupSelectorCubit extends Cubit<GroupSelectorState> {
     if (state.selectedGroupId == groupId) {
       emit(state.copyWith(selectedGroupId: null));
     }
+  }
+
+  Future<void> toggleMembership(Group group, GroupMembership membership) async {
+    final updatedMembers = group.members.contains(membership)
+        ? group.members.where((m) => m != membership).toSet()
+        : {...group.members, membership};
+
+    await _saveGroup.call(
+      SaveGroupParams(
+        id: group.id,
+        name: group.name,
+        color: group.color,
+        members: updatedMembers,
+        filter: group.filter,
+        sortOrder: group.sortOrder,
+      ),
+    );
   }
 
   @override

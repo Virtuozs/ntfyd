@@ -17,11 +17,16 @@ void main() {
     WidgetTester tester, {
     required HomeTopicSummary summary,
     required VoidCallback onTap,
+    ValueChanged<HomeTopicSummary>? onManageTags,
   }) {
     return tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: SubscriptionCard(summary: summary, onTap: onTap),
+          body: SubscriptionCard(
+            summary: summary,
+            onTap: onTap,
+            onManageTags: onManageTags ?? (_) {},
+          ),
         ),
       ),
     );
@@ -65,4 +70,28 @@ void main() {
     await tester.tap(find.byType(InkWell).first);
     expect(tapped, isTrue);
   });
+
+  testWidgets(
+    'tapping "Add to tag" in the menu invokes onManageTags with the summary',
+    (tester) async {
+      HomeTopicSummary? received;
+      final summary = HomeTopicSummary(
+        subscription: subscription,
+        unreadCount: 0,
+      );
+      await pumpCard(
+        tester,
+        summary: summary,
+        onTap: () {},
+        onManageTags: (s) => received = s,
+      );
+
+      await tester.tap(find.byType(PopupMenuButton<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Add to tag'));
+      await tester.pumpAndSettle();
+
+      expect(received, summary);
+    },
+  );
 }

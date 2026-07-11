@@ -7,7 +7,10 @@ import 'package:ntfyd/features/feed/presentation/cubits/group_selector_cubit.dar
 import 'package:ntfyd/features/feed/presentation/cubits/group_selector_state.dart';
 import 'package:ntfyd/features/feed/presentation/cubits/home_feed_cubit.dart';
 import 'package:ntfyd/features/feed/presentation/cubits/home_feed_state.dart';
+import 'package:ntfyd/features/feed/presentation/cubits/home_topic_summary.dart';
 import 'package:ntfyd/features/feed/presentation/pages/home_page.dart';
+import 'package:ntfyd/features/groups/domain/entities/group.dart';
+import 'package:ntfyd/features/groups/presentation/widgets/topic_tags_sheet.dart';
 import 'package:ntfyd/features/server_config/data/models/health_dto.dart';
 import 'package:ntfyd/features/server_config/domain/entities/auth_type.dart';
 import 'package:ntfyd/features/server_config/domain/entities/server_config.dart';
@@ -17,8 +20,10 @@ import 'package:ntfyd/features/settings/domain/entities/app_settings.dart';
 import 'package:ntfyd/features/settings/presentation/cubits/settings_cubit.dart';
 import 'package:ntfyd/features/settings/presentation/cubits/settings_state.dart';
 import 'package:ntfyd/features/settings/presentation/pages/settings_page.dart';
+import 'package:ntfyd/features/subscription/domain/entities/subscription.dart';
 
-class MockServerConfigRepository extends Mock implements ServerConfigRepository {}
+class MockServerConfigRepository extends Mock
+    implements ServerConfigRepository {}
 
 class MockValidateServerHealth extends Mock implements ValidateServerHealth {}
 
@@ -54,16 +59,18 @@ void main() {
     when(
       () => serverConfigRepository.getAll(),
     ).thenAnswer((_) async => Result.success([server]));
-    when(() => validateServerHealth.call('https://ntfy.sh')).thenAnswer(
-      (_) async => const Result.success(HealthDto(healthy: true)),
-    );
+    when(
+      () => validateServerHealth.call('https://ntfy.sh'),
+    ).thenAnswer((_) async => const Result.success(HealthDto(healthy: true)));
     when(
       () => homeFeedCubit.state,
     ).thenReturn(const HomeFeedState.loaded(items: []));
     when(
       () => homeFeedCubit.stream,
     ).thenAnswer((_) => const Stream<HomeFeedState>.empty());
-    when(() => homeFeedCubit.load(groupId: any(named: 'groupId'))).thenReturn(null);
+    when(
+      () => homeFeedCubit.load(groupId: any(named: 'groupId')),
+    ).thenReturn(null);
     when(() => homeFeedCubit.close()).thenAnswer((_) async {});
     when(() => groupSelectorCubit.state).thenReturn(const GroupSelectorState());
     when(
@@ -71,9 +78,9 @@ void main() {
     ).thenAnswer((_) => const Stream<GroupSelectorState>.empty());
     when(() => groupSelectorCubit.load()).thenReturn(null);
     when(() => groupSelectorCubit.close()).thenAnswer((_) async {});
-    when(() => settingsCubit.state).thenReturn(
-      const SettingsState.loaded(AppSettings()),
-    );
+    when(
+      () => settingsCubit.state,
+    ).thenReturn(const SettingsState.loaded(AppSettings()));
     when(
       () => settingsCubit.stream,
     ).thenAnswer((_) => const Stream<SettingsState>.empty());
@@ -114,18 +121,19 @@ void main() {
     expect(find.text('Connected'), findsOneWidget);
   });
 
-  testWidgets('tapping the FAB reveals Subscribe Topic and Create Tag actions', (
-    tester,
-  ) async {
-    await tester.pumpWidget(const MaterialApp(home: HomePage()));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'tapping the FAB reveals Subscribe Topic and Create Tag actions',
+    (tester) async {
+      await tester.pumpWidget(const MaterialApp(home: HomePage()));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(FloatingActionButton).last);
-    await tester.pumpAndSettle();
+      await tester.tap(find.byType(FloatingActionButton).last);
+      await tester.pumpAndSettle();
 
-    expect(find.byTooltip('Subscribe to topic'), findsOneWidget);
-    expect(find.byTooltip('Create Tag'), findsOneWidget);
-  });
+      expect(find.byTooltip('Subscribe to topic'), findsOneWidget);
+      expect(find.byTooltip('Create Tag'), findsOneWidget);
+    },
+  );
 
   testWidgets('tapping the settings icon pushes SettingsPage', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: HomePage()));
@@ -135,5 +143,40 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(SettingsPage), findsOneWidget);
+  });
+
+  testWidgets('tapping Add to tag on a subscription opens TopicTagsSheet', (
+    tester,
+  ) async {
+    final subscription = Subscription(
+      id: 'sub-1',
+      serverId: 'srv-1',
+      topic: 'alerts',
+      displayName: 'Alerts',
+      createdAt: DateTime.utc(2026, 1, 1),
+    );
+    final summary = HomeTopicSummary(
+      subscription: subscription,
+      unreadCount: 0,
+    );
+    final group = Group(id: 'grp-1', name: 'Work');
+
+    when(
+      () => homeFeedCubit.state,
+    ).thenReturn(HomeFeedState.loaded(items: [summary]));
+    when(
+      () => groupSelectorCubit.state,
+    ).thenReturn(GroupSelectorState(groups: [group]));
+
+    await tester.pumpWidget(const MaterialApp(home: HomePage()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(PopupMenuButton<String>));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Add to tag'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TopicTagsSheet), findsOneWidget);
   });
 }

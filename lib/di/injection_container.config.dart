@@ -319,17 +319,18 @@ _i174.GetIt init(
       gh<_i138.ClearAllData>(),
     ),
   );
+  gh.factory<_i221.GroupSelectorCubit>(
+    () => _i221.GroupSelectorCubit(
+      gh<_i1048.GroupRepository>(),
+      gh<_i649.DeleteGroup>(),
+      gh<_i1063.SaveGroup>(),
+    ),
+  );
   gh.factory<_i13.ServerManagerCubit>(
     () => _i13.ServerManagerCubit(
       gh<_i113.ListServers>(),
       gh<_i524.RemoveServer>(),
       gh<_i933.SetDefaultServer>(),
-    ),
-  );
-  gh.factory<_i221.GroupSelectorCubit>(
-    () => _i221.GroupSelectorCubit(
-      gh<_i1048.GroupRepository>(),
-      gh<_i649.DeleteGroup>(),
     ),
   );
   gh.factory<_i349.SubscribeToTopic>(

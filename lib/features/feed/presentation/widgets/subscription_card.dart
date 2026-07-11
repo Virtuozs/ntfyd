@@ -14,10 +14,16 @@ import 'package:ntfyd/shared/theme/design_tokens.dart';
 /// `SubscriptionRepository.watchByServer` stream already reacts to the
 /// resulting DB write (Option A, D9).
 class SubscriptionCard extends StatelessWidget {
-  const SubscriptionCard({super.key, required this.summary, required this.onTap});
+  const SubscriptionCard({
+    super.key,
+    required this.summary,
+    required this.onTap,
+    required this.onManageTags,
+  });
 
   final HomeTopicSummary summary;
   final VoidCallback onTap;
+  final ValueChanged<HomeTopicSummary> onManageTags;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +61,7 @@ class SubscriptionCard extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(Spacing.md),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
                           child: Column(
@@ -96,11 +102,19 @@ class SubscriptionCard extends StatelessWidget {
                           itemBuilder: (context) => [
                             PopupMenuItem(
                               value: 'pin',
-                              child: Text(subscription.pinned ? 'Unpin' : 'Pin'),
+                              child: Text(
+                                subscription.pinned ? 'Unpin' : 'Pin',
+                              ),
                             ),
                             PopupMenuItem(
                               value: 'mute',
-                              child: Text(subscription.muted ? 'Unmute' : 'Mute'),
+                              child: Text(
+                                subscription.muted ? 'Unmute' : 'Mute',
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: 'add_to_tag',
+                              child: Text('Add to tag'),
                             ),
                             const PopupMenuItem(
                               value: 'unsubscribe',
@@ -127,6 +141,8 @@ class SubscriptionCard extends StatelessWidget {
         getIt<TogglePin>().call(subscription.id);
       case 'mute':
         getIt<ToggleMute>().call(subscription.id);
+      case 'add_to_tag':
+        onManageTags(summary);
       case 'unsubscribe':
         getIt<UnsubscribeFromTopic>().call(
           UnsubscribeFromTopicParams(
